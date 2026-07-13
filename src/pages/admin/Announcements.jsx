@@ -84,6 +84,7 @@ export default function Announcements() {
         title: form.title,
         content: form.content,
         type: form.type,
+        isPublished: true,
       });
       toast.success('Announcement published successfully');
       setModalOpen(false);

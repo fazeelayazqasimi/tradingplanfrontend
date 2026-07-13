@@ -63,13 +63,14 @@ export default function Courses() {
       if (search) params.search = search;
       if (levelFilter) params.level = levelFilter;
 
-      const data = await courseService.getCourses(params);
-      const list = data.courses || data.data || data;
+      const response = await courseService.getCourses(params);
+      const body = response.data;
+      const list = body.data || [];
       setCourses(Array.isArray(list) ? list : []);
-      setTotalPages(data.totalPages || Math.ceil((data.total || 0) / 9) || 1);
-      setTotalItems(data.total || (Array.isArray(list) ? list.length : 0));
+      setTotalPages(body.pagination?.totalPages || Math.ceil((body.pagination?.total || 0) / 9) || 1);
+      setTotalItems(body.pagination?.total || (Array.isArray(list) ? list.length : 0));
     } catch (err) {
-      toast.error(err.message || 'Failed to load courses');
+      toast.error(err.response?.data?.message || err.message || 'Failed to load courses');
     } finally {
       setLoading(false);
     }
@@ -77,8 +78,9 @@ export default function Courses() {
 
   const fetchEnrolled = useCallback(async () => {
     try {
-      const data = await courseService.getEnrolled();
-      const list = data.data?.courses || data.data?.data || data.courses || data.data || [];
+      const response = await courseService.getEnrolled();
+      const body = response.data;
+      const list = body.data || [];
       const map = {};
       if (Array.isArray(list)) {
         list.forEach((c) => {

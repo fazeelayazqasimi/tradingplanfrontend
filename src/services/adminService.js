@@ -13,6 +13,7 @@ const adminService = {
   getUser: (id) => unwrap(api.get(`/users/${id}`)),
   updateUser: (id, data) => unwrap(api.put(`/users/${id}`, data)),
   getSubscriptions: (params) => unwrap(api.get('/subscriptions', { params })),
+  updateSubscription: (id, data) => unwrap(api.put(`/subscriptions/${id}`, data)),
   approveSubscription: (id, data) => unwrap(api.put(`/subscriptions/${id}/approve`, data)),
   rejectSubscription: (id, data) => unwrap(api.put(`/subscriptions/${id}/reject`, data)),
   getWithdrawals: (params) => unwrap(api.get('/withdrawals', { params })),

@@ -4,14 +4,17 @@ import {
   FiCheck,
   FiX,
   FiEye,
+  FiEdit2,
   FiCreditCard,
   FiCalendar,
   FiDollarSign,
   FiUser,
+  FiSave,
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
+import Select from '../../components/ui/Select';
 import Card from '../../components/ui/Card';
 import DataTable from '../../components/ui/DataTable';
 import Modal from '../../components/ui/Modal';
@@ -123,6 +126,9 @@ export default function Subscriptions() {
   const [selectedSub, setSelectedSub] = useState(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [processingId, setProcessingId] = useState(null);
+  const [editingSub, setEditingSub] = useState(null);
+  const [editForm, setEditForm] = useState({});
+  const [editSaving, setEditSaving] = useState(false);
 
   const pagination = usePagination({ totalItems: subscriptions.length, perPage: 10 });
 
@@ -191,6 +197,36 @@ export default function Subscriptions() {
     }
   };
 
+  const startEdit = (sub) => {
+    setEditingSub(sub);
+    setEditForm({
+      plan: sub.plan || '',
+      amount: sub.amount || '',
+      status: sub.status || '',
+      startDate: sub.startDate ? sub.startDate.split('T')[0] : '',
+      endDate: sub.endDate ? sub.endDate.split('T')[0] : '',
+      paymentMethod: sub.paymentMethod || '',
+    });
+  };
+
+  const handleEditSave = async () => {
+    if (!editingSub) return;
+    try {
+      setEditSaving(true);
+      const payload = { ...editForm };
+      if (payload.amount) payload.amount = Number(payload.amount);
+      await adminService.updateSubscription(editingSub.id, payload);
+      toast.success('Subscription updated');
+      setEditingSub(null);
+      setDetailOpen(false);
+      fetchSubscriptions();
+    } catch (err) {
+      toast.error(err.response?.data?.message || err.message || 'Failed to update subscription');
+    } finally {
+      setEditSaving(false);
+    }
+  };
+
   const actionColumn = {
     key: 'actions',
     header: '',
@@ -205,6 +241,17 @@ export default function Subscriptions() {
           title="View details"
         >
           <FiEye className="h-4 w-4" />
+        </button>
+        <button
+          onClick={() => {
+            setSelectedSub(row);
+            startEdit(row);
+            setDetailOpen(true);
+          }}
+          className="rounded-xl p-2 text-dark-400 hover:bg-dark-50 hover:text-primary-600 transition-colors"
+          title="Edit"
+        >
+          <FiEdit2 className="h-4 w-4" />
         </button>
         {row.status === 'pending' && (
           <>
@@ -329,11 +376,40 @@ export default function Subscriptions() {
 
       <Modal
         isOpen={detailOpen}
-        onClose={() => setDetailOpen(false)}
-        title="Subscription Details"
+        onClose={() => { setDetailOpen(false); setEditingSub(null); }}
+        title={editingSub ? 'Edit Subscription' : 'Subscription Details'}
         size="md"
       >
-        {selectedSub ? (
+        {editingSub ? (
+          <div className="space-y-5">
+            <Select label="Plan" value={editForm.plan} onChange={(e) => setEditForm((p) => ({ ...p, plan: e.target.value }))}>
+              <option value="">Select plan</option>
+              <option value="monthly">Monthly</option>
+              <option value="yearly">Yearly</option>
+              <option value="lifetime">Lifetime</option>
+            </Select>
+            <Input label="Amount (USD)" type="number" value={editForm.amount} onChange={(e) => setEditForm((p) => ({ ...p, amount: e.target.value }))} />
+            <Select label="Status" value={editForm.status} onChange={(e) => setEditForm((p) => ({ ...p, status: e.target.value }))}>
+              <option value="">Select status</option>
+              <option value="active">Active</option>
+              <option value="pending">Pending</option>
+              <option value="cancelled">Cancelled</option>
+              <option value="expired">Expired</option>
+            </Select>
+            <Input label="Start Date" type="date" value={editForm.startDate} onChange={(e) => setEditForm((p) => ({ ...p, startDate: e.target.value }))} />
+            <Input label="End Date" type="date" value={editForm.endDate} onChange={(e) => setEditForm((p) => ({ ...p, endDate: e.target.value }))} />
+            <Input label="Payment Method" value={editForm.paymentMethod} onChange={(e) => setEditForm((p) => ({ ...p, paymentMethod: e.target.value }))} />
+            <div className="flex items-center gap-3 pt-2">
+              <Button variant="primary" onClick={handleEditSave} disabled={editSaving}>
+                <FiSave className="mr-1.5 h-4 w-4" />
+                {editSaving ? 'Saving...' : 'Save'}
+              </Button>
+              <Button variant="outline" onClick={() => setEditingSub(null)}>
+                Cancel
+              </Button>
+            </div>
+          </div>
+        ) : selectedSub ? (
           <div className="space-y-6">
             <div className="flex items-center gap-4">
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-50">
@@ -428,13 +504,14 @@ export default function Subscriptions() {
                   </Button>
                 </>
               )}
-              <Button variant="outline" onClick={() => setDetailOpen(false)}>
+              <Button variant="outline" onClick={() => { setDetailOpen(false); setEditingSub(null); }}>
                 Close
               </Button>
             </div>
           </div>
         ) : (
           <div className="space-y-4">
+            <p className="text-dark-500">Loading...</p>
             <div className="flex items-center gap-4">
               <Skeleton className="h-14 w-14 rounded-2xl" />
               <div className="space-y-2">

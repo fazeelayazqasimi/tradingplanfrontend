@@ -139,6 +139,7 @@ export default function Courses() {
         description: courseForm.description,
         level: courseForm.level,
         category: courseForm.category,
+        ...(editingCourse ? {} : { isPublished: true }),
       };
       if (editingCourse) {
         await courseService.updateCourse(editingCourse._id || editingCourse.id, payload);
