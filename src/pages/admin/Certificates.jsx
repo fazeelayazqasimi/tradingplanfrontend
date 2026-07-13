@@ -59,7 +59,6 @@ export default function Certificates() {
   const handleSearch = (e) => {
     e.preventDefault();
     pagination.goToPage(1);
-    fetchCertificates();
   };
 
   const handleChange = (field, value) => {

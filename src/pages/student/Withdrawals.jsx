@@ -103,10 +103,6 @@ export default function Withdrawals() {
     return () => { cancelled = true; };
   }, [fetchWallet, fetchWithdrawals]);
 
-  useEffect(() => {
-    fetchWithdrawals();
-  }, [fetchWithdrawals]);
-
   const handleRefresh = () => {
     fetchWallet();
     fetchWithdrawals();

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { FiSearch, FiPlus, FiTrash2, FiEye, FiEdit } from 'react-icons/fi';
+import { FiSearch, FiPlus, FiTrash2, FiEye } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Button from '../../components/ui/Button';
 import DataTable from '../../components/ui/DataTable';
@@ -54,7 +54,6 @@ export default function Quizzes() {
   const handleSearch = (e) => {
     e.preventDefault();
     pagination.goToPage(1);
-    fetchQuizzes();
   };
 
   const handleChange = (field, value) => {

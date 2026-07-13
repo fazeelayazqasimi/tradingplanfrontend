@@ -291,7 +291,7 @@ export default function ProfitShare() {
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium text-dark-700">Available Balance</span>
                     <span className="text-lg font-bold text-emerald-600">
-                      {formatCurrency(stats?.available ?? wallet?.available ?? 0)}
+                      {formatCurrency(stats?.available ?? 0)}
                     </span>
                   </div>
                 </div>

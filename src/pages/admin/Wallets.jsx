@@ -207,7 +207,6 @@ export default function Wallets() {
   const handleSearch = (e) => {
     e.preventDefault();
     pagination.goToPage(1);
-    fetchWallets();
   };
 
   const handleOpenCredit = (wallet) => {

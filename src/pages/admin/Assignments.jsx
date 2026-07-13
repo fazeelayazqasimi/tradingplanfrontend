@@ -5,7 +5,6 @@ import Button from '../../components/ui/Button';
 import DataTable from '../../components/ui/DataTable';
 import Modal from '../../components/ui/Modal';
 import Badge from '../../components/ui/Badge';
-import Skeleton from '../../components/ui/Skeleton';
 import adminService from '../../services/adminService';
 import { formatDate } from '../../utils/helpers';
 import usePagination from '../../hooks/usePagination';
@@ -108,7 +107,6 @@ export default function Assignments() {
   const handleSearch = (e) => {
     e.preventDefault();
     pagination.goToPage(1);
-    fetchAssignments();
   };
 
   const resetForm = () => {

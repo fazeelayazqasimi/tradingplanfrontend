@@ -22,7 +22,6 @@ import courseService from '../../services/courseService';
 import signalService from '../../services/signalService';
 import { useAuth } from '../../context/AuthContext';
 import { formatCurrency, formatDate, getInitials } from '../../utils/helpers';
-import { STATUS_COLORS } from '../../constants/index';
 
 const container = {
   hidden: { opacity: 0 },
@@ -144,7 +143,7 @@ export default function Dashboard() {
             {getInitials(user?.firstName, user?.lastName)}
           </div>
           <div className="flex-1 text-center sm:text-left">
-            <h1 className="text-lg font-bold text-ink">
+            <h1 className="text-lg font-bold text-white">
               Welcome back, {user?.firstName || 'Student'}!
             </h1>
             <p className="text-sm text-white/70 mt-0.5">
