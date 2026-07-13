@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { FiMenu, FiLayout, FiBookOpen, FiTrendingUp, FiCopy, FiPieChart, FiDollarSign, FiLink2, FiAward, FiFileText, FiBell, FiMessageSquare, FiSettings, FiLogOut, FiX, FiCreditCard, FiClock, FiUsers, FiPercent } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 import { getInitials } from '../../utils/helpers';
+import ThemeToggle from '../ui/ThemeToggle';
 
 const sidebarLinks = [
   { path: '/student/dashboard', label: 'Dashboard', icon: FiLayout },
@@ -122,6 +123,7 @@ export default function StudentLayout() {
           <Outlet />
         </main>
       </div>
+      <ThemeToggle />
     </div>
   );
 }

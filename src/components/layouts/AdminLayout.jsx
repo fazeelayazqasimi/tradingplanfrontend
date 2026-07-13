@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { FiMenu, FiX, FiLayout, FiUsers, FiCreditCard, FiBookOpen, FiTrendingUp, FiBell, FiLink2, FiAward, FiDollarSign, FiSettings, FiLogOut, FiMessageSquare, FiHelpCircle, FiFileText, FiEdit, FiPieChart, FiBarChart2 } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 import { getInitials } from '../../utils/helpers';
+import ThemeToggle from '../ui/ThemeToggle';
 
 const sidebarLinks = [
   { path: '/admin/dashboard', label: 'Dashboard', icon: FiLayout },
@@ -128,6 +129,7 @@ export default function AdminLayout() {
           <Outlet />
         </main>
       </div>
+      <ThemeToggle />
     </div>
   );
 }

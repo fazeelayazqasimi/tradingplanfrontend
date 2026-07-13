@@ -1,6 +1,7 @@
 import { Link, useLocation, Outlet } from 'react-router-dom';
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import ThemeToggle from '../ui/ThemeToggle';
 
 export default function WebsiteLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -131,6 +132,7 @@ export default function WebsiteLayout() {
           </div>
         </div>
       </footer>
+      <ThemeToggle />
     </div>
   );
 }

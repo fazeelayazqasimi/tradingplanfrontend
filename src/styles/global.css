@@ -2,6 +2,60 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --dark-50: #f8fafc;
+  --dark-100: #f1f5f9;
+  --dark-200: #e2e8f0;
+  --dark-300: #cbd5e1;
+  --dark-400: #94a3b8;
+  --dark-500: #64748b;
+  --dark-600: #475569;
+  --dark-700: #334155;
+  --dark-800: #1e293b;
+  --dark-850: #172033;
+  --dark-900: #0f172a;
+  --dark-950: #020617;
+  --ink: #111827;
+  --ink-soft: #6B7280;
+}
+
+.dark {
+  --dark-50: #1e293b;
+  --dark-100: #334155;
+  --dark-200: #475569;
+  --dark-300: #64748b;
+  --dark-400: #94a3b8;
+  --dark-500: #cbd5e1;
+  --dark-600: #e2e8f0;
+  --dark-700: #f1f5f9;
+  --dark-800: #f8fafc;
+  --dark-850: #f8fafc;
+  --dark-900: #f8fafc;
+  --dark-950: #ffffff;
+  --ink: #f1f5f9;
+  --ink-soft: #cbd5e1;
+}
+
+.dark .bg-white,
+.dark .card,
+.dark .page-container { background-color: #1e293b; }
+.dark aside { background-color: #172033; }
+.dark header { background-color: #172033; }
+.dark .shadow-card { box-shadow: 0 1px 2px rgba(0,0,0,0.2), 0 1px 3px rgba(0,0,0,0.3); }
+.dark .shadow-card-md { box-shadow: 0 8px 24px rgba(0,0,0,0.3), 0 2px 6px rgba(0,0,0,0.2); }
+.dark .shadow-card-lg { box-shadow: 0 24px 60px rgba(0,0,0,0.4), 0 8px 20px rgba(0,0,0,0.2); }
+.dark input,
+.dark textarea,
+.dark select { background-color: #0f172a !important; color: #f1f5f9 !important; border-color: #475569 !important; }
+.dark select option { background-color: #1e293b; }
+.dark .table thead { background-color: #334155; }
+.dark .table tbody tr:hover { background-color: rgba(51,65,85,0.5); }
+.dark .table th { color: #e2e8f0; }
+.dark .modal-content { background-color: #1e293b; }
+.dark .skeleton { background-color: #334155; }
+.dark .scrollbar-thin { scrollbar-color: #475569 transparent; }
+.dark .scrollbar-thin::-webkit-scrollbar-thumb { background-color: #475569; }
+
 @layer base {
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
@@ -108,7 +162,7 @@
   .table thead { @apply bg-dark-50 border-b border-dark-100; }
   .table th { @apply px-4 py-3 text-left font-semibold text-dark-600 whitespace-nowrap; }
   .table td { @apply px-4 py-3 border-b border-dark-50; }
-  .table tbody tr:hover { @apply bg-dark-50/50; }
+  .table tbody tr:hover { background-color: rgba(100,116,139,0.08); }
 
   .stat-card { @apply card flex flex-col gap-2; }
   .stat-value { @apply text-2xl font-bold text-ink; }
