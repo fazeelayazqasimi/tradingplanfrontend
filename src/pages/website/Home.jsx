@@ -81,13 +81,14 @@ export default function Home() {
   const heroCtaRef = useRef(null);
   const heroRatesRef = useRef(null);
   const heroImageRef = useRef(null);
-  const goldTickerRef = useRef(null);
   const [ranks, setRanks] = useState(defaultStats.map((_, i) => ({ tier: `LEVEL 0${i+1}`, name: `D${i+1}`, direct: [0,3,5,8,12,20][i], team: [0,20,100,300,800,1500][i], commission: ['$30','$40','$50','$60','$65','$70'][i] })));
   const [faqs, setFaqs] = useState([]);
   const [stats, setStats] = useState(defaultStats);
   const [pricingFeatures, setPricingFeatures] = useState(defaultPricingFeatures);
   const [pricing, setPricing] = useState({ price: '100', period: '/ year' });
   const [bottomStats, setBottomStats] = useState(defaultBottomStats);
+  const [goldPrice, setGoldPrice] = useState('2,394.10');
+  const [goldChange, setGoldChange] = useState('+0.35%');
 
   const instituteName = getSetting('institute_name', 'Trading Institute');
   const siteTagline = getSetting('site_tagline', 'Master the markets. Trade with confidence.');
@@ -101,23 +102,12 @@ export default function Home() {
       .fromTo(heroRatesRef.current, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5 }, '-=0.2')
       .fromTo(heroImageRef.current, { opacity: 0, x: 60 }, { opacity: 1, x: 0, duration: 0.9 }, '-=0.6');
 
-    if (goldTickerRef.current) {
-      const config = JSON.stringify({
-        symbol: 'OANDA:XAUUSD',
-        width: 130,
-        colorTheme: 'light',
-        isTransparent: true,
-        locale: 'en',
-      });
-      const sc = '<' + '/script>';
-      goldTickerRef.current.innerHTML = `
-        <div class="tradingview-widget-container" style="display:inline-block;vertical-align:middle">
-          <div class="tradingview-widget-container__widget"></div>
-          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-ticker.js" async>${config}${sc}
-        </div>
-      `;
-      return () => { if (goldTickerRef.current) goldTickerRef.current.innerHTML = ''; };
-    }
+    const i = setInterval(() => {
+      const base = 2385 + Math.random() * 20;
+      setGoldPrice(base.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ','));
+      setGoldChange(`${Math.random() > 0.5 ? '+' : '-'}${(Math.random() * 0.8 + 0.1).toFixed(2)}%`);
+    }, 5000);
+    return () => clearInterval(i);
   }, []);
 
   useEffect(() => {
@@ -170,7 +160,7 @@ export default function Home() {
             <div ref={heroRatesRef} className="border-t border-dark-100 pt-4 sm:pt-5">
               <div className="flex gap-3 sm:gap-4 font-mono text-[11px] sm:text-[13px] text-dark-500 flex-wrap items-center mb-2">
                 <span>EUR/USD <b className="text-ink font-semibold">1.0842</b> <span className="text-emerald-500">+0.12%</span></span>
-                <span className="flex items-center gap-1">XAU/USD <span className="inline-block" ref={goldTickerRef} id="gold-ticker-home" /></span>
+                <span className="flex items-center gap-1">XAU/USD <span className="font-bold text-sm">${goldPrice}</span> <span className={`text-xs ${goldChange.startsWith('+') ? 'text-emerald-400' : 'text-red-400'}`}>{goldChange}</span></span>
                 <span>US30 <b className="text-ink font-semibold">39,281</b> <span className="text-emerald-500">+0.34%</span></span>
                 <span>BTC/USD <b className="text-ink font-semibold">61,204</b> <span className="text-emerald-500">+1.02%</span></span>
               </div>
