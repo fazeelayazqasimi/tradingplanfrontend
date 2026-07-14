@@ -17,6 +17,7 @@ import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 import Skeleton from '../../components/ui/Skeleton';
 import EmptyState from '../../components/ui/EmptyState';
+import LiveChartWidget from '../../components/charts/LiveChartWidget';
 import studentService from '../../services/studentService';
 import courseService from '../../services/courseService';
 import signalService from '../../services/signalService';
@@ -320,6 +321,10 @@ export default function Dashboard() {
       </div>
 
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
+        <LiveChartWidget compact showTitle />
+      </motion.div>
+
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
         <Card className="p-[22px]">
           <h2 className="text-sm font-semibold text-ink mb-3">Quick Actions</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
