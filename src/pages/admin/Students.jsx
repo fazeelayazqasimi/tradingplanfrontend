@@ -10,11 +10,23 @@ import adminService from '../../services/adminService';
 import { formatDate } from '../../utils/helpers';
 import usePagination from '../../hooks/usePagination';
 
-const statusColor = {
-  active: 'success',
-  inactive: 'danger',
-  suspended: 'warning',
-};
+function getStudentId(student) {
+  return student._id || student.id;
+}
+
+function getStatusColor(student) {
+  if (student.isSuspended) return 'warning';
+  return student.isActive !== false ? 'success' : 'danger';
+}
+
+function getStatusLabel(student) {
+  if (student.isSuspended) return 'Suspended';
+  return student.isActive !== false ? 'Active' : 'Inactive';
+}
+
+function getStatusBadge(student) {
+  return <Badge color={getStatusColor(student)}>{getStatusLabel(student)}</Badge>;
+}
 
 const columns = [
   {
@@ -41,14 +53,10 @@ const columns = [
     ),
   },
   {
-    key: 'status',
+    key: 'isActive',
     header: 'Status',
     sortable: true,
-    render: (_, row) => (
-      <Badge color={statusColor[row.status] || 'neutral'}>
-        {row.status}
-      </Badge>
-    ),
+    render: (_, row) => getStatusBadge(row),
   },
   {
     key: 'isApproved',
@@ -116,16 +124,17 @@ export default function Students() {
   };
 
   const handleToggleActive = async (student) => {
+    const studentId = getStudentId(student);
     try {
-      setTogglingId(student.id);
-      const newStatus = student.status === 'active' ? 'inactive' : 'active';
-      await adminService.updateUser(student.id, { status: newStatus });
-      toast.success(`Student ${newStatus === 'active' ? 'activated' : 'deactivated'} successfully`);
+      setTogglingId(studentId);
+      const newIsActive = student.isActive === false;
+      await adminService.updateUser(studentId, { isActive: newIsActive });
+      toast.success(`Student ${newIsActive ? 'activated' : 'deactivated'} successfully`);
       setStudents((prev) =>
-        prev.map((s) => (s.id === student.id ? { ...s, status: newStatus } : s))
+        prev.map((s) => (getStudentId(s) === studentId ? { ...s, isActive: newIsActive } : s))
       );
-      if (selectedStudent?.id === student.id) {
-        setSelectedStudent((prev) => (prev ? { ...prev, status: newStatus } : prev));
+      if (getStudentId(selectedStudent) === studentId) {
+        setSelectedStudent((prev) => (prev ? { ...prev, isActive: newIsActive } : prev));
       }
     } catch (err) {
       toast.error(err.response?.data?.message || err.message || 'Failed to update student');
@@ -138,33 +147,37 @@ export default function Students() {
     key: 'actions',
     header: 'Actions',
     width: 'w-24',
-    render: (_, row) => (
-      <div className="flex items-center gap-1">
-        <button
-          onClick={() => handleViewDetails(row)}
-          className="rounded-xl p-2 text-dark-400 hover:bg-primary-50 hover:text-primary-600 transition-all duration-200"
-          title="View details"
-        >
-          <FiEye className="h-4 w-4" />
-        </button>
-        <button
-          onClick={() => handleToggleActive(row)}
-          disabled={togglingId === row.id}
-          className={`rounded-xl p-2 transition-all duration-200 ${
-            row.status === 'active'
-              ? 'text-dark-400 hover:bg-red-50 hover:text-red-600'
-              : 'text-dark-400 hover:bg-emerald-50 hover:text-emerald-600'
-          } disabled:opacity-50`}
-          title={row.status === 'active' ? 'Deactivate' : 'Activate'}
-        >
-          {row.status === 'active' ? (
-            <FiUserX className="h-4 w-4" />
-          ) : (
-            <FiUserCheck className="h-4 w-4" />
-          )}
-        </button>
-      </div>
-    ),
+    render: (_, row) => {
+      const rowId = getStudentId(row);
+      const isActive = row.isActive !== false;
+      return (
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => handleViewDetails(row)}
+            className="rounded-xl p-2 text-dark-400 hover:bg-primary-50 hover:text-primary-600 transition-all duration-200"
+            title="View details"
+          >
+            <FiEye className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => handleToggleActive(row)}
+            disabled={togglingId === rowId}
+            className={`rounded-xl p-2 transition-all duration-200 ${
+              isActive
+                ? 'text-dark-400 hover:bg-red-50 hover:text-red-600'
+                : 'text-dark-400 hover:bg-emerald-50 hover:text-emerald-600'
+            } disabled:opacity-50`}
+            title={isActive ? 'Deactivate' : 'Activate'}
+          >
+            {isActive ? (
+              <FiUserX className="h-4 w-4" />
+            ) : (
+              <FiUserCheck className="h-4 w-4" />
+            )}
+          </button>
+        </div>
+      );
+    },
   };
 
   const allColumns = [...columns, actionColumn];
@@ -200,7 +213,7 @@ export default function Students() {
           data={students}
           loading={loading}
           emptyMessage="No students found"
-          rowKey="id"
+          rowKey={(row) => getStudentId(row)}
         />
 
         {pagination.totalPages > 1 && (
@@ -262,9 +275,7 @@ export default function Students() {
                   {selectedStudent.firstName} {selectedStudent.lastName}
                 </h3>
                 <div className="flex items-center gap-2 mt-2">
-                  <Badge color={statusColor[selectedStudent.status] || 'neutral'}>
-                    {selectedStudent.status}
-                  </Badge>
+                  {getStatusBadge(selectedStudent)}
                   <Badge color={selectedStudent.isApproved ? 'success' : 'warning'}>
                     {selectedStudent.isApproved ? 'Approved' : 'Pending Approval'}
                   </Badge>
@@ -329,11 +340,11 @@ export default function Students() {
 
             <div className="flex items-center gap-3 pt-2">
               <Button
-                variant={selectedStudent.status === 'active' ? 'danger' : 'success'}
+                variant={selectedStudent.isActive !== false ? 'danger' : 'success'}
                 onClick={() => handleToggleActive(selectedStudent)}
-                disabled={togglingId === selectedStudent.id}
+                disabled={togglingId === getStudentId(selectedStudent)}
               >
-                {selectedStudent.status === 'active' ? 'Deactivate Account' : 'Activate Account'}
+                {selectedStudent.isActive !== false ? 'Deactivate Account' : 'Activate Account'}
               </Button>
               <Button variant="outline" onClick={() => setDetailOpen(false)}>
                 Close

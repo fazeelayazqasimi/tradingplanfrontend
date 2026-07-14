@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import websiteService from '../../services/websiteService';
+import { useName } from '../../context/NameContext';
 
 const defaultSteps = [
   { num: '1', title: 'We Analyze', desc: 'Our team scans multiple markets 24/7 using institutional-grade technical and sentiment analysis to identify high-probability setups.' },
@@ -39,6 +40,7 @@ function ScrollReveal({ children, className = '', delay = 0 }) {
 }
 
 export default function TradingSignals() {
+  const { visitorName } = useName();
   const [content, setContent] = useState({ steps: defaultSteps, features: defaultFeatures, stats: defaultStats });
 
   useEffect(() => {
@@ -68,7 +70,7 @@ export default function TradingSignals() {
           <ScrollReveal>
             <p className="eyebrow mb-4">Trading Signals</p>
             <h1 className="text-[42px] font-extrabold mb-5 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"', letterSpacing: '-0.02em' }}>
-              Professional Trading Signals
+              {visitorName ? `${visitorName}, get professional trading signals` : 'Professional Trading Signals'}
             </h1>
             <p className="text-dark-500 text-[17px] leading-relaxed font-inter max-w-[640px] mx-auto">
               Real-time, data-driven market signals delivered by professional analysts. Precise entries, managed risk, and transparent performance — everything you need to trade with confidence.

@@ -139,11 +139,14 @@ export default function Assignments() {
     }
   };
 
+  const getAssignmentId = (a) => a._id || a.id;
+
   const handleDelete = async (assignment) => {
+    const assignmentId = getAssignmentId(assignment);
     if (!window.confirm(`Delete "${assignment.title}"? This action cannot be undone.`)) return;
     try {
-      setDeletingId(assignment.id);
-      await adminService.deleteAssignment(assignment.id);
+      setDeletingId(assignmentId);
+      await adminService.deleteAssignment(assignmentId);
       toast.success('Assignment deleted');
       fetchAssignments();
     } catch (err) {
@@ -157,18 +160,21 @@ export default function Assignments() {
     key: 'actions',
     header: 'Actions',
     width: 'w-20',
-    render: (_, row) => (
-      <div className="flex items-center gap-1">
-        <button
-          onClick={() => handleDelete(row)}
-          disabled={deletingId === row.id}
-          className="rounded-xl p-2 text-dark-400 hover:bg-red-50 hover:text-red-600 transition-all duration-200 disabled:opacity-50"
-          title="Delete assignment"
-        >
-          <FiTrash2 className="h-4 w-4" />
-        </button>
-      </div>
-    ),
+    render: (_, row) => {
+      const rowId = getAssignmentId(row);
+      return (
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => handleDelete(row)}
+            disabled={deletingId === rowId}
+            className="rounded-xl p-2 text-dark-400 hover:bg-red-50 hover:text-red-600 transition-all duration-200 disabled:opacity-50"
+            title="Delete assignment"
+          >
+            <FiTrash2 className="h-4 w-4" />
+          </button>
+        </div>
+      );
+    },
   };
 
   const allColumns = [...columns, actionColumn];

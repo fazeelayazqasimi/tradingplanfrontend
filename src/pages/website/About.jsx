@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import websiteService from '../../services/websiteService';
+import { useName } from '../../context/NameContext';
 
 const defaultFeatures = [
   { title: 'Mentor-led, not video-only', desc: 'Every course is paired with live sessions and direct feedback from active traders.' },
@@ -30,6 +31,7 @@ function ScrollReveal({ children, className = '', delay = 0 }) {
 }
 
 export default function About() {
+  const { visitorName } = useName();
   const [stats, setStats] = useState(defaultStats);
 
   useEffect(() => {
@@ -67,7 +69,7 @@ export default function About() {
           <div>
             <p className="eyebrow mb-3.5">About Us</p>
             <h2 className="text-[34px] font-extrabold mb-4.5 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"', letterSpacing: '-0.02em' }}>
-              Built by traders who wanted the education they never had.
+              {visitorName ? `Welcome, ${visitorName}. Built by traders who wanted the education they never had.` : 'Built by traders who wanted the education they never had.'}
             </h2>
             <p className="text-dark-500 text-[15.5px] leading-[1.7] font-inter">
               Dream Trader was founded on a simple mission: give retail traders the same structured, mentor-led path that institutional desks give their own analysts. Our vision is a global community where discipline and process - not hype - define success.

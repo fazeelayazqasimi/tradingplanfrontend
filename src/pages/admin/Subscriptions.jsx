@@ -24,6 +24,10 @@ import adminService from '../../services/adminService';
 import { formatCurrency, formatDate } from '../../utils/helpers';
 import usePagination from '../../hooks/usePagination';
 
+function getSubId(sub) {
+  return sub._id || sub.id;
+}
+
 const statusColor = {
   active: 'success',
   pending: 'warning',
@@ -161,14 +165,15 @@ export default function Subscriptions() {
   };
 
   const handleApprove = async (sub) => {
+    const subId = getSubId(sub);
     try {
-      setProcessingId(sub.id);
-      await adminService.approveSubscription(sub.id, { status: 'approved' });
+      setProcessingId(subId);
+      await adminService.approveSubscription(subId, { status: 'approved' });
       toast.success('Subscription approved successfully');
       setSubscriptions((prev) =>
-        prev.map((s) => (s.id === sub.id ? { ...s, status: 'active' } : s))
+        prev.map((s) => (getSubId(s) === subId ? { ...s, status: 'active' } : s))
       );
-      if (selectedSub?.id === sub.id) {
+      if (getSubId(selectedSub) === subId) {
         setSelectedSub((prev) => (prev ? { ...prev, status: 'active' } : prev));
       }
     } catch (err) {
@@ -179,15 +184,16 @@ export default function Subscriptions() {
   };
 
   const handleReject = async (sub) => {
+    const subId = getSubId(sub);
     if (!window.confirm('Are you sure you want to reject this subscription?')) return;
     try {
-      setProcessingId(sub.id);
-      await adminService.rejectSubscription(sub.id);
+      setProcessingId(subId);
+      await adminService.rejectSubscription(subId);
       toast.success('Subscription rejected');
       setSubscriptions((prev) =>
-        prev.map((s) => (s.id === sub.id ? { ...s, status: 'rejected' } : s))
+        prev.map((s) => (getSubId(s) === subId ? { ...s, status: 'rejected' } : s))
       );
-      if (selectedSub?.id === sub.id) {
+      if (getSubId(selectedSub) === subId) {
         setSelectedSub((prev) => (prev ? { ...prev, status: 'rejected' } : prev));
       }
     } catch (err) {
@@ -211,11 +217,12 @@ export default function Subscriptions() {
 
   const handleEditSave = async () => {
     if (!editingSub) return;
+    const editingId = getSubId(editingSub);
     try {
       setEditSaving(true);
       const payload = { ...editForm };
       if (payload.amount) payload.amount = Number(payload.amount);
-      await adminService.updateSubscription(editingSub.id, payload);
+      await adminService.updateSubscription(editingId, payload);
       toast.success('Subscription updated');
       setEditingSub(null);
       setDetailOpen(false);
@@ -230,51 +237,54 @@ export default function Subscriptions() {
   const actionColumn = {
     key: 'actions',
     header: '',
-    render: (_, row) => (
-      <div className="flex items-center justify-end gap-1">
-        <button
-          onClick={() => {
-            setSelectedSub(row);
-            setDetailOpen(true);
-          }}
-          className="rounded-xl p-2 text-dark-400 hover:bg-dark-50 hover:text-primary-600 transition-colors"
-          title="View details"
-        >
-          <FiEye className="h-4 w-4" />
-        </button>
-        <button
-          onClick={() => {
-            setSelectedSub(row);
-            startEdit(row);
-            setDetailOpen(true);
-          }}
-          className="rounded-xl p-2 text-dark-400 hover:bg-dark-50 hover:text-primary-600 transition-colors"
-          title="Edit"
-        >
-          <FiEdit2 className="h-4 w-4" />
-        </button>
-        {row.status === 'pending' && (
-          <>
-            <button
-              onClick={() => handleApprove(row)}
-              disabled={processingId === row.id}
-              className="rounded-xl p-2 text-dark-400 hover:bg-green-50 hover:text-green-500 transition-colors disabled:opacity-50"
-              title="Approve"
-            >
-              <FiCheck className="h-4 w-4" />
-            </button>
-            <button
-              onClick={() => handleReject(row)}
-              disabled={processingId === row.id}
-              className="rounded-xl p-2 text-dark-400 hover:bg-red-50 hover:text-red-500 transition-colors disabled:opacity-50"
-              title="Reject"
-            >
-              <FiX className="h-4 w-4" />
-            </button>
-          </>
-        )}
-      </div>
-    ),
+    render: (_, row) => {
+      const rowId = getSubId(row);
+      return (
+        <div className="flex items-center justify-end gap-1">
+          <button
+            onClick={() => {
+              setSelectedSub(row);
+              setDetailOpen(true);
+            }}
+            className="rounded-xl p-2 text-dark-400 hover:bg-dark-50 hover:text-primary-600 transition-colors"
+            title="View details"
+          >
+            <FiEye className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => {
+              setSelectedSub(row);
+              startEdit(row);
+              setDetailOpen(true);
+            }}
+            className="rounded-xl p-2 text-dark-400 hover:bg-dark-50 hover:text-primary-600 transition-colors"
+            title="Edit"
+          >
+            <FiEdit2 className="h-4 w-4" />
+          </button>
+          {row.status === 'pending' && (
+            <>
+              <button
+                onClick={() => handleApprove(row)}
+                disabled={processingId === rowId}
+                className="rounded-xl p-2 text-dark-400 hover:bg-green-50 hover:text-green-500 transition-colors disabled:opacity-50"
+                title="Approve"
+              >
+                <FiCheck className="h-4 w-4" />
+              </button>
+              <button
+                onClick={() => handleReject(row)}
+                disabled={processingId === rowId}
+                className="rounded-xl p-2 text-dark-400 hover:bg-red-50 hover:text-red-500 transition-colors disabled:opacity-50"
+                title="Reject"
+              >
+                <FiX className="h-4 w-4" />
+              </button>
+            </>
+          )}
+        </div>
+      );
+    },
   };
 
   const allColumns = [...columns, actionColumn];
@@ -489,7 +499,7 @@ export default function Subscriptions() {
                   <Button
                     variant="success"
                     onClick={() => handleApprove(selectedSub)}
-                    disabled={processingId === selectedSub.id}
+                    disabled={processingId === getSubId(selectedSub)}
                   >
                     <FiCheck className="mr-1.5 h-4 w-4" />
                     Approve
@@ -497,7 +507,7 @@ export default function Subscriptions() {
                   <Button
                     variant="danger"
                     onClick={() => handleReject(selectedSub)}
-                    disabled={processingId === selectedSub.id}
+                    disabled={processingId === getSubId(selectedSub)}
                   >
                     <FiX className="mr-1.5 h-4 w-4" />
                     Reject

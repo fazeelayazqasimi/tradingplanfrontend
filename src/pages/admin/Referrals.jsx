@@ -12,6 +12,8 @@ import { formatDate } from '../../utils/helpers';
 import usePagination from '../../hooks/usePagination';
 import api from '../../services/api';
 
+function getRefId(r) { return r._id || r.id; }
+
 const STATUS_MAP = {
   pending: { label: 'Pending', color: 'warning' },
   completed: { label: 'Completed', color: 'success' },
@@ -82,7 +84,7 @@ export default function Referrals() {
     setDetailModal(referral);
     setDetailLoading(true);
     try {
-      const res = await api.get(`/admin/referrals/${referral.id}`);
+      const res = await api.get(`/admin/referrals/${getRefId(referral)}`);
       setDetailData(res.data.data || referral);
     } catch {
       setDetailData(referral);

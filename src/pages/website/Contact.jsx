@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import websiteService from '../../services/websiteService';
 import api from '../../services/api';
+import { useName } from '../../context/NameContext';
 
 const defaultContact = {
   email: 'support@dreamtrader.edu',
@@ -10,6 +11,7 @@ const defaultContact = {
 };
 
 export default function Contact() {
+  const { visitorName } = useName();
   const [form, setForm] = useState({ name: '', email: '', message: '' });
   const [loading, setLoading] = useState(false);
   const [contact, setContact] = useState(defaultContact);
@@ -49,7 +51,7 @@ export default function Contact() {
         <div className="max-w-[1240px] mx-auto px-8 grid lg:grid-cols-[1fr_1fr] gap-14">
           <div>
             <p className="eyebrow mb-3.5">Contact</p>
-            <h2 className="text-[32px] font-extrabold mb-6 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Let's talk about your trading goals.</h2>
+            <h2 className="text-[32px] font-extrabold mb-6 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>{visitorName ? `${visitorName}, let's talk about your trading goals.` : "Let's talk about your trading goals."}</h2>
             <form onSubmit={handleSubmit}>
               <div className="field">
                 <label>Full Name</label>

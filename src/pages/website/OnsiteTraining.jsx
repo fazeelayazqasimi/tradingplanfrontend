@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import websiteService from '../../services/websiteService';
+import { useName } from '../../context/NameContext';
 
 const defaultFeatures = [
   { title: 'Hands-on Workshops', desc: 'Practice real strategies in a live market environment with guided exercises and real-time feedback.' },
@@ -42,6 +43,7 @@ function ScrollReveal({ children, className = '', delay = 0 }) {
 }
 
 export default function OnsiteTraining() {
+  const { visitorName } = useName();
   const [features, setFeatures] = useState(defaultFeatures);
   const [packages, setPackages] = useState(defaultPackages);
 
@@ -72,7 +74,7 @@ export default function OnsiteTraining() {
           <ScrollReveal>
             <p className="eyebrow mb-3.5">In-Person Training</p>
             <h1 className="text-[42px] font-extrabold mb-5 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"', letterSpacing: '-0.02em' }}>
-              Onsite Training Programs
+              {visitorName ? `${visitorName}, join our onsite training programs` : 'Onsite Training Programs'}
             </h1>
             <p className="text-dark-500 text-[17px] leading-relaxed font-inter max-w-[640px] mx-auto">
               Join our hands-on trading workshops led by experienced professionals. Learn proven strategies, practice on live markets, and accelerate your trading journey in an immersive in-person environment.

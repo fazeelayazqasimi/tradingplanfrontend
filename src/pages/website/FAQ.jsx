@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import websiteService from '../../services/websiteService';
+import { useName } from '../../context/NameContext';
 
 const defaultFaqs = [
   { q: 'Do I need prior trading experience?', a: 'No. The curriculum starts from market fundamentals and moves through to advanced strategy, so students of any background can follow along at their own pace.' },
@@ -28,6 +29,7 @@ function ScrollReveal({ children, className = '', delay = 0 }) {
 }
 
 export default function FAQ() {
+  const { visitorName } = useName();
   const [faqs, setFaqs] = useState(defaultFaqs);
 
   useEffect(() => {
@@ -61,7 +63,7 @@ export default function FAQ() {
         <div className="max-w-[760px] mx-auto px-8">
           <div className="max-w-[640px] mb-16">
             <p className="eyebrow mb-3.5">FAQ</p>
-            <h2 className="text-[38px] font-extrabold mb-3.5 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Questions, answered.</h2>
+            <h2 className="text-[38px] font-extrabold mb-3.5 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>{visitorName ? `${visitorName}, your questions answered.` : 'Questions, answered.'}</h2>
           </div>
           <div>
             {faqs.map((faq, i) => (

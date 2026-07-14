@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
+import gsap from 'gsap';
 import websiteService from '../../services/websiteService';
+import { useName } from '../../context/NameContext';
 
 const fadeUp = { hidden: { opacity: 0, y: 28 }, visible: { opacity: 1, y: 0, transition: { duration: 0.6 } } };
 
@@ -99,13 +101,37 @@ function ScrollReveal({ children, className = '', delay = 0 }) {
 }
 
 export default function Home() {
+  const { visitorName, clearName } = useName();
   const faqRef = useRef(null);
+  const heroTitleRef = useRef(null);
+  const heroTextRef = useRef(null);
+  const heroCtaRef = useRef(null);
+  const heroRatesRef = useRef(null);
+  const heroImageRef = useRef(null);
   const [ranks, setRanks] = useState(defaultRanks);
   const [faqs, setFaqs] = useState(defaultFaqs);
   const [stats, setStats] = useState(defaultStats);
   const [pricingFeatures, setPricingFeatures] = useState(defaultPricingFeatures);
   const [pricing, setPricing] = useState(defaultPricing);
   const [bottomStats, setBottomStats] = useState(defaultBottomStats);
+  const [goldPrice, setGoldPrice] = useState('2,394.10');
+  const [goldChange, setGoldChange] = useState('+0.35%');
+
+  useEffect(() => {
+    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+    tl.fromTo(heroTitleRef.current, { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.8 })
+      .fromTo(heroTextRef.current, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6 }, '-=0.4')
+      .fromTo(heroCtaRef.current, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5 }, '-=0.3')
+      .fromTo(heroRatesRef.current, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5 }, '-=0.2')
+      .fromTo(heroImageRef.current, { opacity: 0, x: 60 }, { opacity: 1, x: 0, duration: 0.9 }, '-=0.6');
+
+    const i = setInterval(() => {
+      const base = 2385 + Math.random() * 20;
+      setGoldPrice(base.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ','));
+      setGoldChange(`${Math.random() > 0.5 ? '+' : '-'}${(Math.random() * 0.8 + 0.1).toFixed(2)}%`);
+    }, 5000);
+    return () => clearInterval(i);
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -168,29 +194,38 @@ export default function Home() {
       `}</style>
 
       {/* HERO */}
-      <section className="pt-[180px] pb-[100px] relative overflow-hidden" style={{ background: 'radial-gradient(600px 300px at 85% 10%, rgba(37,99,235,0.06), transparent 60%), radial-gradient(500px 260px at 100% 60%, rgba(16,185,129,0.05), transparent 60%)' }}>
-        <div className="max-w-[1240px] mx-auto px-8 grid lg:grid-cols-[1.05fr_0.95fr] gap-16 items-center">
+      <section className="pt-[140px] sm:pt-[180px] pb-[60px] sm:pb-[100px] relative overflow-hidden" style={{ background: 'radial-gradient(600px 300px at 85% 10%, rgba(37,99,235,0.06), transparent 60%), radial-gradient(500px 260px at 100% 60%, rgba(16,185,129,0.05), transparent 60%)' }}>
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-8 grid lg:grid-cols-[1.05fr_0.95fr] gap-10 lg:gap-16 items-center">
           <div>
             <p className="eyebrow mb-6">Trading Institute</p>
-            <h1 className="text-[56px] leading-[1.06] font-extrabold text-ink mb-6" style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', letterSpacing: '-0.02em' }}>
-              Master the markets. <span className="text-primary-500">Trade with confidence.</span>
+            <h1 ref={heroTitleRef} className="text-[32px] sm:text-[44px] lg:text-[56px] leading-[1.06] font-extrabold text-ink mb-6" style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', letterSpacing: '-0.02em' }}>
+              {visitorName ? (
+                <>Hello {visitorName}. <span className="text-primary-500">Be a trader.</span></>
+              ) : (
+                <>Master the markets. <span className="text-primary-500">Trade with confidence.</span></>
+              )}
             </h1>
-            <p className="text-lg leading-[1.65] text-dark-500 max-w-[480px] mb-9 font-inter">
-              Structured trading education, live signals, and a guided path from your first lesson to your first funded strategy - built by professional traders, not marketers.
+            <p ref={heroTextRef} className="text-lg leading-[1.65] text-dark-500 max-w-[480px] mb-9 font-inter">
+              {visitorName ? (
+                <>Welcome, {visitorName}! Your journey to financial freedom starts here. Structured trading education, live signals, and a guided path built by professional traders.</>
+              ) : (
+                <>Structured trading education, live signals, and a guided path from your first lesson to your first funded strategy - built by professional traders, not marketers.</>
+              )}
             </p>
-            <div className="flex gap-3.5 mb-12">
+            <div ref={heroCtaRef} className="flex gap-3.5 mb-12 flex-wrap">
               <Link to="/register" className="btn-blue btn-lg">Join Now</Link>
               <Link to="/courses" className="btn-outline btn-lg">Explore Courses</Link>
+              <Link to="/calculators" className="btn-outline btn-lg">Free Tools</Link>
             </div>
-            <div className="flex gap-7 border-t border-dark-100 pt-5 font-mono text-[13px] text-dark-500 flex-wrap">
+            <div ref={heroRatesRef} className="flex gap-4 border-t border-dark-100 pt-5 font-mono text-[13px] text-dark-500 flex-wrap">
               <span>EUR/USD <b className="text-ink font-semibold">1.0842</b> <span className="text-emerald-500">+0.12%</span></span>
-              <span>XAU/USD <b className="text-ink font-semibold">2,394.10</b> <span className="text-red-500">-0.08%</span></span>
+              <span>XAU/USD <b className="text-ink font-semibold">{goldPrice}</b> <span className={goldChange.includes('+') ? 'text-emerald-500' : 'text-red-500'}>{goldChange}</span></span>
               <span>US30 <b className="text-ink font-semibold">39,281</b> <span className="text-emerald-500">+0.34%</span></span>
               <span>BTC/USD <b className="text-ink font-semibold">61,204</b> <span className="text-emerald-500">+1.02%</span></span>
             </div>
           </div>
 
-          <div className="relative perspective-[1200px]">
+          <div ref={heroImageRef} className="relative perspective-[1200px]">
             <div className="absolute -top-6 -left-[38px] bg-white border border-dark-100 rounded-[14px] shadow-card-md px-4 py-3 text-[13px] z-10">
               <div className="text-[11px] text-dark-500 mb-1">Learning Progress</div>
               <div className="font-bold text-[15px]">74% Complete</div>
@@ -245,10 +280,10 @@ export default function Home() {
 
       {/* FEATURES */}
       <section className="section bg-dark-50">
-        <div className="max-w-[1240px] mx-auto px-8">
-          <div className="text-center max-w-[640px] mx-auto mb-16">
-            <h2 className="text-[38px] font-extrabold mb-3.5 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"', letterSpacing: '-0.02em' }}>One membership. Every tool you need to trade.</h2>
-            <p className="text-dark-500 text-[16.5px] leading-relaxed font-inter">From your first lesson to your first copied trade, everything lives inside a single Dream Trader membership.</p>
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-8">
+          <div className="text-center max-w-[640px] mx-auto mb-12 sm:mb-16">
+            <h2 className="text-[28px] sm:text-[38px] font-extrabold mb-3.5 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"', letterSpacing: '-0.02em' }}>One membership. Every tool you need to trade.</h2>
+            <p className="text-dark-500 text-[15px] sm:text-[16.5px] leading-relaxed font-inter">From your first lesson to your first copied trade, everything lives inside a single Dream Trader membership.</p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-[22px]">
             {defaultFeatures.map((f, i) => (
@@ -269,7 +304,7 @@ export default function Home() {
         <div className="max-w-[920px] mx-auto px-8">
           <div className="max-w-[640px] mb-16">
             <p className="eyebrow mb-3.5">Learning Path</p>
-            <h2 className="text-[38px] font-extrabold mb-3.5 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Your path through the institute.</h2>
+            <h2 className="text-[28px] sm:text-[38px] font-extrabold mb-3.5 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Your path through the institute.</h2>
             <p className="text-dark-500 text-[16.5px] leading-relaxed font-inter">Eight steps take you from registration to earning through copy trading and referrals - in order, with nothing skipped.</p>
           </div>
           <div className="relative ml-[23px]">
@@ -296,7 +331,7 @@ export default function Home() {
         <div className="max-w-[1240px] mx-auto px-8">
           <div className="max-w-[640px] mb-16">
             <p className="eyebrow mb-3.5">Trading Signals</p>
-            <h2 className="text-[38px] font-extrabold mb-3.5 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Every signal, fully transparent.</h2>
+            <h2 className="text-[28px] sm:text-[38px] font-extrabold mb-3.5 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Every signal, fully transparent.</h2>
             <p className="text-dark-500 text-[16.5px] leading-relaxed font-inter">Market, pair, entry, stop loss, take profit and risk level - published before execution, with status tracked live.</p>
           </div>
           <div className="grid md:grid-cols-3 gap-5">
@@ -331,7 +366,7 @@ export default function Home() {
         <div className="max-w-[1000px] mx-auto px-8">
           <div className="text-center max-w-[640px] mx-auto mb-16">
             <p className="eyebrow mb-3.5">Copy Trading</p>
-            <h2 className="text-[38px] font-extrabold mb-3.5 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Follow the institute's trades, automatically.</h2>
+            <h2 className="text-[28px] sm:text-[38px] font-extrabold mb-3.5 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Follow the institute's trades, automatically.</h2>
             <p className="text-dark-500 text-[16.5px] leading-relaxed font-inter">A simple, transparent flow - from execution to distribution - so you always know where your capital stands.</p>
           </div>
           <div className="flex items-center justify-between gap-2">
@@ -354,7 +389,7 @@ export default function Home() {
         <div className="max-w-[1240px] mx-auto px-8">
           <div className="text-center max-w-[640px] mx-auto mb-16">
             <p className="eyebrow mb-3.5">Rank Progression</p>
-            <h2 className="text-[38px] font-extrabold mb-3.5 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Six tiers. Clear requirements at every step.</h2>
+            <h2 className="text-[28px] sm:text-[38px] font-extrabold mb-3.5 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Six tiers. Clear requirements at every step.</h2>
             <p className="text-dark-500 text-[16.5px] leading-relaxed font-inter">Ranks unlock as your direct referrals and team size grow - with commission percentage rising alongside.</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
@@ -378,7 +413,7 @@ export default function Home() {
         <div className="max-w-[1240px] mx-auto px-8">
           <div className="text-center max-w-[640px] mx-auto mb-16">
             <p className="eyebrow mb-3.5">Pricing</p>
-            <h2 className="text-[38px] font-extrabold mb-3.5 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>One membership. Everything included.</h2>
+            <h2 className="text-[28px] sm:text-[38px] font-extrabold mb-3.5 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>One membership. Everything included.</h2>
             <p className="text-dark-500 text-[16.5px] leading-relaxed font-inter">No hidden tiers, no add-ons - a single annual membership unlocks the full institute.</p>
           </div>
           <ScrollReveal>
@@ -427,7 +462,7 @@ export default function Home() {
       {/* STATS BAND */}
       <section className="section pt-0">
         <div className="max-w-[1240px] mx-auto px-8">
-          <div className="bg-ink rounded-[28px] py-16 px-14 grid grid-cols-2 md:grid-cols-5 gap-7 text-center">
+          <div className="bg-ink rounded-[28px] py-10 sm:py-16 px-6 sm:px-14 grid grid-cols-2 md:grid-cols-5 gap-6 sm:gap-7 text-center">
             {bottomStats.map((s, i) => (
               <ScrollReveal key={i} delay={i * 80}>
                 <div className="text-white">
@@ -443,11 +478,13 @@ export default function Home() {
       {/* CTA BANNER */}
       <section className="section pt-0">
         <div className="max-w-[1240px] mx-auto px-8">
-          <div className="rounded-[26px] border border-dark-100 py-16 px-16 flex justify-between items-center gap-10" style={{ background: 'linear-gradient(120deg, #EFF4FE, #ECFDF5)' }}>
-            <div>
-              <h3 className="text-[28px] mb-2.5 max-w-[460px]" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Need help choosing the right program?</h3>
-              <p className="text-dark-500 max-w-[420px] text-[15px] font-inter">Talk to our team about your goals and we'll point you to the right starting point.</p>
-            </div>
+          <div className="rounded-[26px] border border-dark-100 py-10 sm:py-16 px-6 sm:px-16 flex flex-col sm:flex-row justify-between items-center gap-8 sm:gap-10" style={{ background: 'linear-gradient(120deg, #EFF4FE, #ECFDF5)' }}>
+          <div className="text-center sm:text-left">
+            <h3 className="text-[22px] sm:text-[28px] mb-2.5 max-w-[460px]" style={{ fontFamily: '"Plus Jakarta Sans"' }}>
+              {visitorName ? `${visitorName}, need help choosing the right program?` : 'Need help choosing the right program?'}
+            </h3>
+            <p className="text-dark-500 max-w-[420px] text-[15px] font-inter">Talk to our team about your goals and we'll point you to the right starting point.</p>
+          </div>
             <div className="flex gap-3 flex-shrink-0">
               <Link to="/contact" className="btn-primary">Talk to Our Team</Link>
               <Link to="/pricing" className="btn-outline">View Pricing</Link>

@@ -21,6 +21,9 @@ import Terms from './pages/website/Terms';
 import OnsiteTraining from './pages/website/OnsiteTraining';
 import TradingSignals from './pages/website/TradingSignals';
 import CopyTradingPublic from './pages/website/CopyTrading';
+import ReferralProgramPublic from './pages/website/ReferralProgram';
+import TradingCalculators from './pages/website/TradingCalculators';
+import Tools from './pages/website/Tools';
 
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminStudents from './pages/admin/Students';
@@ -91,6 +94,9 @@ export const router = createBrowserRouter([
       { path: 'onsite-training', element: <OnsiteTraining /> },
       { path: 'trading-signals', element: <TradingSignals /> },
       { path: 'copy-trading', element: <CopyTradingPublic /> },
+      { path: 'referral-program', element: <ReferralProgramPublic /> },
+      { path: 'calculators', element: <TradingCalculators /> },
+      { path: 'tools', element: <Tools /> },
     ],
   },
   { path: '/login', element: <GuestRoute><Login /></GuestRoute> },

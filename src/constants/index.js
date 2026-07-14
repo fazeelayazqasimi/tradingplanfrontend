@@ -31,7 +31,12 @@ export const NAVIGATION = {
   website: [
     { path: '/', label: 'Home' },
     { path: '/about', label: 'About' },
-    { path: '/courses', label: 'Courses' },
+    { path: '/courses', label: 'Education' },
+    { path: '/trading-signals', label: 'Trading Signals' },
+    { path: '/copy-trading', label: 'Copy Trading' },
+    { path: '/referral-program', label: 'Referral Program' },
+    { path: '/calculators', label: 'Calculators' },
+    { path: '/tools', label: 'Market Tools' },
     { path: '/pricing', label: 'Pricing' },
     { path: '/faq', label: 'FAQ' },
     { path: '/contact', label: 'Contact' },
@@ -62,5 +67,7 @@ export const NAVIGATION = {
     { path: '/admin/withdrawals', label: 'Withdrawals', icon: 'wallet' },
     { path: '/admin/settings', label: 'Settings', icon: 'settings' },
     { path: '/admin/support', label: 'Support', icon: 'support' },
+    { path: '/admin/wallets', label: 'Wallets', icon: 'wallet' },
+    { path: '/admin/reports', label: 'Reports', icon: 'dashboard' },
   ],
 };

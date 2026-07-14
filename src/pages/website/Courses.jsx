@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import websiteService from '../../services/websiteService';
+import { useName } from '../../context/NameContext';
 
 const defaultCourses = [
   { title: 'Market Structure & Price Action', tag: 'Foundations', lessons: 12, fill: 82, color: '#2563EB' },
@@ -30,6 +31,7 @@ function ScrollReveal({ children, className = '', delay = 0 }) {
 }
 
 export default function Courses() {
+  const { visitorName } = useName();
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -59,7 +61,7 @@ export default function Courses() {
         <div className="max-w-[1240px] mx-auto px-8">
           <div className="max-w-[640px] mb-16">
             <p className="eyebrow mb-3.5">Online Education</p>
-            <h2 className="text-[38px] font-extrabold mb-3.5 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Courses built to be finished, not just started.</h2>
+            <h2 className="text-[38px] font-extrabold mb-3.5 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>{visitorName ? `${visitorName}, our courses are built to be finished, not just started.` : 'Courses built to be finished, not just started.'}</h2>
             <p className="text-dark-500 text-[16.5px] leading-relaxed font-inter">Video lessons, downloadable notes, assignments and quizzes - with progress tracked all the way to your certificate.</p>
           </div>
 

@@ -52,6 +52,30 @@ export default function Register() {
             <input type="email" placeholder="you@example.com" className={errors.email ? 'input-error' : ''} {...register('email', { required: 'Email is required' })} />
             {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email.message}</p>}
           </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="field">
+              <label>Phone</label>
+              <input type="tel" placeholder="+1 234 567 890" {...register('phone')} />
+            </div>
+            <div className="field">
+              <label>Country</label>
+              <select {...register('country')} className="input">
+                <option value="">Select Country</option>
+                <option value="US">United States</option>
+                <option value="UK">United Kingdom</option>
+                <option value="CA">Canada</option>
+                <option value="AU">Australia</option>
+                <option value="DE">Germany</option>
+                <option value="FR">France</option>
+                <option value="JP">Japan</option>
+                <option value="SG">Singapore</option>
+                <option value="AE">UAE</option>
+                <option value="PK">Pakistan</option>
+                <option value="IN">India</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
           <div className="field">
             <label>Password</label>
             <input type="password" placeholder="Uppercase, lowercase, number, min 8" className={errors.password ? 'input-error' : ''} {...register('password', { required: 'Password is required', minLength: { value: 8, message: 'Min 8 characters' }, pattern: { value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/, message: 'Must include uppercase, lowercase, and a number' } })} />

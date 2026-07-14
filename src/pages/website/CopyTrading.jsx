@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import websiteService from '../../services/websiteService';
+import { useName } from '../../context/NameContext';
 
 const defaultSteps = [
   { num: '01', title: 'Choose a Trader', desc: 'Browse verified trader profiles with transparent track records, risk scores, and historical performance data.' },
@@ -40,6 +41,7 @@ function ScrollReveal({ children, className = '', delay = 0 }) {
 }
 
 export default function CopyTrading() {
+  const { visitorName } = useName();
   const [steps, setSteps] = useState(defaultSteps);
   const [benefits, setBenefits] = useState(defaultBenefits);
   const [stats, setStats] = useState(defaultStats);
@@ -77,7 +79,7 @@ export default function CopyTrading() {
           <ScrollReveal>
             <p className="eyebrow mb-3.5">Copy Trading</p>
             <h1 className="text-[44px] font-extrabold mb-5 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"', letterSpacing: '-0.02em' }}>
-              Automated Copy Trading
+              {visitorName ? `${visitorName}, start automated copy trading` : 'Automated Copy Trading'}
             </h1>
             <p className="text-dark-500 text-[17px] leading-relaxed font-inter max-w-[600px] mx-auto">
               Mirror the moves of proven professional traders and let their expertise work for your portfolio — fully automated, fully transparent.

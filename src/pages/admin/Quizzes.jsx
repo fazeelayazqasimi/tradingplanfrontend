@@ -1,12 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
-import { FiSearch, FiPlus, FiTrash2, FiEye } from 'react-icons/fi';
+import { FiSearch, FiPlus, FiTrash2, FiEye, FiLoader } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Button from '../../components/ui/Button';
+import Select from '../../components/ui/Select';
 import DataTable from '../../components/ui/DataTable';
 import Modal from '../../components/ui/Modal';
 import Badge from '../../components/ui/Badge';
 import Skeleton from '../../components/ui/Skeleton';
 import adminService from '../../services/adminService';
+import courseService from '../../services/courseService';
 import { formatDate } from '../../utils/helpers';
 import usePagination from '../../hooks/usePagination';
 
@@ -26,9 +28,28 @@ export default function Quizzes() {
   const [detailLoading, setDetailLoading] = useState(false);
   const [form, setForm] = useState(initialForm);
   const [submitting, setSubmitting] = useState(false);
+  const [courses, setCourses] = useState([]);
+  const [coursesLoading, setCoursesLoading] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
 
   const pagination = usePagination({ totalItems: quizzes.length, perPage: 10 });
+
+  const fetchCourses = useCallback(async () => {
+    setCoursesLoading(true);
+    try {
+      const res = await courseService.getCourses({ perPage: 100 });
+      const list = res.data?.data || [];
+      setCourses(Array.isArray(list) ? list : []);
+    } catch {
+      setCourses([]);
+    } finally {
+      setCoursesLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchCourses();
+  }, [fetchCourses]);
 
   const fetchQuizzes = useCallback(async () => {
     try {
@@ -71,8 +92,8 @@ export default function Quizzes() {
       toast.error('Title is required');
       return;
     }
-    if (!form.courseId.trim()) {
-      toast.error('Course ID is required');
+    if (!form.courseId) {
+      toast.error('Please select a course');
       return;
     }
     if (!form.passingScore || form.passingScore < 0 || form.passingScore > 100) {
@@ -237,7 +258,7 @@ export default function Quizzes() {
           data={quizzes}
           loading={loading}
           emptyMessage="No quizzes found"
-          rowKey="id"
+          rowKey={(row) => row._id || row.id}
         />
 
         {pagination.totalPages > 1 && (
@@ -299,16 +320,21 @@ export default function Quizzes() {
           </div>
           <div className="w-full">
             <label className="block text-[12px] font-semibold uppercase tracking-wider text-dark-500 mb-1.5">
-              Course ID
+              Course
             </label>
-            <input
-              type="text"
-              value={form.courseId}
-              onChange={(e) => handleChange('courseId', e.target.value)}
-              placeholder="Enter the course ID"
-              className="w-full rounded-[11px] border border-dark-200 bg-dark-50 px-4 py-3 text-[14.5px] text-ink placeholder-dark-400 outline-none transition-colors focus:border-primary-500 focus:bg-white"
-              required
-            />
+            {coursesLoading ? (
+              <div className="flex items-center gap-2 rounded-[11px] border border-dark-200 bg-dark-50 px-4 py-3 text-[14.5px] text-dark-400">
+                <FiLoader className="h-4 w-4 animate-spin" />
+                Loading courses...
+              </div>
+            ) : (
+              <Select
+                value={form.courseId}
+                onChange={(e) => handleChange('courseId', e.target.value)}
+                options={courses.map((c) => ({ value: c._id || c.id, label: c.title }))}
+                placeholder="Select a course..."
+              />
+            )}
           </div>
           <div className="w-full">
             <label className="block text-[12px] font-semibold uppercase tracking-wider text-dark-500 mb-1.5">
