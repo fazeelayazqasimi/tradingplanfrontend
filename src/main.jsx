@@ -6,6 +6,7 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { NameProvider } from './context/NameContext';
+import { SettingsProvider } from './context/SettingsContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import { router } from './App';
 import './styles/global.css';
@@ -23,7 +24,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <ThemeProvider>
           <AuthProvider>
             <NameProvider>
-            <RouterProvider router={router} />
+              <SettingsProvider>
+              <RouterProvider router={router} />
+              </SettingsProvider>
             </NameProvider>
             <Toaster position="top-right" toastOptions={{ duration: 3000, style: { borderRadius: '12px', padding: '12px 16px', fontSize: '14px' } }} />
           </AuthProvider>

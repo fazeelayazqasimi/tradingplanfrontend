@@ -210,43 +210,33 @@ function CurrencyStrengthMeter() {
 }
 
 function LiveGoldPrice() {
-  const [price, setPrice] = useState('2394.10');
-  const [change, setChange] = useState('+8.40');
-  const [changePct, setChangePct] = useState('+0.35%');
-  const [direction, setDirection] = useState('up');
+  const containerRef = useRef(null);
   useEffect(() => {
-    const i = setInterval(() => {
-      const base = 2390 + Math.random() * 15;
-      const old = parseFloat(price);
-      const newP = parseFloat(base.toFixed(2));
-      const diff = (newP - old);
-      setPrice(newP.toFixed(2));
-      setChange((diff >= 0 ? '+' : '') + diff.toFixed(2));
-      setChangePct((diff >= 0 ? '+' : '') + ((diff / old) * 100).toFixed(2) + '%');
-      setDirection(diff >= 0 ? 'up' : 'down');
-    }, 3000);
-    return () => clearInterval(i);
-  }, [price]);
+    if (!containerRef.current) return;
+    const script = document.createElement('script');
+    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-single-ticker.js';
+    script.async = true;
+    script.type = 'text/javascript';
+    script.innerHTML = JSON.stringify({
+      symbol: 'OANDA:XAUUSD',
+      width: '100%',
+      colorTheme: 'light',
+      isTransparent: false,
+      locale: 'en',
+    });
+    containerRef.current.appendChild(script);
+    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+  }, []);
   return (
     <div className="bg-white border border-dark-100 rounded-2xl p-4 sm:p-6 shadow-card bg-gradient-to-br from-amber-50 to-orange-50/30">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center gap-2 mb-3">
+        <span className="text-2xl">🥇</span>
         <div>
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">🥇</span>
-            <div>
-              <h3 className="font-bold text-lg">XAU/USD</h3>
-              <p className="text-xs text-dark-500">Live Gold Spot Price</p>
-            </div>
-          </div>
+          <h3 className="font-bold text-lg">XAU/USD</h3>
+          <p className="text-xs text-dark-500">Live Gold Spot Price — Powered by TradingView</p>
         </div>
-        <span className="text-2xl sm:text-3xl font-bold">${price}</span>
       </div>
-      <div className={`flex items-center gap-2 ${direction === 'up' ? 'text-emerald-500' : 'text-red-500'}`}>
-        <span className="text-xl">{direction === 'up' ? '▲' : '▼'}</span>
-        <span className="font-bold text-lg">{change}</span>
-        <span className="text-sm">({changePct})</span>
-      </div>
-      <div className="mt-3 text-xs text-dark-500">Live updating every 3 seconds • Forex & CFD</div>
+      <div ref={containerRef} />
     </div>
   );
 }

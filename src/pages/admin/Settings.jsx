@@ -14,12 +14,15 @@ import {
   FiMapPin,
   FiUser,
   FiRefreshCw,
+  FiUpload,
+  FiTrash2,
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Card from '../../components/ui/Card';
 import adminService from '../../services/adminService';
+import api from '../../services/api';
 import { formatDateTime } from '../../utils/helpers';
 
 const SECTIONS = [
@@ -34,6 +37,7 @@ const SECTIONS = [
 const SETTING_FIELDS = {
   general: [
     { key: 'institute_name', label: 'Institute Name', icon: FiUser, placeholder: 'e.g. Trading Academy Pro' },
+    { key: 'institute_logo', label: 'Institute Logo', type: 'logo', placeholder: 'Upload your institute logo' },
     { key: 'institute_email', label: 'Institute Email', icon: FiMail, type: 'email', placeholder: 'admin@academy.com' },
     { key: 'institute_phone', label: 'Phone Number', icon: FiPhone, type: 'tel', placeholder: '+1 (555) 000-0000' },
     { key: 'institute_address', label: 'Address', icon: FiMapPin, placeholder: '123 Trading St, New York, NY' },
@@ -74,6 +78,7 @@ export default function Settings() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [dirtyFields, setDirtyFields] = useState(new Set());
+  const [uploadingLogo, setUploadingLogo] = useState(false);
 
   const fetchSettings = useCallback(async () => {
     try {
@@ -127,7 +132,7 @@ export default function Settings() {
   };
 
   const handleSaveSection = async () => {
-    const sectionFields = (SETTING_FIELDS[activeSection] || []).filter((f) => !f.readOnly);
+    const sectionFields = (SETTING_FIELDS[activeSection] || []).filter((f) => !f.readOnly && f.type !== 'logo');
     const dirty = sectionFields.filter((f) => dirtyFields.has(f.key));
     if (dirty.length === 0) {
       toast('No changes to save');
@@ -169,6 +174,29 @@ export default function Settings() {
     toast('Changes reverted');
   };
 
+  const handleLogoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingLogo(true);
+    try {
+      const formData = new FormData();
+      formData.append('logo', file);
+      const res = await api.post('/settings/upload-logo', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      const logoUrl = res.data?.data?.url || res.data?.url;
+      if (logoUrl) {
+        setEditedSettings((prev) => ({ ...prev, institute_logo: logoUrl }));
+        setSettings((prev) => ({ ...prev, institute_logo: logoUrl }));
+        toast.success('Logo uploaded successfully');
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to upload logo');
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
   const sectionHasChanges = (SETTING_FIELDS[activeSection] || []).some(
     (f) => !f.readOnly && dirtyFields.has(f.key)
   );
@@ -177,6 +205,44 @@ export default function Settings() {
     const value = editedSettings[field.key] ?? '';
     const isDirty = dirtyFields.has(field.key);
     const isReadonly = field.readOnly;
+
+    if (field.type === 'logo') {
+      const logoUrl = editedSettings.institute_logo || settings.institute_logo || '';
+      return (
+        <div key={field.key} className="space-y-1.5">
+          <label className="block text-sm font-medium text-dark-600 mb-1.5">Institute Logo</label>
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 rounded-xl border border-dark-200 bg-dark-50 flex items-center justify-center overflow-hidden flex-shrink-0">
+              {logoUrl ? (
+                <img src={logoUrl} alt="Logo" className="w-full h-full object-contain" />
+              ) : (
+                <FiUpload className="text-dark-300" size={20} />
+              )}
+            </div>
+            <div className="flex-1">
+              <label className="btn-outline text-sm cursor-pointer inline-flex items-center gap-2">
+                <FiUpload size={14} />
+                {uploadingLogo ? 'Uploading...' : 'Choose Image'}
+                <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} disabled={uploadingLogo} />
+              </label>
+              <p className="text-xs text-dark-400 mt-1">Recommended: 200x200px, PNG or SVG</p>
+            </div>
+            {logoUrl && (
+              <button
+                onClick={() => {
+                  setEditedSettings((prev) => ({ ...prev, institute_logo: '' }));
+                  setDirtyFields((prev) => { const n = new Set(prev); n.add('institute_logo'); return n; });
+                }}
+                className="p-2 text-red-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                title="Remove logo"
+              >
+                <FiTrash2 size={16} />
+              </button>
+            )}
+          </div>
+        </div>
+      );
+    }
 
     return (
       <div key={field.key} className="space-y-1.5">

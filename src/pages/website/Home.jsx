@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import websiteService from '../../services/websiteService';
 import { useName } from '../../context/NameContext';
+import { useSettings } from '../../context/SettingsContext';
 
 const defaultFeatures = [
   { icon: '▤', title: 'Online Education', desc: 'Self-paced video courses with notes, quizzes and completion certificates.' },
@@ -73,20 +74,24 @@ function ScrollReveal({ children, className = '', delay = 0 }) {
 
 export default function Home() {
   const { visitorName } = useName();
+  const { getSetting } = useSettings();
   const faqRef = useRef(null);
   const heroTitleRef = useRef(null);
   const heroTextRef = useRef(null);
   const heroCtaRef = useRef(null);
   const heroRatesRef = useRef(null);
   const heroImageRef = useRef(null);
+  const goldTickerRef = useRef(null);
   const [ranks, setRanks] = useState(defaultStats.map((_, i) => ({ tier: `LEVEL 0${i+1}`, name: `D${i+1}`, direct: [0,3,5,8,12,20][i], team: [0,20,100,300,800,1500][i], commission: ['$30','$40','$50','$60','$65','$70'][i] })));
   const [faqs, setFaqs] = useState([]);
   const [stats, setStats] = useState(defaultStats);
   const [pricingFeatures, setPricingFeatures] = useState(defaultPricingFeatures);
   const [pricing, setPricing] = useState({ price: '100', period: '/ year' });
   const [bottomStats, setBottomStats] = useState(defaultBottomStats);
-  const [goldPrice, setGoldPrice] = useState('2,394.10');
-  const [goldChange, setGoldChange] = useState('+0.35%');
+
+  const instituteName = getSetting('institute_name', 'Trading Institute');
+  const siteTagline = getSetting('site_tagline', 'Master the markets. Trade with confidence.');
+  const siteDescription = getSetting('site_description', '');
 
   useEffect(() => {
     const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
@@ -95,12 +100,22 @@ export default function Home() {
       .fromTo(heroCtaRef.current, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5 }, '-=0.3')
       .fromTo(heroRatesRef.current, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5 }, '-=0.2')
       .fromTo(heroImageRef.current, { opacity: 0, x: 60 }, { opacity: 1, x: 0, duration: 0.9 }, '-=0.6');
-    const i = setInterval(() => {
-      const base = 2385 + Math.random() * 20;
-      setGoldPrice(base.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ','));
-      setGoldChange(`${Math.random() > 0.5 ? '+' : '-'}${(Math.random() * 0.8 + 0.1).toFixed(2)}%`);
-    }, 5000);
-    return () => clearInterval(i);
+
+    if (goldTickerRef.current) {
+      const script = document.createElement('script');
+      script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-single-ticker.js';
+      script.async = true;
+      script.type = 'text/javascript';
+      script.innerHTML = JSON.stringify({
+        symbol: 'OANDA:XAUUSD',
+        width: 130,
+        colorTheme: 'light',
+        isTransparent: true,
+        locale: 'en',
+      });
+      goldTickerRef.current.appendChild(script);
+      return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+    }
   }, []);
 
   useEffect(() => {
@@ -138,23 +153,25 @@ export default function Home() {
       <section className="pt-[120px] sm:pt-[140px] lg:pt-[180px] pb-[50px] sm:pb-[80px] lg:pb-[100px] relative overflow-hidden" style={{ background: 'radial-gradient(600px 300px at 85% 10%, rgba(37,99,235,0.06), transparent 60%), radial-gradient(500px 260px at 100% 60%, rgba(16,185,129,0.05), transparent 60%)' }}>
         <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-[1.05fr_0.95fr] gap-8 sm:gap-10 lg:gap-16 items-center">
           <div>
-            <p className="eyebrow mb-4 sm:mb-6 text-[11px] sm:text-xs">Trading Institute</p>
+            <p className="eyebrow mb-4 sm:mb-6 text-[11px] sm:text-xs">{instituteName}</p>
             <h1 ref={heroTitleRef} className="text-[28px] sm:text-[38px] md:text-[44px] lg:text-[56px] leading-[1.06] font-extrabold text-ink mb-4 sm:mb-6" style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', letterSpacing: '-0.02em' }}>
-              {visitorName ? <>Hello {visitorName}. <span className="text-primary-500">Be a trader.</span></> : <>Master the markets. <span className="text-primary-500">Trade with confidence.</span></>}
+              {visitorName ? <>Hello {visitorName}. <span className="text-primary-500">Be a trader.</span></> : <>{siteTagline.split('.')[0]}. <span className="text-primary-500">{siteTagline.split('.')[1] || 'Trade with confidence.'}</span></>}
             </h1>
             <p ref={heroTextRef} className="text-base sm:text-lg leading-[1.65] text-dark-500 max-w-[480px] mb-6 sm:mb-9 font-inter">
-              {visitorName ? `Welcome, ${visitorName}! Your journey to financial freedom starts here.` : 'Structured trading education, live signals, and a guided path - built by professional traders, not marketers.'}
+              {visitorName ? `Welcome, ${visitorName}! Your journey to financial freedom starts here.` : (siteDescription || 'Structured trading education, live signals, and a guided path - built by professional traders, not marketers.')}
             </p>
             <div ref={heroCtaRef} className="flex flex-col sm:flex-row gap-3 sm:gap-3.5 mb-8 sm:mb-12">
               <Link to="/register" className="btn-blue btn-lg text-center px-6 py-3 sm:px-8 sm:py-4 text-sm sm:text-[15.5px]">Join Now</Link>
               <Link to="/courses" className="btn-outline btn-lg text-center px-6 py-3 sm:px-8 sm:py-4 text-sm sm:text-[15.5px]">Explore Courses</Link>
               <Link to="/calculators" className="btn-outline btn-lg text-center px-6 py-3 sm:px-8 sm:py-4 text-sm sm:text-[15.5px]">Free Tools</Link>
             </div>
-            <div ref={heroRatesRef} className="flex gap-3 sm:gap-4 border-t border-dark-100 pt-4 sm:pt-5 font-mono text-[11px] sm:text-[13px] text-dark-500 flex-wrap">
-              <span>EUR/USD <b className="text-ink font-semibold">1.0842</b> <span className="text-emerald-500">+0.12%</span></span>
-              <span>XAU/USD <b className="text-ink font-semibold">{goldPrice}</b> <span className={goldChange.includes('+') ? 'text-emerald-500' : 'text-red-500'}>{goldChange}</span></span>
-              <span>US30 <b className="text-ink font-semibold">39,281</b> <span className="text-emerald-500">+0.34%</span></span>
-              <span>BTC/USD <b className="text-ink font-semibold">61,204</b> <span className="text-emerald-500">+1.02%</span></span>
+            <div ref={heroRatesRef} className="border-t border-dark-100 pt-4 sm:pt-5">
+              <div className="flex gap-3 sm:gap-4 font-mono text-[11px] sm:text-[13px] text-dark-500 flex-wrap items-center mb-2">
+                <span>EUR/USD <b className="text-ink font-semibold">1.0842</b> <span className="text-emerald-500">+0.12%</span></span>
+                <span className="flex items-center gap-1">XAU/USD <span className="inline-block" ref={goldTickerRef} id="gold-ticker-home" /></span>
+                <span>US30 <b className="text-ink font-semibold">39,281</b> <span className="text-emerald-500">+0.34%</span></span>
+                <span>BTC/USD <b className="text-ink font-semibold">61,204</b> <span className="text-emerald-500">+1.02%</span></span>
+              </div>
             </div>
           </div>
           <div ref={heroImageRef} className="hidden lg:block relative perspective-[1200px]">

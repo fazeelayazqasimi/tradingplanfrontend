@@ -2,36 +2,42 @@ import { Link, useLocation, Outlet } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useName } from '../../context/NameContext';
+import { useSettings } from '../../context/SettingsContext';
 import ThemeToggle from '../ui/ThemeToggle';
 import NewsletterPopup from '../website/NewsletterPopup';
 
-const forexTicker = [
-  { pair: 'EUR/USD', bid: '1.0842', chg: '+0.12%', cls: 'text-emerald-500' },
-  { pair: 'GBP/USD', bid: '1.2650', chg: '-0.08%', cls: 'text-red-500' },
-  { pair: 'USD/JPY', bid: '151.80', chg: '+0.25%', cls: 'text-emerald-500' },
-  { pair: 'XAU/USD', bid: '2,394.10', chg: '+0.35%', cls: 'text-emerald-500' },
-  { pair: 'BTC/USD', bid: '61,204', chg: '+1.02%', cls: 'text-emerald-500' },
-  { pair: 'US30', bid: '39,281', chg: '+0.34%', cls: 'text-emerald-500' },
-  { pair: 'USD/CHF', bid: '0.8820', chg: '-0.03%', cls: 'text-red-500' },
-  { pair: 'AUD/USD', bid: '0.6520', chg: '+0.18%', cls: 'text-emerald-500' },
-];
-
 function MarqueeTicker() {
+  const tickerRef = useRef(null);
+  useEffect(() => {
+    if (!tickerRef.current) return;
+    const div = tickerRef.current;
+    const script = document.createElement('script');
+    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js';
+    script.async = true;
+    script.type = 'text/javascript';
+    script.innerHTML = JSON.stringify({
+      symbols: [
+        { proName: 'FOREXCOM:SPXUSD', title: 'S&P 500' },
+        { proName: 'FX_IDC:EURUSD', title: 'EUR/USD' },
+        { proName: 'OANDA:XAUUSD', title: 'XAU/USD' },
+        { proName: 'FX_IDC:GBPUSD', title: 'GBP/USD' },
+        { proName: 'BITSTAMP:BTCUSD', title: 'BTC/USD' },
+        { proName: 'FX_IDC:USDJPY', title: 'USD/JPY' },
+        { proName: 'OANDA:US30USD', title: 'US30' },
+        { proName: 'FX_IDC:AUDUSD', title: 'AUD/USD' },
+      ],
+      colorTheme: 'dark',
+      isTransparent: false,
+      displayMode: 'adaptive',
+      locale: 'en',
+    });
+    div.appendChild(script);
+    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+  }, []);
+
   return (
-    <div className="bg-ink text-white text-[11px] sm:text-[12px] font-mono overflow-hidden h-[26px] sm:h-[30px] flex items-center relative z-50">
-      <div className="ticker-track flex whitespace-nowrap animate-marquee">
-        {[...Array(3)].map((_, idx) => (
-          <div key={idx} className="flex items-center gap-3 sm:gap-6 mx-2 sm:mx-4">
-            {forexTicker.map((f, i) => (
-              <span key={i} className="flex items-center gap-1 sm:gap-1.5">
-                <span className="font-semibold text-dark-300 text-[10px] sm:text-[12px]">{f.pair}</span>
-                <span className="text-white/90 text-[10px] sm:text-[12px]">{f.bid}</span>
-                <span className={`${f.cls} text-[10px] sm:text-[12px]`}>{f.chg}</span>
-              </span>
-            ))}
-          </div>
-        ))}
-      </div>
+    <div className="bg-ink overflow-hidden h-[26px] sm:h-[30px] flex items-center relative z-50">
+      <div ref={tickerRef} className="w-full h-full" />
     </div>
   );
 }
@@ -101,6 +107,9 @@ export default function WebsiteLayout() {
   const [openSubMenu, setOpenSubMenu] = useState(null);
   const { pathname } = useLocation();
   const { user } = useAuth();
+  const { getSetting } = useSettings();
+  const instituteName = getSetting('institute_name', 'Dream Trader');
+  const instituteLogo = getSetting('institute_logo', '');
   const dashboardLink = user?.role === 'admin' ? '/admin/dashboard' : user?.role === 'student' ? '/student/dashboard' : null;
   useEffect(() => { setMobileOpen(false); setOpenSubMenu(null); }, [pathname]);
 
@@ -111,11 +120,15 @@ export default function WebsiteLayout() {
         <div className="max-w-[1240px] mx-auto px-3 sm:px-8">
           <div className="flex items-center justify-between h-[60px] sm:h-[72px] bg-white/80 backdrop-blur-xl rounded-xl sm:rounded-2xl border border-dark-100/50 px-3 sm:px-6 shadow-glass mt-2">
             <Link to="/" className="flex items-center gap-2 flex-shrink-0">
-              <div className="w-[28px] h-[28px] sm:w-[30px] sm:h-[30px] rounded-lg bg-gradient-to-br from-primary-500 to-emerald-500 relative flex-shrink-0">
-                <span className="absolute left-[6px] top-[15px] sm:left-[7px] sm:top-[16px] w-[4px] h-[7px] sm:w-[5px] sm:h-[8px] bg-white rounded-[1px]" />
-                <span className="absolute left-[13px] top-[8px] sm:left-[14px] sm:top-[9px] w-[4px] h-[14px] sm:w-[5px] sm:h-[15px] bg-white rounded-[1px]" />
-              </div>
-              <span className="font-extrabold text-base sm:text-lg text-ink hidden sm:block" style={{ fontFamily: '"Plus Jakarta Sans", sans-serif' }}>Dream Trader</span>
+              {instituteLogo ? (
+                <img src={instituteLogo} alt={instituteName} className="h-[28px] sm:h-[30px] w-auto" />
+              ) : (
+                <div className="w-[28px] h-[28px] sm:w-[30px] sm:h-[30px] rounded-lg bg-gradient-to-br from-primary-500 to-emerald-500 relative flex-shrink-0">
+                  <span className="absolute left-[6px] top-[15px] sm:left-[7px] sm:top-[16px] w-[4px] h-[7px] sm:w-[5px] sm:h-[8px] bg-white rounded-[1px]" />
+                  <span className="absolute left-[13px] top-[8px] sm:left-[14px] sm:top-[9px] w-[4px] h-[14px] sm:w-[5px] sm:h-[15px] bg-white rounded-[1px]" />
+                </div>
+              )}
+              <span className="font-extrabold text-base sm:text-lg text-ink hidden sm:block" style={{ fontFamily: '"Plus Jakarta Sans", sans-serif' }}>{instituteName}</span>
             </Link>
             <nav className="hidden lg:flex items-center gap-0.5 xl:gap-1 text-[13px] xl:text-[14px] font-medium text-dark-500">
               {mainNav.map((item, i) => (
@@ -189,16 +202,25 @@ export default function WebsiteLayout() {
           <div className="grid grid-cols-2 md:grid-cols-5 gap-8 sm:gap-10 pb-10 sm:pb-14">
             <div className="col-span-2 md:col-span-1">
               <Link to="/" className="flex items-center gap-2.5 mb-3">
-                <div className="w-[28px] h-[28px] rounded-lg bg-gradient-to-br from-primary-500 to-emerald-500 relative flex-shrink-0">
-                  <span className="absolute left-[6px] top-[15px] w-[4px] h-[7px] bg-white rounded-[1px]" />
-                  <span className="absolute left-[13px] top-[8px] w-[4px] h-[14px] bg-white rounded-[1px]" />
-                </div>
-                <span className="font-extrabold text-white text-base" style={{ fontFamily: '"Plus Jakarta Sans", sans-serif' }}>Dream Trader</span>
+                {instituteLogo ? (
+                  <img src={instituteLogo} alt={instituteName} className="h-[28px] w-auto" />
+                ) : (
+                  <div className="w-[28px] h-[28px] rounded-lg bg-gradient-to-br from-primary-500 to-emerald-500 relative flex-shrink-0">
+                    <span className="absolute left-[6px] top-[15px] w-[4px] h-[7px] bg-white rounded-[1px]" />
+                    <span className="absolute left-[13px] top-[8px] w-[4px] h-[14px] bg-white rounded-[1px]" />
+                  </div>
+                )}
+                <span className="font-extrabold text-white text-base" style={{ fontFamily: '"Plus Jakarta Sans", sans-serif' }}>{instituteName}</span>
               </Link>
-              <p className="text-[13px] sm:text-[13.8px] text-dark-500 max-w-[260px] leading-relaxed">Professional trading education, signals and community for serious students of the market.</p>
+              <p className="text-[13px] sm:text-[13.8px] text-dark-500 max-w-[260px] leading-relaxed">{getSetting('site_description', 'Professional trading education, signals and community for serious students of the market.')}</p>
               <div className="flex gap-2.5 mt-4">
-                {['in', 'X', 'yt', 'ig'].map(s => (
-                  <a key={s} href="#" className="w-[32px] h-[32px] rounded-[9px] bg-white border border-dark-200 flex items-center justify-center text-[11px] font-medium text-dark-500 hover:text-primary-500 hover:border-primary-200 transition-colors">{s}</a>
+                {[
+                  { label: 'in', url: getSetting('social_instagram', '#') },
+                  { label: 'X', url: getSetting('social_twitter', '#') },
+                  { label: 'yt', url: getSetting('social_youtube', '#') },
+                  { label: 'tg', url: getSetting('social_telegram', '#') },
+                ].map(s => (
+                  <a key={s.label} href={s.url} target="_blank" rel="noopener noreferrer" className="w-[32px] h-[32px] rounded-[9px] bg-white border border-dark-200 flex items-center justify-center text-[11px] font-medium text-dark-500 hover:text-primary-500 hover:border-primary-200 transition-colors">{s.label}</a>
                 ))}
               </div>
             </div>
@@ -229,7 +251,7 @@ export default function WebsiteLayout() {
             </div>
           </div>
           <div className="flex flex-col sm:flex-row justify-between items-center pt-6 sm:pt-7 border-t border-dark-100 text-[12px] text-dark-500 gap-2">
-            <span>&copy; {new Date().getFullYear()} Dream Trader Trading Institute. All rights reserved.</span>
+            <span>&copy; {new Date().getFullYear()} {instituteName}. All rights reserved.</span>
             <span className="text-center sm:text-right">Trading involves risk. Past performance is not indicative of future results.</span>
           </div>
         </div>
