@@ -102,19 +102,26 @@ export default function Home() {
       .fromTo(heroImageRef.current, { opacity: 0, x: 60 }, { opacity: 1, x: 0, duration: 0.9 }, '-=0.6');
 
     if (goldTickerRef.current) {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'tradingview-widget-container';
+      wrapper.style.cssText = 'display:inline-block;vertical-align:middle';
+      const widgetDiv = document.createElement('div');
+      widgetDiv.className = 'tradingview-widget-container__widget';
+      wrapper.appendChild(widgetDiv);
       const script = document.createElement('script');
       script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-single-ticker.js';
       script.async = true;
       script.type = 'text/javascript';
-      script.innerHTML = JSON.stringify({
+      script.textContent = JSON.stringify({
         symbol: 'OANDA:XAUUSD',
         width: 130,
         colorTheme: 'light',
         isTransparent: true,
         locale: 'en',
       });
-      goldTickerRef.current.appendChild(script);
-      return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+      wrapper.appendChild(script);
+      goldTickerRef.current.appendChild(wrapper);
+      return () => { wrapper.remove(); };
     }
   }, []);
 

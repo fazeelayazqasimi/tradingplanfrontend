@@ -213,19 +213,27 @@ function LiveGoldPrice() {
   const containerRef = useRef(null);
   useEffect(() => {
     if (!containerRef.current) return;
+    const existing = containerRef.current.querySelector('.tradingview-widget-container');
+    if (existing) existing.remove();
+    const wrapper = document.createElement('div');
+    wrapper.className = 'tradingview-widget-container';
+    const widgetDiv = document.createElement('div');
+    widgetDiv.className = 'tradingview-widget-container__widget';
+    wrapper.appendChild(widgetDiv);
     const script = document.createElement('script');
     script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-single-ticker.js';
     script.async = true;
     script.type = 'text/javascript';
-    script.innerHTML = JSON.stringify({
+    script.textContent = JSON.stringify({
       symbol: 'OANDA:XAUUSD',
       width: '100%',
       colorTheme: 'light',
       isTransparent: false,
       locale: 'en',
     });
-    containerRef.current.appendChild(script);
-    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+    wrapper.appendChild(script);
+    containerRef.current.appendChild(wrapper);
+    return () => { wrapper.remove(); };
   }, []);
   return (
     <div className="bg-white border border-dark-100 rounded-2xl p-4 sm:p-6 shadow-card bg-gradient-to-br from-amber-50 to-orange-50/30">
