@@ -48,10 +48,10 @@ export default function Contact() {
   return (
     <div>
       <section className="section">
-        <div className="max-w-[1240px] mx-auto px-8 grid lg:grid-cols-[1fr_1fr] gap-14">
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-[1fr_1fr] gap-10 sm:gap-14">
           <div>
             <p className="eyebrow mb-3.5">Contact</p>
-            <h2 className="text-[32px] font-extrabold mb-6 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>{visitorName ? `${visitorName}, let's talk about your trading goals.` : "Let's talk about your trading goals."}</h2>
+            <h2 className="text-[24px] sm:text-[32px] font-extrabold mb-6 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>{visitorName ? `${visitorName}, let's talk about your trading goals.` : "Let's talk about your trading goals."}</h2>
             <form onSubmit={handleSubmit}>
               <div className="field">
                 <label>Full Name</label>
@@ -71,7 +71,7 @@ export default function Contact() {
             </form>
           </div>
           <div>
-            <div className="rounded-[20px] h-full min-h-[280px] bg-dark-50 border border-dark-100 relative overflow-hidden mb-5" style={{ backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 12px, rgba(37,99,235,0.04) 12px, rgba(37,99,235,0.04) 24px)' }}>
+            <div className="rounded-[20px] h-full min-h-[200px] sm:min-h-[280px] bg-dark-50 border border-dark-100 relative overflow-hidden mb-5" style={{ backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 12px, rgba(37,99,235,0.04) 12px, rgba(37,99,235,0.04) 24px)' }}>
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-full w-[30px] h-[30px] rounded-[50%_50%_50%_0] bg-primary-500 -rotate-45 shadow-card-md" />
             </div>
             <div className="flex gap-3.5 items-start mb-5">

@@ -334,7 +334,6 @@ function LotSizeConverter() {
 
 function CurrencyConverter() {
   const [amount, setAmount] = useState('100');
-  const [fromRate, setFromRate] = useState(1);
   const [toIndex, setToIndex] = useState(2);
   const currencies = [
     { code: 'USD', name: 'US Dollar', rate: 1 },
@@ -380,16 +379,16 @@ export default function TradingCalculators() {
     <div>
       <style>{`.reveal-element { opacity: 0; transform: translateY(28px); transition: opacity 0.8s ease, transform 0.8s ease; } .reveal-active { opacity: 1 !important; transform: translateY(0) !important; }`}</style>
       <section className="pt-32 pb-16 bg-dark-50">
-        <div className="max-w-[1240px] mx-auto px-8" ref={titleRef}>
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8" ref={titleRef}>
           <p className="eyebrow mb-3">Trading Tools</p>
-          <h1 className="text-[48px] font-extrabold mb-4 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"', letterSpacing: '-0.02em' }}>Trading <span className="text-primary-500">Calculators</span></h1>
-          <p className="text-dark-500 text-lg max-w-[600px]">Professional-grade calculators to manage your risk, position size, and potential returns — all in one place.</p>
+          <h1 className="text-[32px] sm:text-[40px] lg:text-[48px] font-extrabold mb-4 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"', letterSpacing: '-0.02em' }}>Trading <span className="text-primary-500">Calculators</span></h1>
+          <p className="text-dark-500 text-base sm:text-lg max-w-[600px]">Professional-grade calculators to manage your risk, position size, and potential returns — all in one place.</p>
         </div>
       </section>
 
       <section className="section-sm">
-        <div className="max-w-[1240px] mx-auto px-8">
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             <PositionSizeCalculator />
             <RiskRewardCalculator />
             <PipCalculator />

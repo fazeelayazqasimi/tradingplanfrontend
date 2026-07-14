@@ -56,21 +56,20 @@ export default function Courses() {
         .reveal-active { opacity: 1 !important; transform: translateY(0) !important; }
       `}</style>
 
-      {/* Online Education */}
       <section className="section bg-dark-50">
-        <div className="max-w-[1240px] mx-auto px-8">
-          <div className="max-w-[640px] mb-16">
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-[640px] mb-10 sm:mb-16">
             <p className="eyebrow mb-3.5">Online Education</p>
-            <h2 className="text-[38px] font-extrabold mb-3.5 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>{visitorName ? `${visitorName}, our courses are built to be finished, not just started.` : 'Courses built to be finished, not just started.'}</h2>
+            <h2 className="text-[24px] sm:text-[32px] lg:text-[38px] font-extrabold mb-3.5 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>{visitorName ? `${visitorName}, our courses are built to be finished, not just started.` : 'Courses built to be finished, not just started.'}</h2>
             <p className="text-dark-500 text-[16.5px] leading-relaxed font-inter">Video lessons, downloadable notes, assignments and quizzes - with progress tracked all the way to your certificate.</p>
           </div>
 
           {loading ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {[1,2,3].map(i => <div key={i} className="skeleton h-72 rounded-2xl" />)}
             </div>
           ) : displayCourses ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {displayCourses.map((course, i) => (
                 <ScrollReveal key={course._id || i} delay={i * 80}>
                   <Link to={`/courses/${course.slug}`} className="block bg-white border border-dark-100 rounded-[18px] overflow-hidden shadow-card transition-all duration-300 hover:shadow-card-md hover:-translate-y-1 h-full">
@@ -95,7 +94,7 @@ export default function Courses() {
               ))}
             </div>
           ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {defaultCourses.map((c, i) => (
                 <ScrollReveal key={i} delay={i * 80}>
                   <div className="bg-white border border-dark-100 rounded-[18px] overflow-hidden shadow-card">
@@ -123,12 +122,11 @@ export default function Courses() {
         </div>
       </section>
 
-      {/* Onsite Training */}
       <section className="section">
-        <div className="max-w-[1240px] mx-auto px-8 grid lg:grid-cols-2 gap-7">
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-7">
           <div>
             <p className="eyebrow mb-3.5">Onsite Training</p>
-            <h2 className="text-[32px] font-extrabold mb-4 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Learn face to face with senior mentors.</h2>
+            <h2 className="text-[24px] sm:text-[32px] font-extrabold mb-4 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Learn face to face with senior mentors.</h2>
             <p className="text-dark-500 text-[15px] leading-[1.7] mb-6.5 font-inter">
               Quarterly workshops in select cities cover live market reads, trade journaling and Q&A with instructors - with attendance tracked toward your certification.
             </p>
@@ -152,7 +150,7 @@ export default function Courses() {
             <div className="bg-white border border-dark-100 rounded-[18px] p-6 shadow-card">
               <div className="font-bold text-[15px] mb-3.5" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Upcoming Sessions</div>
               {schedule.map((s, i) => (
-                <div key={i} className="flex justify-between items-center py-3.5 border-b border-dark-100 last:border-0">
+                <div key={i} className="flex flex-col sm:flex-row justify-between items-start sm:items-center py-3.5 border-b border-dark-100 last:border-0 gap-1">
                   <div>
                     <div className="font-bold text-[14.5px]">{s.day}</div>
                     <div className="text-[13px] text-dark-500 font-mono">{s.time}</div>

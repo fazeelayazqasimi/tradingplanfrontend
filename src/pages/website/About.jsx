@@ -52,9 +52,8 @@ export default function About() {
         .reveal-active { opacity: 1 !important; transform: translateY(0) !important; }
       `}</style>
 
-      {/* About Hero */}
       <section className="pt-20 pb-0">
-        <div className="max-w-[1240px] mx-auto px-8 grid lg:grid-cols-[0.95fr_1.05fr] gap-[72px] items-center">
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-[0.95fr_1.05fr] gap-[72px] items-center">
           <ScrollReveal>
             <div className="aspect-[4/5] rounded-[22px] relative overflow-hidden shadow-card-lg" style={{ background: 'linear-gradient(160deg, #0F172A 0%, #1E293B 55%, #0B1220 100%)' }}>
               <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
@@ -68,7 +67,7 @@ export default function About() {
 
           <div>
             <p className="eyebrow mb-3.5">About Us</p>
-            <h2 className="text-[34px] font-extrabold mb-4.5 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"', letterSpacing: '-0.02em' }}>
+            <h2 className="text-[24px] sm:text-[32px] lg:text-[34px] font-extrabold mb-4.5 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"', letterSpacing: '-0.02em' }}>
               {visitorName ? `Welcome, ${visitorName}. Built by traders who wanted the education they never had.` : 'Built by traders who wanted the education they never had.'}
             </h2>
             <p className="text-dark-500 text-[15.5px] leading-[1.7] font-inter">
@@ -88,7 +87,7 @@ export default function About() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-5.5 mt-10 pt-9 border-t border-dark-100">
               {stats.map((s, i) => (
                 <ScrollReveal key={i} delay={i * 100}>
-                  <div className="text-[30px] font-extrabold" style={{ fontFamily: '"Plus Jakarta Sans"' }}>{s.num}</div>
+                  <div className="text-[24px] sm:text-[30px] font-extrabold" style={{ fontFamily: '"Plus Jakarta Sans"' }}>{s.num}</div>
                   <div className="text-[13px] text-dark-500 mt-0.5 font-inter">{s.lbl}</div>
                 </ScrollReveal>
               ))}
@@ -97,17 +96,16 @@ export default function About() {
         </div>
       </section>
 
-      {/* CTA */}
       <section className="section">
-        <div className="max-w-[1240px] mx-auto px-8">
-          <div className="rounded-[26px] border border-dark-100 py-16 px-16 flex justify-between items-center gap-10" style={{ background: 'linear-gradient(120deg, #EFF4FE, #ECFDF5)' }}>
-            <div>
-              <h3 className="text-[28px] mb-2.5" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Ready to start learning?</h3>
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="rounded-[26px] border border-dark-100 py-10 sm:py-16 px-6 sm:px-16 flex flex-col sm:flex-row justify-between items-center gap-6 sm:gap-10" style={{ background: 'linear-gradient(120deg, #EFF4FE, #ECFDF5)' }}>
+            <div className="text-center sm:text-left">
+              <h3 className="text-[22px] sm:text-[28px] mb-2.5" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Ready to start learning?</h3>
               <p className="text-dark-500 text-[15px] font-inter">Join thousands of students who are building their trading skills every day.</p>
             </div>
-            <div className="flex gap-3 flex-shrink-0">
-              <Link to="/register" className="btn-blue">Join Now</Link>
-              <Link to="/courses" className="btn-outline">View Courses</Link>
+            <div className="flex flex-col sm:flex-row gap-3 flex-shrink-0 w-full sm:w-auto">
+              <Link to="/register" className="btn-blue text-center">Join Now</Link>
+              <Link to="/courses" className="btn-outline text-center">View Courses</Link>
             </div>
           </div>
         </div>

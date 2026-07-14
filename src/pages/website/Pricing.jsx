@@ -72,18 +72,18 @@ export default function Pricing() {
       `}</style>
 
       <section className="section">
-        <div className="max-w-[1240px] mx-auto px-8">
-          <div className="text-center max-w-[640px] mx-auto mb-16">
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-[640px] mx-auto mb-10 sm:mb-16">
             <p className="eyebrow mb-3.5">Pricing</p>
-            <h2 className="text-[38px] font-extrabold mb-3.5 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>{visitorName ? `${visitorName}, one membership. Everything included.` : 'One membership. Everything included.'}</h2>
+            <h2 className="text-[24px] sm:text-[32px] lg:text-[38px] font-extrabold mb-3.5 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>{visitorName ? `${visitorName}, one membership. Everything included.` : 'One membership. Everything included.'}</h2>
             <p className="text-dark-500 text-[16.5px] leading-relaxed font-inter">No hidden tiers, no add-ons - a single annual membership unlocks the full institute.</p>
           </div>
 
           <ScrollReveal>
-            <div className="max-w-[460px] mx-auto bg-white border border-dark-100 rounded-[24px] p-11 shadow-card-lg text-center relative">
+            <div className="max-w-[460px] mx-auto bg-white border border-dark-100 rounded-[24px] p-6 sm:p-11 shadow-card-lg text-center relative">
               <div className="absolute -top-[13px] left-1/2 -translate-x-1/2 bg-ink text-white text-[10.5px] font-bold tracking-wider px-4 py-1.5 rounded-full">MOST POPULAR</div>
               <div className="font-semibold text-[15px] text-dark-500 font-inter">Annual Membership</div>
-              <div className="text-[52px] font-extrabold mt-4 mb-1" style={{ fontFamily: '"Plus Jakarta Sans"' }}>${price}<span className="text-lg font-medium text-dark-500">{period}</span></div>
+              <div className="text-[36px] sm:text-[52px] font-extrabold mt-4 mb-1" style={{ fontFamily: '"Plus Jakarta Sans"' }}>${price}<span className="text-lg font-medium text-dark-500">{period}</span></div>
               <p className="text-sm text-dark-500 font-inter">Less than $9/month</p>
               <ul className="text-left flex flex-col gap-3.5 my-8">
                 {features.map((f, i) => (

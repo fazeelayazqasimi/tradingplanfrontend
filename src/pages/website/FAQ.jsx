@@ -60,16 +60,16 @@ export default function FAQ() {
       `}</style>
 
       <section className="section">
-        <div className="max-w-[760px] mx-auto px-8">
-          <div className="max-w-[640px] mb-16">
+        <div className="max-w-[760px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-[640px] mb-10 sm:mb-16">
             <p className="eyebrow mb-3.5">FAQ</p>
-            <h2 className="text-[38px] font-extrabold mb-3.5 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>{visitorName ? `${visitorName}, your questions answered.` : 'Questions, answered.'}</h2>
+            <h2 className="text-[24px] sm:text-[32px] lg:text-[38px] font-extrabold mb-3.5 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>{visitorName ? `${visitorName}, your questions answered.` : 'Questions, answered.'}</h2>
           </div>
           <div>
             {faqs.map((faq, i) => (
               <ScrollReveal key={i} delay={i * 50}>
                 <div className="faq-item border-b border-dark-100">
-                  <div className="faq-q flex justify-between items-center py-6 cursor-pointer font-semibold text-lg gap-4" onClick={toggleFaq}>
+                  <div className="faq-q flex justify-between items-center py-5 sm:py-6 cursor-pointer font-semibold text-base sm:text-lg gap-4" onClick={toggleFaq}>
                     <span style={{ fontFamily: '"Plus Jakarta Sans"' }}>{faq.q}</span>
                     <div className="w-[22px] h-[22px] relative flex-shrink-0">
                       <span className="absolute bg-ink rounded-[2px] transition-all duration-300" style={{ width: 14, height: 1.6, top: 10, left: 4 }} />

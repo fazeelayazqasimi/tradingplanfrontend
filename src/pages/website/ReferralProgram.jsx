@@ -59,18 +59,18 @@ export default function ReferralProgram() {
       <style>{`.reveal-element { opacity: 0; transform: translateY(28px); transition: opacity 0.8s ease, transform 0.8s ease; } .reveal-active { opacity: 1 !important; transform: translateY(0) !important; }`}</style>
 
       <section className="pt-32 pb-16 bg-dark-50">
-        <div className="max-w-[1240px] mx-auto px-8" ref={heroRef}>
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8" ref={heroRef}>
           <p className="eyebrow mb-3">Referral Program</p>
-          <h1 className="text-[48px] font-extrabold mb-4 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"', letterSpacing: '-0.02em' }}>
+          <h1 className="text-[32px] sm:text-[40px] lg:text-[48px] font-extrabold mb-4 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"', letterSpacing: '-0.02em' }}>
             Earn by <span className="text-primary-500">Sharing</span>
           </h1>
-          <p className="text-dark-500 text-lg max-w-[600px]">Build a team, earn commissions, climb ranks, and share in network profits. The more you teach, the more you earn.</p>
+          <p className="text-dark-500 text-base sm:text-lg max-w-[600px]">Build a team, earn commissions, climb ranks, and share in network profits. The more you teach, the more you earn.</p>
         </div>
       </section>
 
       <section className="section-sm">
-        <div className="max-w-[1240px] mx-auto px-8">
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 mb-20">
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-20">
             {benefits.map((b, i) => (
               <ScrollReveal key={i} delay={i * 60}>
                 <div className="bg-white border border-dark-100 rounded-2xl p-6 shadow-card hover:shadow-card-md transition-all hover:-translate-y-1">
@@ -85,10 +85,10 @@ export default function ReferralProgram() {
       </section>
 
       <section className="section-sm bg-dark-50">
-        <div className="max-w-[1240px] mx-auto px-8">
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <p className="eyebrow mb-3">Rank Structure</p>
-            <h2 className="text-[36px] font-extrabold">Commission & Profit Share by Rank</h2>
+            <h2 className="text-[24px] sm:text-[36px] font-extrabold">Commission & Profit Share by Rank</h2>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -117,13 +117,12 @@ export default function ReferralProgram() {
         </div>
       </section>
 
-      {/* How It Works */}
       <section className="section-sm">
-        <div className="max-w-[1240px] mx-auto px-8">
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
               <p className="eyebrow mb-3">How It Works</p>
-              <h2 className="text-[34px] font-extrabold mb-4 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Simple 3-step referral process</h2>
+              <h2 className="text-[24px] sm:text-[34px] font-extrabold mb-4 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Simple 3-step referral process</h2>
               <div className="space-y-6">
                 {[
                   { num: '01', title: 'Get Your Link', desc: 'After joining, you receive a unique referral link and code to share anywhere.' },
@@ -140,7 +139,7 @@ export default function ReferralProgram() {
                 ))}
               </div>
             </div>
-            <div className="bg-gradient-to-br from-primary-50 to-emerald-50 rounded-2xl border border-dark-100 p-8 shadow-card">
+            <div className="bg-gradient-to-br from-primary-50 to-emerald-50 rounded-2xl border border-dark-100 p-6 sm:p-8 shadow-card">
               <h3 className="font-bold text-xl mb-4">Example Earnings</h3>
               <div className="space-y-4">
                 {[
@@ -160,17 +159,16 @@ export default function ReferralProgram() {
         </div>
       </section>
 
-      {/* CTA */}
       <section className="section-sm pt-0">
-        <div className="max-w-[1240px] mx-auto px-8">
-          <div className="rounded-[26px] border border-dark-100 py-16 px-16 flex justify-between items-center gap-10" style={{ background: 'linear-gradient(120deg, #EFF4FE, #ECFDF5)' }}>
-            <div>
-              <h3 className="text-[28px] mb-2.5" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Ready to start earning?</h3>
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="rounded-[26px] border border-dark-100 py-10 sm:py-16 px-6 sm:px-16 flex flex-col sm:flex-row justify-between items-center gap-6 sm:gap-10" style={{ background: 'linear-gradient(120deg, #EFF4FE, #ECFDF5)' }}>
+            <div className="text-center sm:text-left">
+              <h3 className="text-[22px] sm:text-[28px] mb-2.5" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Ready to start earning?</h3>
               <p className="text-dark-500 text-[15px] font-inter">Join today and get your personal referral link instantly.</p>
             </div>
-            <div className="flex gap-3 flex-shrink-0">
-              <Link to="/register" className="btn-blue">Join Now</Link>
-              <Link to="/pricing" className="btn-outline">View Pricing</Link>
+            <div className="flex flex-col sm:flex-row gap-3 flex-shrink-0 w-full sm:w-auto">
+              <Link to="/register" className="btn-blue text-center">Join Now</Link>
+              <Link to="/pricing" className="btn-outline text-center">View Pricing</Link>
             </div>
           </div>
         </div>

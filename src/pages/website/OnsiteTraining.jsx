@@ -68,12 +68,11 @@ export default function OnsiteTraining() {
         .reveal-active { opacity: 1 !important; transform: translateY(0) !important; }
       `}</style>
 
-      {/* Hero */}
       <section className="section pt-[120px] pb-16">
-        <div className="max-w-[1240px] mx-auto px-8 text-center">
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <ScrollReveal>
             <p className="eyebrow mb-3.5">In-Person Training</p>
-            <h1 className="text-[42px] font-extrabold mb-5 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"', letterSpacing: '-0.02em' }}>
+            <h1 className="text-[28px] sm:text-[36px] lg:text-[42px] font-extrabold mb-5 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"', letterSpacing: '-0.02em' }}>
               {visitorName ? `${visitorName}, join our onsite training programs` : 'Onsite Training Programs'}
             </h1>
             <p className="text-dark-500 text-[17px] leading-relaxed font-inter max-w-[640px] mx-auto">
@@ -83,10 +82,9 @@ export default function OnsiteTraining() {
         </div>
       </section>
 
-      {/* Features Grid */}
       <section className="section pt-0 pb-16">
-        <div className="max-w-[1240px] mx-auto px-8">
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-7">
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-7">
             {features.map((f, i) => (
               <ScrollReveal key={i} delay={i * 100}>
                 <div className="rounded-[18px] border border-dark-100 p-7 bg-white shadow-sm hover:shadow-card transition-shadow duration-300">
@@ -100,13 +98,12 @@ export default function OnsiteTraining() {
         </div>
       </section>
 
-      {/* Training Packages */}
       <section className="section py-16">
-        <div className="max-w-[1240px] mx-auto px-8">
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
           <ScrollReveal>
             <div className="text-center mb-12">
               <p className="eyebrow mb-3.5">Training Packages</p>
-              <h2 className="text-[34px] font-extrabold mb-4 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"', letterSpacing: '-0.02em' }}>
+              <h2 className="text-[24px] sm:text-[34px] font-extrabold mb-4 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"', letterSpacing: '-0.02em' }}>
                 Choose Your Training Path
               </h2>
               <p className="text-dark-500 text-[15.5px] leading-relaxed font-inter max-w-[560px] mx-auto">
@@ -115,10 +112,10 @@ export default function OnsiteTraining() {
             </div>
           </ScrollReveal>
 
-          <div className="grid md:grid-cols-3 gap-7">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-7">
             {packages.map((pkg, i) => (
               <ScrollReveal key={i} delay={i * 120}>
-                <div className={`rounded-[22px] border p-8 flex flex-col h-full ${i === 2 ? 'border-primary-400 shadow-card-lg relative bg-gradient-to-b from-primary-50/40 to-white' : 'border-dark-100 bg-white shadow-sm'}`}>
+                <div className={`rounded-[22px] border p-6 sm:p-8 flex flex-col h-full ${i === 2 ? 'border-primary-400 shadow-card-lg relative bg-gradient-to-b from-primary-50/40 to-white' : 'border-dark-100 bg-white shadow-sm'}`}>
                   {i === 2 && (
                     <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-primary-500 text-white text-[11.5px] font-bold px-4 py-1 rounded-full tracking-wide font-inter">
                       Most Popular
@@ -147,12 +144,11 @@ export default function OnsiteTraining() {
         </div>
       </section>
 
-      {/* CTA */}
       <section className="section py-16">
-        <div className="max-w-[1240px] mx-auto px-8">
-          <div className="rounded-[26px] border border-dark-100 py-16 px-16 flex flex-col md:flex-row justify-between items-center gap-10" style={{ background: 'linear-gradient(120deg, #EFF4FE, #ECFDF5)' }}>
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="rounded-[26px] border border-dark-100 py-10 sm:py-16 px-6 sm:px-16 flex flex-col md:flex-row justify-between items-center gap-6 sm:gap-10" style={{ background: 'linear-gradient(120deg, #EFF4FE, #ECFDF5)' }}>
             <div className="text-center md:text-left">
-              <h3 className="text-[28px] mb-2.5" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Ready to Learn in Person?</h3>
+              <h3 className="text-[22px] sm:text-[28px] mb-2.5" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Ready to Learn in Person?</h3>
               <p className="text-dark-500 text-[15px] font-inter">Secure your spot in our next onsite training program and take your trading to the next level.</p>
             </div>
             <div className="flex gap-3 flex-shrink-0">

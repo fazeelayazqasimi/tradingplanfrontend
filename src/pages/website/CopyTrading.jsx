@@ -69,22 +69,19 @@ export default function CopyTrading() {
         .reveal-element { opacity: 0; transform: translateY(28px); transition: opacity 0.8s ease, transform 0.8s ease; }
         .reveal-active { opacity: 1 !important; transform: translateY(0) !important; }
         .ct-step-line { position: relative; }
-        .ct-step-line::after { content: ''; position: absolute; top: 28px; right: -100%; width: 100%; height: 2px; background: #E2E8F0; }
-        .ct-step-line:last-child::after { display: none; }
       `}</style>
 
-      {/* Hero */}
       <section className="pt-24 pb-16">
-        <div className="max-w-[1240px] mx-auto px-8 text-center">
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <ScrollReveal>
             <p className="eyebrow mb-3.5">Copy Trading</p>
-            <h1 className="text-[44px] font-extrabold mb-5 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"', letterSpacing: '-0.02em' }}>
+            <h1 className="text-[28px] sm:text-[36px] lg:text-[44px] font-extrabold mb-5 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"', letterSpacing: '-0.02em' }}>
               {visitorName ? `${visitorName}, start automated copy trading` : 'Automated Copy Trading'}
             </h1>
             <p className="text-dark-500 text-[17px] leading-relaxed font-inter max-w-[600px] mx-auto">
               Mirror the moves of proven professional traders and let their expertise work for your portfolio — fully automated, fully transparent.
             </p>
-            <div className="flex justify-center gap-3 mt-9">
+            <div className="flex flex-col sm:flex-row justify-center gap-3 mt-9">
               <Link to="/register" className="btn-blue">Get Started Free</Link>
               <a href="#how-it-works" className="btn-outline">See How It Works</a>
             </div>
@@ -92,11 +89,10 @@ export default function CopyTrading() {
         </div>
       </section>
 
-      {/* Visual Band */}
       <section className="pb-16">
-        <div className="max-w-[1240px] mx-auto px-8">
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
           <ScrollReveal>
-            <div className="rounded-[22px] overflow-hidden h-[220px] relative shadow-card-lg" style={{ background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 60%, #0B1220 100%)' }}>
+            <div className="rounded-[22px] overflow-hidden h-[180px] sm:h-[220px] relative shadow-card-lg" style={{ background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 60%, #0B1220 100%)' }}>
               <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
               <div className="absolute bottom-0 left-0 right-0 h-[100px] flex items-end px-8 gap-1.5 pb-0">
                 {[55,70,40,85,50,65,30,90,45,75,60,35,80,48,72,58,38,92,42,88,68,52,78,44].map((h, i) => (
@@ -108,15 +104,14 @@ export default function CopyTrading() {
         </div>
       </section>
 
-      {/* How It Works */}
       <section id="how-it-works" className="section">
-        <div className="max-w-[1240px] mx-auto px-8">
-          <div className="text-center max-w-[640px] mx-auto mb-16">
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-[640px] mx-auto mb-10 sm:mb-16">
             <p className="eyebrow mb-3.5">The Process</p>
-            <h2 className="text-[38px] font-extrabold mb-3.5 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>How Copy Trading Works</h2>
+            <h2 className="text-[24px] sm:text-[32px] lg:text-[38px] font-extrabold mb-3.5 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>How Copy Trading Works</h2>
             <p className="text-dark-500 text-[16.5px] leading-relaxed font-inter">Four simple steps to start mirroring the pros.</p>
           </div>
-          <div className="grid md:grid-cols-4 gap-8">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {steps.map((step, i) => (
               <ScrollReveal key={i} delay={i * 120}>
                 <div className="text-center px-4">
@@ -130,18 +125,17 @@ export default function CopyTrading() {
         </div>
       </section>
 
-      {/* Benefits */}
       <section className="section">
-        <div className="max-w-[1240px] mx-auto px-8">
-          <div className="text-center max-w-[640px] mx-auto mb-16">
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-[640px] mx-auto mb-10 sm:mb-16">
             <p className="eyebrow mb-3.5">Why Copy Trading</p>
-            <h2 className="text-[38px] font-extrabold mb-3.5 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Built for every type of trader</h2>
+            <h2 className="text-[24px] sm:text-[32px] lg:text-[38px] font-extrabold mb-3.5 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Built for every type of trader</h2>
             <p className="text-dark-500 text-[16.5px] leading-relaxed font-inter">Whether you are just starting out or looking to diversify — copy trading gives you the edge.</p>
           </div>
-          <div className="grid md:grid-cols-3 gap-7">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-7">
             {benefits.map((b, i) => (
               <ScrollReveal key={i} delay={i * 80}>
-                <div className="bg-white border border-dark-100 rounded-[18px] p-8 shadow-card hover:shadow-card-lg transition-shadow h-full">
+                <div className="bg-white border border-dark-100 rounded-[18px] p-6 sm:p-8 shadow-card hover:shadow-card-lg transition-shadow h-full">
                   <div className="w-10 h-10 rounded-[10px] bg-primary-50 text-primary-500 flex items-center justify-center text-sm font-bold mb-4" style={{ fontFamily: '"Plus Jakarta Sans"' }}>&#10003;</div>
                   <h3 className="text-[16px] font-bold mb-2" style={{ fontFamily: '"Plus Jakarta Sans"' }}>{b.title}</h3>
                   <p className="text-dark-500 text-[14.5px] leading-relaxed font-inter">{b.desc}</p>
@@ -152,14 +146,13 @@ export default function CopyTrading() {
         </div>
       </section>
 
-      {/* Stats */}
       <section className="section">
-        <div className="max-w-[1240px] mx-auto px-8">
-          <div className="rounded-[26px] border border-dark-100 py-14 px-12" style={{ background: 'linear-gradient(120deg, #EFF4FE, #ECFDF5)' }}>
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="rounded-[26px] border border-dark-100 py-10 sm:py-14 px-6 sm:px-12" style={{ background: 'linear-gradient(120deg, #EFF4FE, #ECFDF5)' }}>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
               {stats.map((s, i) => (
                 <ScrollReveal key={i} delay={i * 100}>
-                  <div className="text-[36px] font-extrabold" style={{ fontFamily: '"Plus Jakarta Sans"' }}>{s.num}</div>
+                  <div className="text-[24px] sm:text-[36px] font-extrabold" style={{ fontFamily: '"Plus Jakarta Sans"' }}>{s.num}</div>
                   <div className="text-[13.5px] text-dark-500 mt-1 font-inter">{s.lbl}</div>
                 </ScrollReveal>
               ))}
@@ -168,12 +161,11 @@ export default function CopyTrading() {
         </div>
       </section>
 
-      {/* CTA */}
       <section className="section">
-        <div className="max-w-[1240px] mx-auto px-8">
-          <div className="rounded-[26px] border border-dark-100 py-16 px-16 flex flex-col md:flex-row justify-between items-center gap-10" style={{ background: 'linear-gradient(120deg, #EFF4FE, #ECFDF5)' }}>
-            <div>
-              <h3 className="text-[28px] mb-2.5" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Start Copy Trading Today</h3>
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="rounded-[26px] border border-dark-100 py-10 sm:py-16 px-6 sm:px-16 flex flex-col md:flex-row justify-between items-center gap-6 sm:gap-10" style={{ background: 'linear-gradient(120deg, #EFF4FE, #ECFDF5)' }}>
+            <div className="text-center md:text-left">
+              <h3 className="text-[22px] sm:text-[28px] mb-2.5" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Start Copy Trading Today</h3>
               <p className="text-dark-500 text-[15px] font-inter">Join thousands of traders who are growing their portfolios with automated copy trading.</p>
             </div>
             <div className="flex gap-3 flex-shrink-0">

@@ -108,7 +108,7 @@ function OverlapChart() {
 
 function EconomicCalendar() {
   return (
-    <div className="bg-white border border-dark-100 rounded-2xl p-6 shadow-card">
+    <div className="bg-white border border-dark-100 rounded-2xl p-4 sm:p-6 shadow-card">
       <h3 className="font-bold text-lg mb-1">Economic Calendar</h3>
       <p className="text-sm text-dark-500 mb-4">Upcoming high-impact economic events</p>
       <div className="overflow-x-auto">
@@ -152,9 +152,9 @@ function ForexHeatMap() {
     return { color: isPositive ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700', text: `${isPositive ? '+' : ''}${pct}%`, change: pct };
   };
   return (
-    <div className="bg-white border border-dark-100 rounded-2xl p-6 shadow-card">
+    <div className="bg-white border border-dark-100 rounded-2xl p-4 sm:p-6 shadow-card">
       <h3 className="font-bold text-lg mb-1">Forex Heat Map</h3>
-      <p class="text-sm text-dark-500 mb-4">Currency strength visual — green = bullish, red = bearish</p>
+      <p className="text-sm text-dark-500 mb-4">Currency strength visual — green = bullish, red = bearish</p>
       <div className="overflow-x-auto">
         <table className="w-full text-xs">
           <thead>
@@ -186,7 +186,7 @@ function ForexHeatMap() {
 
 function CurrencyStrengthMeter() {
   return (
-    <div className="bg-white border border-dark-100 rounded-2xl p-6 shadow-card">
+    <div className="bg-white border border-dark-100 rounded-2xl p-4 sm:p-6 shadow-card">
       <h3 className="font-bold text-lg mb-1">Currency Strength Meter</h3>
       <p className="text-sm text-dark-500 mb-4">Real-time relative strength (0-10 scale)</p>
       <div className="space-y-3">
@@ -228,7 +228,7 @@ function LiveGoldPrice() {
     return () => clearInterval(i);
   }, [price]);
   return (
-    <div className="bg-white border border-dark-100 rounded-2xl p-6 shadow-card bg-gradient-to-br from-amber-50 to-orange-50/30">
+    <div className="bg-white border border-dark-100 rounded-2xl p-4 sm:p-6 shadow-card bg-gradient-to-br from-amber-50 to-orange-50/30">
       <div className="flex items-center justify-between mb-4">
         <div>
           <div className="flex items-center gap-2">
@@ -239,7 +239,7 @@ function LiveGoldPrice() {
             </div>
           </div>
         </div>
-        <span className="text-3xl font-bold">${price}</span>
+        <span className="text-2xl sm:text-3xl font-bold">${price}</span>
       </div>
       <div className={`flex items-center gap-2 ${direction === 'up' ? 'text-emerald-500' : 'text-red-500'}`}>
         <span className="text-xl">{direction === 'up' ? '▲' : '▼'}</span>
@@ -264,7 +264,7 @@ function LiveRatesTicker() {
     return () => clearInterval(i);
   }, []);
   return (
-    <div className="bg-white border border-dark-100 rounded-2xl p-6 shadow-card">
+    <div className="bg-white border border-dark-100 rounded-2xl p-4 sm:p-6 shadow-card">
       <h3 className="font-bold text-lg mb-1">Live Forex Rates</h3>
       <p className="text-sm text-dark-500 mb-4">Real-time bid/ask prices with spread</p>
       <div className="overflow-x-auto">
@@ -327,10 +327,10 @@ function TradingViewChart() {
   }, []);
 
   return (
-    <div className="bg-white border border-dark-100 rounded-2xl p-6 shadow-card">
+    <div className="bg-white border border-dark-100 rounded-2xl p-4 sm:p-6 shadow-card">
       <h3 className="font-bold text-lg mb-1">Interactive Charts</h3>
       <p className="text-sm text-dark-500 mb-4">Powered by TradingView — switch between any pair or asset</p>
-      <div id={containerId} className="w-full rounded-xl overflow-hidden border border-dark-100" style={{ height: '500px' }} />
+      <div id={containerId} className="w-full rounded-xl overflow-hidden border border-dark-100" style={{ height: '400px' }} />
     </div>
   );
 }
@@ -360,17 +360,17 @@ export default function Tools() {
       <style>{`.reveal-element { opacity: 0; transform: translateY(28px); transition: opacity 0.8s ease, transform 0.8s ease; } .reveal-active { opacity: 1 !important; transform: translateY(0) !important; }`}</style>
 
       <section className="pt-32 pb-16 bg-dark-50">
-        <div className="max-w-[1240px] mx-auto px-8" ref={titleRef}>
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8" ref={titleRef}>
           <p className="eyebrow mb-3">Trading Tools</p>
-          <h1 className="text-[48px] font-extrabold mb-4 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"', letterSpacing: '-0.02em' }}>
+          <h1 className="text-[32px] sm:text-[40px] lg:text-[48px] font-extrabold mb-4 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"', letterSpacing: '-0.02em' }}>
             Market <span className="text-primary-500">Tools & Data</span>
           </h1>
-          <p className="text-dark-500 text-lg max-w-[600px]">Live rates, economic calendar, market sessions, currency strength, and interactive charts — all in real time.</p>
+          <p className="text-dark-500 text-base sm:text-lg max-w-[600px]">Live rates, economic calendar, market sessions, currency strength, and interactive charts — all in real time.</p>
         </div>
       </section>
 
       <section className="section-sm">
-        <div className="max-w-[1240px] mx-auto px-8 space-y-6">
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
           <ScrollReveal><LiveGoldPrice /></ScrollReveal>
           <div className="grid lg:grid-cols-2 gap-6">
             <ScrollReveal><EconomicCalendar /></ScrollReveal>
