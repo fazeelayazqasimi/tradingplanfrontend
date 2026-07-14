@@ -213,27 +213,21 @@ function LiveGoldPrice() {
   const containerRef = useRef(null);
   useEffect(() => {
     if (!containerRef.current) return;
-    const existing = containerRef.current.querySelector('.tradingview-widget-container');
-    if (existing) existing.remove();
-    const wrapper = document.createElement('div');
-    wrapper.className = 'tradingview-widget-container';
-    const widgetDiv = document.createElement('div');
-    widgetDiv.className = 'tradingview-widget-container__widget';
-    wrapper.appendChild(widgetDiv);
-    const script = document.createElement('script');
-    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-single-ticker.js';
-    script.async = true;
-    script.type = 'text/javascript';
-    script.textContent = JSON.stringify({
+    const config = JSON.stringify({
       symbol: 'OANDA:XAUUSD',
       width: '100%',
       colorTheme: 'light',
       isTransparent: false,
       locale: 'en',
     });
-    wrapper.appendChild(script);
-    containerRef.current.appendChild(wrapper);
-    return () => { wrapper.remove(); };
+    const sc = '<' + '/script>';
+    containerRef.current.innerHTML = `
+      <div class="tradingview-widget-container">
+        <div class="tradingview-widget-container__widget"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-ticker.js" async>${config}${sc}
+      </div>
+    `;
+    return () => { if (containerRef.current) containerRef.current.innerHTML = ''; };
   }, []);
   return (
     <div className="bg-white border border-dark-100 rounded-2xl p-4 sm:p-6 shadow-card bg-gradient-to-br from-amber-50 to-orange-50/30">

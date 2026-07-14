@@ -10,12 +10,7 @@ function MarqueeTicker() {
   const tickerRef = useRef(null);
   useEffect(() => {
     if (!tickerRef.current) return;
-    const div = tickerRef.current;
-    const script = document.createElement('script');
-    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js';
-    script.async = true;
-    script.type = 'text/javascript';
-    script.innerHTML = JSON.stringify({
+    const config = JSON.stringify({
       symbols: [
         { proName: 'FOREXCOM:SPXUSD', title: 'S&P 500' },
         { proName: 'FX_IDC:EURUSD', title: 'EUR/USD' },
@@ -31,8 +26,14 @@ function MarqueeTicker() {
       displayMode: 'adaptive',
       locale: 'en',
     });
-    div.appendChild(script);
-    return () => { if (script.parentNode) script.parentNode.removeChild(script); };
+    const sc = '<' + '/script>';
+    tickerRef.current.innerHTML = `
+      <div class="tradingview-widget-container" style="width:100%;height:100%">
+        <div class="tradingview-widget-container__widget"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>${config}${sc}
+      </div>
+    `;
+    return () => { if (tickerRef.current) tickerRef.current.innerHTML = ''; };
   }, []);
 
   return (
