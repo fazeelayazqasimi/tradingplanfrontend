@@ -43,6 +43,11 @@ export default function LiveChartWidget({ compact, showTitle }) {
   const saveTimerRef = useRef(null);
   const scriptAddedRef = useRef(false);
 
+  const tvLoadedRef = useRef(false);
+  const dataLoadedRef = useRef(false);
+  const widgetParamsRef = useRef({ symbol, interval, theme });
+  widgetParamsRef.current = { symbol, interval, theme };
+
   const destroyWidget = useCallback(() => {
     if (widgetRef.current) {
       try { widgetRef.current.remove(); } catch {}
@@ -53,31 +58,32 @@ export default function LiveChartWidget({ compact, showTitle }) {
 
   const createWidget = useCallback(() => {
     destroyWidget();
-    if (!window.TradingView) return;
+    if (!window.TradingView || !dataLoadedRef.current) return;
     setTvReady(false);
+    const { symbol: sym, interval: iv, theme: th } = widgetParamsRef.current;
     const container = document.getElementById(containerId);
     if (!container) return;
     const widget = new window.TradingView.widget({
       container_id: containerId,
       autosize: true,
-      symbol,
-      interval,
+      symbol: sym,
+      interval: iv,
       timezone: 'Etc/UTC',
-      theme,
+      theme: th,
       style: '1',
       locale: 'en',
-      toolbar_bg: theme === 'dark' ? '#1e222d' : '#f1f3f6',
+      toolbar_bg: th === 'dark' ? '#1e222d' : '#f1f3f6',
       enable_publishing: false,
       hide_side_toolbar: false,
       allow_symbol_change: true,
       studies: ['RSI@tv-basicstudies', 'MASimple@tv-basicstudies'],
       saved_data: savedDataRef.current || null,
-      overrides: theme === 'dark' ? {
+      overrides: th === 'dark' ? {
         'paneProperties.background': '#1e222d',
         'paneProperties.vertGridProperties.color': '#2a2e39',
         'paneProperties.horzGridProperties.color': '#2a2e39',
       } : {},
-      loading_screen: { backgroundColor: theme === 'dark' ? '#1e222d' : '#ffffff' },
+      loading_screen: { backgroundColor: th === 'dark' ? '#1e222d' : '#ffffff' },
       auto_save_delay: 500,
       onAutoSaveNeeded: () => {
         clearTimeout(saveTimerRef.current);
@@ -86,7 +92,26 @@ export default function LiveChartWidget({ compact, showTitle }) {
     });
     widgetRef.current = widget;
     widget.onChartReady(() => setTvReady(true));
-  }, [symbol, interval, theme, destroyWidget, containerId]);
+  }, [destroyWidget, containerId]);
+
+  const tryCreateWidget = useCallback(() => {
+    if (window.TradingView && dataLoadedRef.current && !widgetRef.current) {
+      createWidget();
+    }
+  }, [createWidget]);
+
+  useEffect(() => {
+    api.get('/charts/drawings', { params: { symbol } })
+      .then((res) => {
+        savedDataRef.current = res.data?.data || null;
+        dataLoadedRef.current = true;
+        tryCreateWidget();
+      })
+      .catch(() => {
+        dataLoadedRef.current = true;
+        tryCreateWidget();
+      });
+  }, []);
 
   useEffect(() => {
     if (!scriptAddedRef.current) {
@@ -95,27 +120,29 @@ export default function LiveChartWidget({ compact, showTitle }) {
         script.id = 'tv-chart-base-script';
         script.src = 'https://s3.tradingview.com/tv.js';
         script.async = true;
-        script.onload = () => createWidget();
+        script.onload = () => {
+          tvLoadedRef.current = true;
+          tryCreateWidget();
+        };
         document.head.appendChild(script);
       } else if (window.TradingView) {
-        createWidget();
+        tvLoadedRef.current = true;
+        tryCreateWidget();
       } else {
         const check = setInterval(() => {
-          if (window.TradingView) { clearInterval(check); createWidget(); }
+          if (window.TradingView) {
+            clearInterval(check);
+            tvLoadedRef.current = true;
+            tryCreateWidget();
+          }
         }, 200);
       }
       scriptAddedRef.current = true;
     } else {
-      createWidget();
+      tryCreateWidget();
     }
     return () => destroyWidget();
-  }, [createWidget, destroyWidget]);
-
-  useEffect(() => {
-    api.get('/charts/drawings', { params: { symbol } })
-      .then((res) => { savedDataRef.current = res.data?.data || null; })
-      .catch(() => {});
-  }, []);
+  }, [destroyWidget, tryCreateWidget]);
 
   async function autoSaveChart() {
     if (!widgetRef.current) return;
