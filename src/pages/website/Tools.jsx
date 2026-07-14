@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/all';
@@ -298,44 +298,6 @@ function LiveRatesTicker() {
   );
 }
 
-function TradingViewChart() {
-  const containerId = 'tradingview-chart';
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://s3.tradingview.com/tv.js';
-    script.async = true;
-    script.onload = () => {
-      if (window.TradingView) {
-        new window.TradingView.widget({
-          container_id: containerId,
-          autosize: true,
-          symbol: 'OANDA:XAUUSD',
-          interval: 'D',
-          timezone: 'Etc/UTC',
-          theme: 'light',
-          style: '1',
-          locale: 'en',
-          toolbar_bg: '#f1f3f6',
-          enable_publishing: false,
-          hide_side_toolbar: false,
-          allow_symbol_change: true,
-          studies: ['RSI@tv-basicstudies', 'MASimple@tv-basicstudies'],
-        });
-      }
-    };
-    document.head.appendChild(script);
-    return () => { document.head.removeChild(script); };
-  }, []);
-
-  return (
-    <div className="bg-white border border-dark-100 rounded-2xl p-4 sm:p-6 shadow-card">
-      <h3 className="font-bold text-lg mb-1">Interactive Charts</h3>
-      <p className="text-sm text-dark-500 mb-4">Powered by TradingView — switch between any pair or asset</p>
-      <div id={containerId} className="w-full rounded-xl overflow-hidden border border-dark-100" style={{ height: '400px' }} />
-    </div>
-  );
-}
-
 function ScrollReveal({ children, className = '' }) {
   const ref = useRef(null);
   useEffect(() => {
@@ -383,7 +345,6 @@ export default function Tools() {
             <ScrollReveal><CurrencyStrengthMeter /></ScrollReveal>
           </div>
           <ScrollReveal><LiveRatesTicker /></ScrollReveal>
-          <ScrollReveal><TradingViewChart /></ScrollReveal>
         </div>
       </section>
     </div>

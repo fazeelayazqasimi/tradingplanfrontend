@@ -62,6 +62,7 @@ import StudentTransactions from './pages/student/Transactions';
 import StudentWithdrawals from './pages/student/Withdrawals';
 import StudentTeamMembers from './pages/student/TeamMembers';
 import StudentProfitShare from './pages/student/ProfitShare';
+import StudentCharts from './pages/student/Charts';
 
 function ProtectedRoute({ children, role }) {
   const { user, loading } = useAuth();
@@ -151,6 +152,7 @@ export const router = createBrowserRouter([
       { path: 'withdrawals', element: <StudentWithdrawals /> },
       { path: 'team', element: <StudentTeamMembers /> },
       { path: 'profit-share', element: <StudentProfitShare /> },
+      { path: 'charts', element: <StudentCharts /> },
     ],
   },
   { path: '*', element: <NotFound /> },

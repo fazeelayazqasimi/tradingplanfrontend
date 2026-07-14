@@ -1,6 +1,6 @@
 import { Link, useLocation, Outlet } from 'react-router-dom';
 import { useState } from 'react';
-import { FiMenu, FiLayout, FiBookOpen, FiTrendingUp, FiCopy, FiPieChart, FiDollarSign, FiLink2, FiAward, FiFileText, FiBell, FiMessageSquare, FiSettings, FiLogOut, FiX, FiCreditCard, FiClock, FiUsers, FiPercent, FiHome } from 'react-icons/fi';
+import { FiMenu, FiLayout, FiBookOpen, FiTrendingUp, FiCopy, FiPieChart, FiDollarSign, FiLink2, FiAward, FiFileText, FiBell, FiMessageSquare, FiSettings, FiLogOut, FiX, FiCreditCard, FiClock, FiUsers, FiPercent, FiHome, FiBarChart2 } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 import { getInitials } from '../../utils/helpers';
 import ThemeToggle from '../ui/ThemeToggle';
@@ -20,6 +20,7 @@ const sidebarLinks = [
   { path: '/student/profit-share', label: 'Profit Share', icon: FiPercent },
   { path: '/student/rank', label: 'My Rank', icon: FiAward },
   { path: '/student/certificates', label: 'Certificates', icon: FiFileText },
+  { path: '/student/charts', label: 'Charts', icon: FiBarChart2 },
   { path: '/student/announcements', label: 'Announcements', icon: FiBell },
   { path: '/student/support', label: 'Support', icon: FiMessageSquare },
   { path: '/student/settings', label: 'Settings', icon: FiSettings },
