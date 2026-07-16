@@ -16,6 +16,8 @@ import {
   FiRefreshCw,
   FiUpload,
   FiTrash2,
+  FiUsers,
+  FiServer,
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Button from '../../components/ui/Button';
@@ -29,6 +31,8 @@ const SECTIONS = [
   { id: 'general', label: 'General', icon: FiGlobe },
   { id: 'social', label: 'Social Links', icon: FiInstagram },
   { id: 'subscription', label: 'Subscription', icon: FiDollarSign },
+  { id: 'referral', label: 'Referral Commissions', icon: FiUsers },
+  { id: 'broker', label: 'Broker APIs', icon: FiServer },
   { id: 'withdrawal', label: 'Withdrawals', icon: FiDollarSign },
   { id: 'trading', label: 'Trading', icon: FiTrendingUp },
   { id: 'smtp', label: 'SMTP', icon: FiMail },
@@ -53,6 +57,24 @@ const SETTING_FIELDS = {
   subscription: [
     { key: 'membership_price', label: 'Membership Price ($)', icon: FiDollarSign, type: 'number', placeholder: '49.99' },
     { key: 'membership_duration', label: 'Duration (days)', type: 'number', placeholder: '30' },
+  ],
+  referral: [
+    { key: 'referral_level_1_commission', label: 'Level 1 Commission ($)', icon: FiDollarSign, type: 'number', placeholder: '30' },
+    { key: 'referral_level_2_commission', label: 'Level 2 Commission ($)', icon: FiDollarSign, type: 'number', placeholder: '10' },
+    { key: 'referral_level_3_commission', label: 'Level 3 Commission ($)', icon: FiDollarSign, type: 'number', placeholder: '5' },
+    { key: 'referral_level_4_commission', label: 'Level 4 Commission ($)', icon: FiDollarSign, type: 'number', placeholder: '3' },
+    { key: 'referral_level_5_commission', label: 'Level 5 Commission ($)', icon: FiDollarSign, type: 'number', placeholder: '2' },
+    { key: 'referral_max_levels', label: 'Max Referral Levels', icon: FiUsers, type: 'number', placeholder: '5' },
+  ],
+  broker: [
+    { key: 'broker_dma_name', label: 'DMA Broker Name', icon: FiServer, placeholder: 'DMA' },
+    { key: 'broker_dma_api_key', label: 'DMA API Key', icon: FiServer, placeholder: 'Enter DMA API key' },
+    { key: 'broker_dma_api_secret', label: 'DMA API Secret', icon: FiServer, placeholder: 'Enter DMA API secret' },
+    { key: 'broker_dma_api_endpoint', label: 'DMA API Endpoint', icon: FiServer, placeholder: 'https://api.dma-broker.com' },
+    { key: 'broker_startrading_name', label: 'StarTrading Broker Name', icon: FiServer, placeholder: 'StarTrading' },
+    { key: 'broker_startrading_api_key', label: 'StarTrading API Key', icon: FiServer, placeholder: 'Enter StarTrading API key' },
+    { key: 'broker_startrading_api_secret', label: 'StarTrading API Secret', icon: FiServer, placeholder: 'Enter StarTrading API secret' },
+    { key: 'broker_startrading_api_endpoint', label: 'StarTrading API Endpoint', icon: FiServer, placeholder: 'https://api.startrading.com' },
   ],
   withdrawal: [
     { key: 'min_withdrawal', label: 'Minimum Withdrawal ($)', icon: FiDollarSign, type: 'number', placeholder: '10' },
@@ -357,9 +379,13 @@ export default function Settings() {
                         ? 'Social media profile links'
                         : activeSection === 'subscription'
                           ? 'Membership pricing and duration'
-                          : activeSection === 'withdrawal'
-                            ? 'Withdrawal limits for students'
-                            : 'Revenue share percentages'}
+                          : activeSection === 'referral'
+                            ? 'Configure referral commission amounts per level'
+                            : activeSection === 'broker'
+                              ? 'DMA and StarTrading broker API configuration'
+                              : activeSection === 'withdrawal'
+                                ? 'Withdrawal limits for students'
+                                : 'Revenue share percentages'}
                 </p>
               </div>
               {activeSection !== 'smtp' && (

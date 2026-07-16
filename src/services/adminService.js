@@ -71,5 +71,8 @@ const adminService = {
   getAllWallets: (params) => unwrap(api.get('/wallets/all', { params })),
   getWalletStats: (params) => unwrap(api.get('/wallets/admin/stats', { params })),
   creditWallet: (userId, data) => unwrap(api.post(`/wallets/${userId}/credit`, data)),
+  getCoursePurchases: (params) => unwrap(api.get('/course-purchases/all', { params })),
+  approvePurchase: (id, data) => unwrap(api.put(`/course-purchases/${id}/approve`, data)),
+  rejectPurchase: (id, data) => unwrap(api.put(`/course-purchases/${id}/reject`, data)),
 };
 export default adminService;

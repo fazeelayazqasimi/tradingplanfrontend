@@ -58,8 +58,9 @@ export const NAVIGATION = {
   admin: [
     { path: '/admin/dashboard', label: 'Dashboard', icon: 'dashboard' },
     { path: '/admin/students', label: 'Students', icon: 'students' },
-    { path: '/admin/subscriptions', label: 'Subscriptions', icon: 'subscriptions' },
+    { path: '/admin/course-purchases', label: 'Purchases', icon: 'subscriptions' },
     { path: '/admin/courses', label: 'Courses', icon: 'courses' },
+    { path: '/admin/subscriptions', label: 'Subscriptions', icon: 'subscriptions' },
     { path: '/admin/signals', label: 'Signals', icon: 'signals' },
     { path: '/admin/announcements', label: 'Announcements', icon: 'announce' },
     { path: '/admin/referrals', label: 'Referrals', icon: 'referrals' },

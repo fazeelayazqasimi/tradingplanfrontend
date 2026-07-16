@@ -43,6 +43,7 @@ import AdminQuizzes from './pages/admin/Quizzes';
 import AdminCertificates from './pages/admin/Certificates';
 import AdminWallets from './pages/admin/Wallets';
 import AdminReports from './pages/admin/Reports';
+import AdminCoursePurchases from './pages/admin/CoursePurchases';
 
 import StudentDashboard from './pages/student/Dashboard';
 import StudentCourses from './pages/student/Courses';
@@ -111,6 +112,7 @@ export const router = createBrowserRouter([
       { index: true, element: <Navigate to="dashboard" replace /> },
       { path: 'dashboard', element: <AdminDashboard /> },
       { path: 'students', element: <AdminStudents /> },
+      { path: 'course-purchases', element: <AdminCoursePurchases /> },
       { path: 'subscriptions', element: <AdminSubscriptions /> },
       { path: 'courses', element: <AdminCourses /> },
       { path: 'signals', element: <AdminSignals /> },

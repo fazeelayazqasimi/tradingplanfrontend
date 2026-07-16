@@ -7,6 +7,7 @@ import {
   FiUsers,
   FiCheckCircle,
   FiXCircle,
+  FiDollarSign,
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Button from '../../components/ui/Button';
@@ -39,6 +40,7 @@ const initialCourseForm = {
   description: '',
   level: '',
   category: '',
+  price: '',
 };
 
 const initialLessonForm = {
@@ -104,6 +106,7 @@ export default function Courses() {
       description: course.description || '',
       level: course.level || '',
       category: course.category || '',
+      price: course.price ?? '',
     });
     setCourseModalOpen(true);
   };
@@ -139,6 +142,7 @@ export default function Courses() {
         description: courseForm.description,
         level: courseForm.level,
         category: courseForm.category,
+        price: courseForm.price ? Number(courseForm.price) : 0,
         ...(editingCourse ? {} : { isPublished: true }),
       };
       if (editingCourse) {
@@ -220,6 +224,19 @@ export default function Courses() {
           {row.level || 'N/A'}
         </Badge>
       ),
+    },
+    {
+      key: 'price',
+      header: 'Price',
+      render: (_, row) => {
+        const price = row.price ?? 0;
+        return (
+          <span className="inline-flex items-center gap-1.5 text-sm font-medium text-dark-700">
+            <FiDollarSign className="h-3.5 w-3.5 text-dark-400" />
+            {price > 0 ? `$${price}` : 'Free'}
+          </span>
+        );
+      },
     },
     {
       key: 'totalLessons',
@@ -370,6 +387,15 @@ export default function Courses() {
             placeholder="e.g. Forex, Crypto, Stocks, Risk Management"
             value={courseForm.category}
             onChange={(e) => handleCourseChange('category', e.target.value)}
+          />
+          <Input
+            label="Price ($)"
+            type="number"
+            min="0"
+            step="0.01"
+            placeholder="0 = Free, 100 = $100"
+            value={courseForm.price}
+            onChange={(e) => handleCourseChange('price', e.target.value)}
           />
           <div className="flex items-center gap-3 pt-4 border-t border-dark-100">
             <Button type="submit" loading={submitting}>

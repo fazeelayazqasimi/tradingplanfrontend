@@ -18,5 +18,9 @@ const studentService = {
   connectMT: (data) => api.post('/users/connect-mt', data),
   disconnectMT: () => api.delete('/users/disconnect-mt'),
   getSettings: () => api.get('/settings/public'),
+  getMyPurchases: (params) => api.get('/course-purchases/my', { params }),
+  createPurchase: (data) => api.post('/course-purchases', data),
+  getApprovalStatus: () => api.get('/course-purchases/my/approval-status'),
+  createPaymentIntent: (data) => api.post('/payments/create-payment-intent', data),
 };
 export default studentService;

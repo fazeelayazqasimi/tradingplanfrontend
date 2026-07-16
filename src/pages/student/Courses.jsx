@@ -7,17 +7,24 @@ import {
   FiUsers,
   FiFilter,
   FiChevronRight,
+  FiDollarSign,
+  FiCreditCard,
+  FiClock,
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
 import Input from '../../components/ui/Input';
+import Select from '../../components/ui/Select';
+import Modal from '../../components/ui/Modal';
 import Skeleton from '../../components/ui/Skeleton';
 import EmptyState from '../../components/ui/EmptyState';
 import Pagination from '../../components/ui/Pagination';
 import courseService from '../../services/courseService';
+import studentService from '../../services/studentService';
 import { COURSE_LEVELS } from '../../constants/index';
+import { formatCurrency } from '../../utils/helpers';
 
 const levelColor = {
   beginner: 'success',
@@ -45,16 +52,28 @@ const item = {
   show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 260, damping: 20 } },
 };
 
+const BROKER_OPTIONS = [
+  { value: 'dma', label: 'DMA Broker' },
+  { value: 'startrading', label: 'StarTrading' },
+];
+
 export default function Courses() {
   const [courses, setCourses] = useState([]);
   const [enrolledMap, setEnrolledMap] = useState({});
+  const [purchasedMap, setPurchasedMap] = useState({});
   const [loading, setLoading] = useState(true);
   const [enrolling, setEnrolling] = useState(null);
+  const [buying, setBuying] = useState(null);
   const [search, setSearch] = useState('');
   const [levelFilter, setLevelFilter] = useState('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
+
+  const [buyModal, setBuyModal] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState(null);
+  const [selectedBroker, setSelectedBroker] = useState('dma');
+  const [paymentStep, setPaymentStep] = useState('broker');
 
   const fetchCourses = useCallback(async () => {
     try {
@@ -88,9 +107,22 @@ export default function Courses() {
         });
       }
       setEnrolledMap(map);
-    } catch {
-      // silent — enrolled info is supplementary
-    }
+    } catch {}
+  }, []);
+
+  const fetchPurchases = useCallback(async () => {
+    try {
+      const res = await studentService.getMyPurchases();
+      const data = res?.data?.data || res?.data || [];
+      const map = {};
+      if (Array.isArray(data)) {
+        data.forEach((p) => {
+          const cid = p.courseId?._id || p.courseId;
+          if (cid) map[cid] = p;
+        });
+      }
+      setPurchasedMap(map);
+    } catch {}
   }, []);
 
   useEffect(() => {
@@ -100,6 +132,10 @@ export default function Courses() {
   useEffect(() => {
     fetchEnrolled();
   }, [fetchEnrolled]);
+
+  useEffect(() => {
+    fetchPurchases();
+  }, [fetchPurchases]);
 
   useEffect(() => {
     setPage(1);
@@ -121,12 +157,42 @@ export default function Courses() {
     }
   };
 
+  const openBuyModal = (e, course) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setSelectedCourse(course);
+    setSelectedBroker('dma');
+    setPaymentStep('broker');
+    setBuyModal(true);
+  };
+
+  const handlePurchase = async () => {
+    if (!selectedCourse) return;
+    const courseId = selectedCourse._id || selectedCourse.id;
+    try {
+      setBuying(courseId);
+      const res = await studentService.createPaymentIntent({
+        courseId,
+        broker: selectedBroker,
+        paymentMethod: 'card',
+      });
+      toast.success('Payment initiated! Waiting for admin approval.');
+      setBuyModal(false);
+      fetchPurchases();
+      fetchCourses();
+    } catch (err) {
+      toast.error(err.response?.data?.message || err.message || 'Purchase failed');
+    } finally {
+      setBuying(null);
+    }
+  };
+
   return (
     <div className="space-y-5">
       <div>
         <h1 className="text-lg font-bold text-ink">Course Catalog</h1>
         <p className="mt-0.5 text-sm text-dark-500">
-          Browse and enroll in trading courses to advance your skills.
+          Browse, enroll in free courses, or purchase premium courses.
         </p>
       </div>
 
@@ -192,11 +258,16 @@ export default function Courses() {
               const slug = course.slug || courseId;
               const enrolled = enrolledMap[courseId];
               const isEnrolled = !!enrolled;
+              const purchase = purchasedMap[courseId];
+              const hasPendingPurchase = purchase?.status === 'pending';
+              const isApproved = purchase?.status === 'active' || isEnrolled;
               const totalLessons = course.totalLessons ?? course.lessons?.length ?? 0;
               const studentsCount = course.totalStudents ?? course.enrolledStudents ?? 0;
               const progress = enrolled?.progress ?? enrolled?.enrollment?.progress ?? 0;
               const completedLessons = enrolled?.completedLessons ?? enrolled?.enrollment?.completedLessons ?? 0;
               const pct = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : progress;
+              const price = course.price ?? 0;
+              const isPaid = price > 0;
 
               return (
                 <motion.div key={courseId || idx} variants={item}>
@@ -208,16 +279,24 @@ export default function Courses() {
                         ) : (
                           <FiBookOpen size={36} className="text-white/30" />
                         )}
-                        {course.level && (
-                          <div className="absolute top-2.5 left-2.5">
+                        <div className="absolute top-2.5 left-2.5 flex gap-1.5">
+                          {course.level && (
                             <Badge color={levelColor[course.level] || 'neutral'}>
                               {course.level.charAt(0).toUpperCase() + course.level.slice(1)}
                             </Badge>
+                          )}
+                          {isPaid && (
+                            <Badge color="warning">${price}</Badge>
+                          )}
+                        </div>
+                        {(isApproved || isEnrolled) && (
+                          <div className="absolute top-2.5 right-2.5">
+                            <Badge color="success">Active</Badge>
                           </div>
                         )}
-                        {isEnrolled && (
+                        {hasPendingPurchase && (
                           <div className="absolute top-2.5 right-2.5">
-                            <Badge color="success">Enrolled</Badge>
+                            <Badge color="info">Pending</Badge>
                           </div>
                         )}
                       </div>
@@ -242,9 +321,15 @@ export default function Courses() {
                             <FiUsers size={12} />
                             {studentsCount} student{studentsCount !== 1 ? 's' : ''}
                           </span>
+                          {isPaid && (
+                            <span className="flex items-center gap-1">
+                              <FiDollarSign size={12} />
+                              {formatCurrency(price)}
+                            </span>
+                          )}
                         </div>
 
-                        {isEnrolled && totalLessons > 0 && (
+                        {isApproved && totalLessons > 0 && (
                           <div className="mb-2.5">
                             <div className="flex items-center justify-between text-xs text-dark-500 mb-1">
                               <span>{completedLessons}/{totalLessons} lessons</span>
@@ -259,9 +344,24 @@ export default function Courses() {
                           </div>
                         )}
 
-                        {isEnrolled ? (
+                        {isApproved ? (
                           <Button variant="secondary" className="w-full gap-1.5" size="sm">
                             Continue Learning <FiChevronRight size={14} />
+                          </Button>
+                        ) : hasPendingPurchase ? (
+                          <Button variant="outline" className="w-full" size="sm" disabled>
+                            <FiClock size={14} /> Pending Approval
+                          </Button>
+                        ) : isPaid ? (
+                          <Button
+                            variant="primary"
+                            className="w-full gap-1.5"
+                            size="sm"
+                            onClick={(e) => openBuyModal(e, course)}
+                            loading={buying === courseId}
+                          >
+                            <FiCreditCard size={14} />
+                            Buy ${price}
                           </Button>
                         ) : (
                           <Button
@@ -271,7 +371,7 @@ export default function Courses() {
                             loading={enrolling === courseId}
                             onClick={(e) => handleEnroll(e, courseId)}
                           >
-                            Enroll Now
+                            Enroll Free
                           </Button>
                         )}
                       </div>
@@ -292,6 +392,113 @@ export default function Courses() {
           )}
         </>
       )}
+
+      <Modal
+        isOpen={buyModal}
+        onClose={() => setBuyModal(false)}
+        title={paymentStep === 'broker' ? 'Select Broker' : 'Complete Payment'}
+        size="sm"
+      >
+        {paymentStep === 'broker' ? (
+          <div className="space-y-5">
+            <p className="text-sm text-dark-500">
+              Choose your broker for <strong>{selectedCourse?.title}</strong> — ${selectedCourse?.price}
+            </p>
+            <div className="space-y-3">
+              {BROKER_OPTIONS.map((b) => (
+                <button
+                  key={b.value}
+                  onClick={() => setSelectedBroker(b.value)}
+                  className={`w-full flex items-center gap-3 p-4 rounded-xl border-2 transition-all ${
+                    selectedBroker === b.value
+                      ? 'border-primary-500 bg-primary-50'
+                      : 'border-dark-200 hover:border-dark-300'
+                  }`}
+                >
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold ${
+                    selectedBroker === b.value ? 'bg-primary-500 text-white' : 'bg-dark-100 text-dark-500'
+                  }`}>
+                    {b.label.charAt(0)}
+                  </div>
+                  <div className="text-left">
+                    <p className="font-medium text-ink text-sm">{b.label}</p>
+                    <p className="text-xs text-dark-400">Trading platform integration</p>
+                  </div>
+                  {selectedBroker === b.value && (
+                    <div className="ml-auto w-5 h-5 rounded-full bg-primary-500 flex items-center justify-center">
+                      <span className="text-white text-xs">✓</span>
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
+            <Button
+              variant="primary"
+              className="w-full"
+              onClick={() => setPaymentStep('card')}
+            >
+              Continue to Payment
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-5">
+            <div className="p-4 rounded-xl bg-dark-50 border border-dark-100 space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-dark-500">Course</span>
+                <span className="font-medium text-ink">{selectedCourse?.title}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-dark-500">Broker</span>
+                <span className="font-medium text-ink capitalize">{selectedBroker}</span>
+              </div>
+              <div className="border-t border-dark-200 pt-2 flex justify-between text-sm">
+                <span className="text-dark-500">Amount</span>
+                <span className="font-bold text-ink">${selectedCourse?.price}</span>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-xl border border-dark-200 space-y-3">
+              <p className="text-sm font-medium text-ink">Card Details</p>
+              <input
+                type="text"
+                placeholder="Card Number"
+                className="w-full rounded-lg border border-dark-200 bg-white px-3 py-2.5 text-sm"
+                defaultValue="4242 4242 4242 4242"
+              />
+              <div className="grid grid-cols-2 gap-3">
+                <input
+                  type="text"
+                  placeholder="MM/YY"
+                  className="w-full rounded-lg border border-dark-200 bg-white px-3 py-2.5 text-sm"
+                  defaultValue="12/28"
+                />
+                <input
+                  type="text"
+                  placeholder="CVC"
+                  className="w-full rounded-lg border border-dark-200 bg-white px-3 py-2.5 text-sm"
+                  defaultValue="123"
+                />
+              </div>
+            </div>
+
+            <Button
+              variant="primary"
+              className="w-full gap-1.5"
+              onClick={handlePurchase}
+              loading={buying === (selectedCourse?._id || selectedCourse?.id)}
+            >
+              <FiCreditCard size={16} />
+              Pay ${selectedCourse?.price}
+            </Button>
+            <button
+              onClick={() => setPaymentStep('broker')}
+              className="w-full text-center text-sm text-dark-400 hover:text-dark-600"
+            >
+              ← Change Broker
+            </button>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }
