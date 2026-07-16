@@ -512,35 +512,6 @@ export default function Dashboard() {
         </motion.div>
       </div>
 
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
-        <LiveChartWidget compact showTitle />
-      </motion.div>
-
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
-        <Card className="p-[22px]">
-          <h2 className="text-sm font-semibold text-ink mb-3">Quick Actions</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-            <Link to="/student/courses">
-              <Button variant="outline" className="w-full justify-start gap-2.5 h-12 text-sm">
-                <FiBookOpen size={18} className="text-blue-500" />
-                <span>View Courses</span>
-              </Button>
-            </Link>
-            <Link to="/student/signals">
-              <Button variant="outline" className="w-full justify-start gap-2.5 h-12 text-sm">
-                <FiTrendingUp size={18} className="text-emerald-500" />
-                <span>Check Signals</span>
-              </Button>
-            </Link>
-            <Link to="/student/wallet">
-              <Button variant="outline" className="w-full justify-start gap-2.5 h-12 text-sm">
-                <FiCreditCard size={18} className="text-amber-500" />
-                <span>Wallet</span>
-              </Button>
-            </Link>
-          </div>
-        </Card>
-      </motion.div>
     </div>
   );
 }
