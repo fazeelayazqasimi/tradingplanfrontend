@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   FiUsers,
@@ -9,8 +10,12 @@ import {
   FiBookOpen,
   FiTrendingUp,
   FiCalendar,
+  FiShoppingCart,
+  FiX,
 } from 'react-icons/fi';
 import Skeleton from '../../components/ui/Skeleton';
+import Button from '../../components/ui/Button';
+import Modal from '../../components/ui/Modal';
 import adminService from '../../services/adminService';
 import { formatCurrency, formatDate } from '../../utils/helpers';
 
@@ -92,6 +97,8 @@ export default function Dashboard() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [pendingPurchases, setPendingPurchases] = useState([]);
+  const [pendingModalOpen, setPendingModalOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -99,8 +106,20 @@ export default function Dashboard() {
       try {
         setLoading(true);
         setError(null);
-        const data = await adminService.getDashboard();
-        if (!cancelled) setStats(data.data || data);
+        const [dbRes, pendingRes] = await Promise.allSettled([
+          adminService.getDashboard(),
+          adminService.getCoursePurchases({ status: 'pending', limit: 10, page: 1 }),
+        ]);
+        if (!cancelled) {
+          if (dbRes.status === 'fulfilled') setStats(dbRes.value.data || dbRes.value);
+          if (pendingRes.status === 'fulfilled') {
+            const list = pendingRes.value?.data || [];
+            if (list.length > 0) {
+              setPendingPurchases(list);
+              setPendingModalOpen(true);
+            }
+          }
+        }
       } catch (err) {
         if (!cancelled) setError(err.message || 'Failed to load dashboard');
       } finally {
@@ -180,6 +199,47 @@ export default function Dashboard() {
           })}
         </motion.div>
       )}
+
+      <Modal
+        isOpen={pendingModalOpen}
+        onClose={() => setPendingModalOpen(false)}
+        title="Pending Purchase Requests"
+        size="md"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-dark-500">
+            {pendingPurchases.length} student{pendingPurchases.length > 1 ? 's have' : ' has'} requested course access. Review and approve or reject.
+          </p>
+          <div className="max-h-80 overflow-y-auto space-y-3">
+            {pendingPurchases.slice(0, 10).map((p) => (
+              <div key={p._id} className="flex items-center gap-3 p-3 rounded-xl bg-dark-50 border border-dark-100">
+                <div className="w-9 h-9 rounded-full bg-primary-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
+                  {(p.userId?.firstName?.[0] || '?').toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-ink truncate">
+                    {p.userId?.firstName ? `${p.userId.firstName} ${p.userId.lastName}` : 'Unknown'}
+                  </p>
+                  <p className="text-xs text-dark-500 truncate">
+                    {p.courseId?.title || 'Unknown course'} — {p.broker === 'dma' ? 'DMA' : 'StarTrading'}
+                  </p>
+                </div>
+                <span className="text-xs font-semibold text-ink">{formatCurrency(p.amount)}</span>
+              </div>
+            ))}
+          </div>
+          <div className="flex items-center gap-3 pt-2">
+            <Link to="/admin/course-purchases" onClick={() => setPendingModalOpen(false)}>
+              <Button variant="primary">
+                Go to Purchases
+              </Button>
+            </Link>
+            <Button variant="outline" onClick={() => setPendingModalOpen(false)}>
+              Dismiss
+            </Button>
+          </div>
+        </div>
+      </Modal>
 
       {!loading && stats?.recentActivity && (
         <motion.div

@@ -1,8 +1,9 @@
 import { Link, useLocation, Outlet } from 'react-router-dom';
-import { useState } from 'react';
-import { FiMenu, FiX, FiLayout, FiUsers, FiCreditCard, FiBookOpen, FiTrendingUp, FiBell, FiLink2, FiAward, FiDollarSign, FiSettings, FiLogOut, FiMessageSquare, FiHelpCircle, FiFileText, FiEdit, FiBarChart2, FiHome, FiChevronLeft } from 'react-icons/fi';
+import { useState, useEffect, useRef } from 'react';
+import { FiMenu, FiX, FiLayout, FiUsers, FiCreditCard, FiBookOpen, FiTrendingUp, FiBell, FiLink2, FiAward, FiDollarSign, FiSettings, FiLogOut, FiMessageSquare, FiHelpCircle, FiFileText, FiEdit, FiBarChart2, FiHome, FiShoppingCart } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 import { getInitials } from '../../utils/helpers';
+import adminService from '../../services/adminService';
 import ThemeToggle from '../ui/ThemeToggle';
 
 const sidebarLinks = [
@@ -22,6 +23,7 @@ const sidebarLinks = [
   { path: '/admin/support', label: 'Support', icon: FiMessageSquare },
   { path: '/admin/reports', label: 'Reports', icon: FiBarChart2 },
   { path: '/admin/content', label: 'Website Content', icon: FiLayout },
+  { path: '/admin/course-purchases', label: 'Purchases', icon: FiShoppingCart },
   { path: '/admin/settings', label: 'Settings', icon: FiSettings },
 ];
 
@@ -35,8 +37,29 @@ const bottomNavLinks = [
 
 export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
   const { pathname } = useLocation();
   const { user, logout } = useAuth();
+  const prevCountRef = useRef(0);
+
+  useEffect(() => {
+    const fetchCount = async () => {
+      try {
+        const data = await adminService.getPendingPurchaseCount();
+        const count = data?.data?.count ?? 0;
+        setPendingCount(count);
+        if (count > prevCountRef.current && prevCountRef.current > 0) {
+          if (Notification.permission === 'granted') {
+            new Notification('New Purchase Request', { body: `${count} pending purchase request${count > 1 ? 's' : ''}` });
+          }
+        }
+        prevCountRef.current = count;
+      } catch {}
+    };
+    fetchCount();
+    const interval = setInterval(fetchCount, 15000);
+    return () => clearInterval(interval);
+  }, []);
 
   const getPageTitle = () => {
     const current = sidebarLinks.find(l => l.path === pathname);
@@ -84,6 +107,7 @@ export default function AdminLayout() {
           {sidebarLinks.map((link) => {
             const Icon = link.icon;
             const active = pathname === link.path;
+            const showBadge = link.path === '/admin/course-purchases' && pendingCount > 0;
             return (
               <Link
                 key={link.path}
@@ -103,7 +127,12 @@ export default function AdminLayout() {
                       : 'text-dark-400 group-hover:text-dark-600'
                   }`}
                 />
-                {link.label}
+                <span className="flex-1">{link.label}</span>
+                {showBadge && (
+                  <span className="flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-red-500 text-[11px] font-bold text-white leading-none">
+                    {pendingCount > 99 ? '99+' : pendingCount}
+                  </span>
+                )}
               </Link>
             );
           })}

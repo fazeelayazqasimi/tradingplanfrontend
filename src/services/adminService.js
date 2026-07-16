@@ -72,6 +72,7 @@ const adminService = {
   getWalletStats: (params) => unwrap(api.get('/wallets/admin/stats', { params })),
   creditWallet: (userId, data) => unwrap(api.post(`/wallets/${userId}/credit`, data)),
   getCoursePurchases: (params) => unwrap(api.get('/course-purchases/all', { params })),
+  getPendingPurchaseCount: () => unwrap(api.get('/course-purchases/pending-count')),
   approvePurchase: (id, data) => unwrap(api.put(`/course-purchases/${id}/approve`, data)),
   rejectPurchase: (id, data) => unwrap(api.put(`/course-purchases/${id}/reject`, data)),
 };
