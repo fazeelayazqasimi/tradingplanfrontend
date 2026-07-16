@@ -1,10 +1,13 @@
 import { Link, useLocation, Outlet } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
-import { FiMenu, FiX, FiLayout, FiUsers, FiCreditCard, FiBookOpen, FiTrendingUp, FiBell, FiLink2, FiAward, FiDollarSign, FiSettings, FiLogOut, FiMessageSquare, FiHelpCircle, FiFileText, FiEdit, FiBarChart2, FiHome, FiShoppingCart } from 'react-icons/fi';
+import { FiMenu, FiX, FiLayout, FiUsers, FiCreditCard, FiBookOpen, FiTrendingUp, FiBell, FiLink2, FiAward, FiDollarSign, FiSettings, FiLogOut, FiMessageSquare, FiHelpCircle, FiFileText, FiEdit, FiBarChart2, FiHome } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 import { getInitials } from '../../utils/helpers';
 import adminService from '../../services/adminService';
 import ThemeToggle from '../ui/ThemeToggle';
+import Modal from '../ui/Modal';
+import Button from '../ui/Button';
+import toast from 'react-hot-toast';
 
 const sidebarLinks = [
   { path: '/admin/dashboard', label: 'Dashboard', icon: FiLayout },
@@ -23,7 +26,6 @@ const sidebarLinks = [
   { path: '/admin/support', label: 'Support', icon: FiMessageSquare },
   { path: '/admin/reports', label: 'Reports', icon: FiBarChart2 },
   { path: '/admin/content', label: 'Website Content', icon: FiLayout },
-  { path: '/admin/course-purchases', label: 'Purchases', icon: FiShoppingCart },
   { path: '/admin/settings', label: 'Settings', icon: FiSettings },
 ];
 
@@ -38,17 +40,32 @@ const bottomNavLinks = [
 export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
+  const [pendingList, setPendingList] = useState([]);
+  const [pendingModalOpen, setPendingModalOpen] = useState(false);
   const { pathname } = useLocation();
   const { user, logout } = useAuth();
   const prevCountRef = useRef(0);
+  const notifiedRef = useRef(false);
+  const hasShownModalRef = useRef(false);
 
   useEffect(() => {
     const fetchCount = async () => {
       try {
-        const data = await adminService.getPendingPurchaseCount();
-        const count = data?.data?.count ?? 0;
+        const [countRes, listRes] = await Promise.allSettled([
+          adminService.getPendingPurchaseCount(),
+          adminService.getCoursePurchases({ status: 'pending', limit: 10, page: 1 }),
+        ]);
+        let count = 0;
+        if (countRes.status === 'fulfilled') count = countRes.value?.data?.count ?? 0;
         setPendingCount(count);
+
+        if (listRes.status === 'fulfilled') {
+          const list = listRes.value?.data || [];
+          setPendingList(list);
+        }
+
         if (count > prevCountRef.current && prevCountRef.current > 0) {
+          toast(`${count} pending purchase request${count > 1 ? 's' : ''}! Go to Subscriptions to approve.`, { icon: '🛒', duration: 6000 });
           if (Notification.permission === 'granted') {
             new Notification('New Purchase Request', { body: `${count} pending purchase request${count > 1 ? 's' : ''}` });
           }
@@ -57,9 +74,19 @@ export default function AdminLayout() {
       } catch {}
     };
     fetchCount();
-    const interval = setInterval(fetchCount, 15000);
+    const interval = setInterval(fetchCount, 20000);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    if (pendingCount > 0 && !hasShownModalRef.current) {
+      const timer = setTimeout(() => {
+        setPendingModalOpen(true);
+        hasShownModalRef.current = true;
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [pendingCount]);
 
   const getPageTitle = () => {
     const current = sidebarLinks.find(l => l.path === pathname);
@@ -107,7 +134,7 @@ export default function AdminLayout() {
           {sidebarLinks.map((link) => {
             const Icon = link.icon;
             const active = pathname === link.path;
-            const showBadge = link.path === '/admin/course-purchases' && pendingCount > 0;
+            const showBadge = link.path === '/admin/subscriptions' && pendingCount > 0;
             return (
               <Link
                 key={link.path}
@@ -209,6 +236,43 @@ export default function AdminLayout() {
       </nav>
 
       <ThemeToggle />
+
+      <Modal
+        isOpen={pendingModalOpen}
+        onClose={() => setPendingModalOpen(false)}
+        title="Pending Purchase Requests"
+        size="md"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-dark-500">
+            {pendingList.length} student{pendingList.length > 1 ? 's have' : ' has'} requested course access.
+          </p>
+          <div className="max-h-72 overflow-y-auto space-y-3">
+            {pendingList.slice(0, 10).map((p) => (
+              <div key={p._id} className="flex items-center gap-3 p-3 rounded-xl bg-dark-50 border border-dark-100">
+                <div className="w-9 h-9 rounded-full bg-primary-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
+                  {((p.userId?.firstName?.[0] || p.student?.firstName?.[0] || '?')).toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-ink truncate">
+                    {p.userId?.firstName ? `${p.userId.firstName} ${p.userId.lastName}` : p.student?.firstName ? `${p.student.firstName} ${p.student.lastName}` : 'Unknown'}
+                  </p>
+                  <p className="text-xs text-dark-500 truncate">
+                    {p.courseId?.title || 'Course'} — {p.broker === 'dma' ? 'DMA' : 'StarTrading'}
+                  </p>
+                </div>
+                <span className="text-xs font-semibold text-ink">${p.amount}</span>
+              </div>
+            ))}
+          </div>
+          <div className="flex items-center gap-3 pt-2">
+            <Link to="/admin/subscriptions" onClick={() => setPendingModalOpen(false)}>
+              <Button variant="primary">Go to Subscriptions</Button>
+            </Link>
+            <Button variant="outline" onClick={() => setPendingModalOpen(false)}>Dismiss</Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
