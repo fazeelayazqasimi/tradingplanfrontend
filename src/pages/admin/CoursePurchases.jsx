@@ -49,7 +49,7 @@ export default function CoursePurchases() {
         search: searchQuery,
         status: statusFilter,
         page: pagination.currentPage,
-        perPage: pagination.perPage,
+        limit: pagination.perPage,
       });
       pagination.setTotalItems(data.pagination?.total || 0);
       setPurchases(data.data || []);

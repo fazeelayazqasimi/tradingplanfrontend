@@ -33,16 +33,25 @@ const statusColor = (status) => {
   return 'neutral';
 };
 
-const getMemberName = (ref) =>
-  (ref.firstName ? `${ref.firstName} ${ref.lastName}` : null) ||
-  ref.name ||
-  ref.userName ||
-  `${ref.firstName || ''} ${ref.lastName || ''}`.trim() ||
-  'Unknown';
+const getUserObj = (ref) => ref.referredUserId || ref;
 
-const getMemberEmail = (ref) => ref.email || ref.userEmail || '';
+const getMemberName = (ref) => {
+  const u = getUserObj(ref);
+  return (u.firstName ? `${u.firstName} ${u.lastName}` : null) ||
+    u.name || u.userName ||
+    `${u.firstName || ''} ${u.lastName || ''}`.trim() ||
+    'Unknown';
+};
 
-const getMemberDate = (ref) => ref.joinedAt || ref.createdAt || ref.date;
+const getMemberEmail = (ref) => {
+  const u = getUserObj(ref);
+  return u.email || u.userEmail || '';
+};
+
+const getMemberDate = (ref) => {
+  const u = getUserObj(ref);
+  return u.joinedAt || u.createdAt || u.date || ref.createdAt;
+};
 
 const getInitials = (name) =>
   name
@@ -197,11 +206,17 @@ export default function TeamMembers() {
 
   const indirectMap = {};
   indirectReferrals.forEach((member) => {
-    const parentId =
-      member.referredBy || member.parentId || member.directReferrerId || member.referred_by;
-    if (parentId) {
-      if (!indirectMap[parentId]) indirectMap[parentId] = [];
-      indirectMap[parentId].push(member);
+    const parentUserId = member.referredUserId?.referredBy;
+    if (parentUserId) {
+      const directRef = directReferrals.find((dr) => {
+        const du = dr.referredUserId;
+        return du ? (du._id || du).toString() === parentUserId.toString() : false;
+      });
+      if (directRef) {
+        const parentKey = directRef._id || directRef.id;
+        if (!indirectMap[parentKey]) indirectMap[parentKey] = [];
+        indirectMap[parentKey].push(member);
+      }
     }
   });
 

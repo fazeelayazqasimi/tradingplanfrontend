@@ -304,8 +304,9 @@ export default function Referrals() {
                 ) : (
                   <div className="space-y-3">
                     {activeList.map((ref, idx) => {
-                      const name = (ref.firstName ? `${ref.firstName} ${ref.lastName}` : null) || ref.name || ref.userName || `${ref.firstName || ''} ${ref.lastName || ''}`.trim() || 'Unknown';
-                      const joinedDate = ref.joinedAt || ref.createdAt || ref.date;
+                      const u = ref.referredUserId || ref;
+                      const name = (u.firstName ? `${u.firstName} ${u.lastName}` : null) || u.name || u.userName || `${u.firstName || ''} ${u.lastName || ''}`.trim() || 'Unknown';
+                      const joinedDate = u.joinedAt || u.createdAt || u.date || ref.createdAt;
                       const status = ref.status || 'active';
                       const initials = name.split(' ').map((n) => n[0]).join('').toUpperCase().substring(0, 2);
 
