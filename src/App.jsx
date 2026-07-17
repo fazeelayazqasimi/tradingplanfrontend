@@ -16,6 +16,7 @@ import Login from './pages/website/Login';
 import Register from './pages/website/Register';
 import ForgotPassword from './pages/website/ForgotPassword';
 import ResetPassword from './pages/website/ResetPassword';
+import VerifyEmail from './pages/website/VerifyEmail';
 import Privacy from './pages/website/Privacy';
 import Terms from './pages/website/Terms';
 import OnsiteTraining from './pages/website/OnsiteTraining';
@@ -44,6 +45,7 @@ import AdminCertificates from './pages/admin/Certificates';
 import AdminWallets from './pages/admin/Wallets';
 import AdminDeposits from './pages/admin/Deposits';
 import AdminPaymentAccounts from './pages/admin/PaymentAccounts';
+import AdminCoupons from './pages/admin/Coupons';
 import AdminReports from './pages/admin/Reports';
 
 import StudentDashboard from './pages/student/Dashboard';
@@ -106,6 +108,7 @@ export const router = createBrowserRouter([
   { path: '/register', element: <GuestRoute><Register /></GuestRoute> },
   { path: '/forgot-password', element: <GuestRoute><ForgotPassword /></GuestRoute> },
   { path: '/reset-password/:token', element: <GuestRoute><ResetPassword /></GuestRoute> },
+  { path: '/verify-email/:token', element: <VerifyEmail /> },
   {
     path: '/admin',
     element: <ProtectedRoute role="admin"><AdminLayout /></ProtectedRoute>,
@@ -130,6 +133,7 @@ export const router = createBrowserRouter([
       { path: 'wallets', element: <AdminWallets /> },
       { path: 'deposits', element: <AdminDeposits /> },
       { path: 'payment-accounts', element: <AdminPaymentAccounts /> },
+      { path: 'coupons', element: <AdminCoupons /> },
       { path: 'reports', element: <AdminReports /> },
     ],
   },

@@ -11,6 +11,10 @@ import {
   FiRefreshCw,
   FiPlus,
   FiLayers,
+  FiCopy,
+  FiCheckCircle,
+  FiServer,
+  FiTag,
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
@@ -28,6 +32,7 @@ import walletService from '../../services/walletService';
 import studentService from '../../services/studentService';
 import depositService from '../../services/depositService';
 import paymentAccountService from '../../services/paymentAccountService';
+import couponService from '../../services/couponService';
 import { formatCurrency, formatDate, copyToClipboard } from '../../utils/helpers';
 import usePagination from '../../hooks/usePagination';
 
@@ -79,8 +84,16 @@ const PAYMENT_METHODS = [
   { value: 'mobile_money', label: 'Mobile Money' },
 ];
 
+const WALLET_TABS = [
+  { key: 'main', label: 'Main Wallet', icon: FiDollarSign },
+  { key: 'funding', label: 'Funding Wallet', icon: FiServer },
+  { key: 'ib', label: 'IB Wallet', icon: FiLayers },
+];
+
 export default function Wallet() {
+  const [walletTab, setWalletTab] = useState('main');
   const [wallet, setWallet] = useState(null);
+  const [allWallets, setAllWallets] = useState([]);
   const [stats, setStats] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -100,21 +113,34 @@ export default function Wallet() {
   const [formErrors, setFormErrors] = useState({});
 
   const [paymentAccounts, setPaymentAccounts] = useState([]);
-  const [depositForm, setDepositForm] = useState({ accountId: '', amount: '' });
+  const [depositForm, setDepositForm] = useState({ accountId: '', amount: '', paymentMethod: 'bank_transfer', coinType: '' });
   const [depositErrors, setDepositErrors] = useState({});
   const [depositHistory, setDepositHistory] = useState([]);
+  const [supportedCoins, setSupportedCoins] = useState({});
+  const [coinPayment, setCoinPayment] = useState(null);
+  const [showCoupon, setShowCoupon] = useState(false);
+  const [couponCode, setCouponCode] = useState('');
+  const [couponResult, setCouponResult] = useState(null);
 
   const { page, limit, nextPage, prevPage, goToPage } = usePagination(1, 10);
   const [totalPages, setTotalPages] = useState(1);
 
-  const fetchWallet = useCallback(async () => {
+  const fetchWallet = useCallback(async (type) => {
     try {
-      const res = await walletService.getWallet();
+      const res = await walletService.getWallet(type || walletTab);
       const data = res?.data?.data || res?.data || res;
       setWallet(data);
     } catch {
       toast.error('Failed to load wallet data');
     }
+  }, [walletTab]);
+
+  const fetchAllWallets = useCallback(async () => {
+    try {
+      const res = await walletService.getAllWallets();
+      const data = res?.data?.data || res?.data || [];
+      setAllWallets(Array.isArray(data) ? data : []);
+    } catch { /* silent */ }
   }, []);
 
   const fetchStats = useCallback(async () => {
@@ -149,12 +175,12 @@ export default function Wallet() {
     let cancelled = false;
     async function init() {
       setLoading(true);
-      await Promise.all([fetchWallet(), fetchStats()]);
+      await Promise.all([fetchWallet(walletTab), fetchStats(), fetchAllWallets()]);
       if (!cancelled) setLoading(false);
     }
     init();
     return () => { cancelled = true; };
-  }, [fetchWallet, fetchStats]);
+  }, [fetchWallet, fetchStats, fetchAllWallets, walletTab]);
 
   useEffect(() => {
     fetchTransactions();
@@ -176,16 +202,29 @@ export default function Wallet() {
     } catch { /* silent */ }
   }, []);
 
+  const fetchSupportedCoins = useCallback(async () => {
+    try {
+      const res = await depositService.getSupportedCoins();
+      const data = res?.data?.data?.supportedCoins || {};
+      setSupportedCoins(data);
+    } catch { /* silent */ }
+  }, []);
+
   useEffect(() => {
     fetchPaymentAccounts();
     fetchDepositHistory();
-  }, [fetchPaymentAccounts, fetchDepositHistory]);
+    fetchSupportedCoins();
+  }, [fetchPaymentAccounts, fetchDepositHistory, fetchSupportedCoins]);
 
   const validateDeposit = () => {
     const errors = {};
-    if (!depositForm.accountId) errors.accountId = 'Select a payment account';
     const amt = parseFloat(depositForm.amount);
     if (!depositForm.amount || isNaN(amt) || amt <= 0) errors.amount = 'Enter a valid amount';
+    if (depositForm.paymentMethod === 'crypto' || depositForm.paymentMethod === 'coin') {
+      if (!depositForm.coinType) errors.coinType = 'Select a coin type';
+    } else {
+      if (!depositForm.accountId) errors.accountId = 'Select a payment account';
+    }
     setDepositErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -194,19 +233,43 @@ export default function Wallet() {
     if (!validateDeposit()) return;
     setSubmitting(true);
     try {
-      await depositService.createDeposit({
-        accountId: depositForm.accountId,
+      const payload = {
         amount: parseFloat(depositForm.amount),
-      });
-      toast.success('Deposit request submitted! Admin will verify and approve.');
-      setShowDeposit(false);
-      setDepositForm({ accountId: '', amount: '' });
-      setDepositErrors({});
-      fetchDepositHistory();
+        paymentMethod: depositForm.paymentMethod,
+        walletType: walletTab,
+      };
+      if (depositForm.paymentMethod === 'crypto' || depositForm.paymentMethod === 'coin') {
+        payload.coinType = depositForm.coinType;
+      } else {
+        payload.accountId = depositForm.accountId;
+      }
+      const res = await depositService.createDeposit(payload);
+      if (depositForm.paymentMethod === 'crypto' || depositForm.paymentMethod === 'coin') {
+        setCoinPayment(res?.data?.data?.coinPayment || null);
+        toast.success('Coin deposit initiated! Send payment to the address below.');
+      } else {
+        toast.success('Deposit request submitted! Admin will verify and approve.');
+        setShowDeposit(false);
+        setDepositForm({ accountId: '', amount: '', paymentMethod: 'bank_transfer', coinType: '' });
+        setDepositErrors({});
+        fetchDepositHistory();
+      }
     } catch (err) {
       toast.error(err?.response?.data?.message || 'Failed to submit deposit request');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleValidateCoupon = async () => {
+    if (!couponCode.trim()) return toast.error('Enter a coupon code');
+    try {
+      const res = await couponService.validateCoupon({ code: couponCode, amount: wallet?.availableBalance || 0 });
+      setCouponResult(res?.data?.data || null);
+      toast.success('Coupon is valid!');
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Invalid coupon');
+      setCouponResult(null);
     }
   };
 
@@ -216,9 +279,10 @@ export default function Wallet() {
   };
 
   const handleRefresh = () => {
-    fetchWallet();
+    fetchWallet(walletTab);
     fetchStats();
     fetchTransactions();
+    fetchAllWallets();
     toast.success('Wallet data refreshed');
   };
 
@@ -375,14 +439,18 @@ export default function Wallet() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-ink">Wallet</h1>
-          <p className="mt-1 text-sm text-dark-500">Manage your finances and transactions</p>
+          <p className="mt-1 text-sm text-dark-500">Manage your finances, deposits, and withdrawals</p>
         </div>
         <div className="flex items-center gap-3">
+          <Button variant="outline" size="sm" onClick={() => { setShowCoupon(true); setCouponCode(''); setCouponResult(null); }}>
+            <FiTag size={16} />
+            Coupon
+          </Button>
           <Button variant="outline" size="sm" onClick={handleRefresh} disabled={loading || loadingTx}>
             <FiRefreshCw size={16} className={loading || loadingTx ? 'animate-spin' : ''} />
             Refresh
           </Button>
-          <Button variant="outline" size="sm" onClick={() => { setDepositForm({ accountId: '', amount: '' }); setDepositErrors({}); setShowDeposit(true); }}>
+          <Button variant="outline" size="sm" onClick={() => { setDepositForm({ accountId: '', amount: '', paymentMethod: 'bank_transfer', coinType: '' }); setCoinPayment(null); setDepositErrors({}); setShowDeposit(true); }}>
             <FiPlus size={16} />
             Deposit
           </Button>
@@ -391,6 +459,29 @@ export default function Wallet() {
             Withdraw
           </Button>
         </div>
+      </div>
+
+      {/* Wallet Type Tabs */}
+      <div className="flex gap-2 bg-dark-50 p-1.5 rounded-xl">
+        {WALLET_TABS.map((tab) => {
+          const Icon = tab.icon;
+          const w = allWallets.find(w => w.type === tab.key);
+          return (
+            <button
+              key={tab.key}
+              onClick={() => setWalletTab(tab.key)}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 flex-1 justify-center ${
+                walletTab === tab.key
+                  ? 'bg-white text-primary-600 shadow-sm border border-dark-100'
+                  : 'text-dark-500 hover:text-dark-700 hover:bg-white/50'
+              }`}
+            >
+              <Icon size={16} />
+              <span className="hidden sm:inline">{tab.label}</span>
+              {w && <span className="text-xs text-dark-400 ml-1">({formatCurrency(w.availableBalance || 0)})</span>}
+            </button>
+          );
+        })}
       </div>
 
       {loading ? (
@@ -625,69 +716,173 @@ export default function Wallet() {
         </Card>
       </motion.div>
 
-      <Modal isOpen={showDeposit} onClose={() => { setShowDeposit(false); setDepositErrors({}); }} title="Deposit to Wallet" size="md">
-        <div className="space-y-4">
-          <p className="text-sm text-dark-500">Select a payment account and enter the amount you want to deposit. Admin will verify and approve your request.</p>
-
-          {paymentAccounts.length === 0 ? (
-            <div className="p-6 text-center text-dark-400 text-sm bg-dark-50 rounded-xl">
-              No payment accounts available yet. Please contact admin.
+      <Modal isOpen={showDeposit} onClose={() => { setShowDeposit(false); setDepositErrors({}); setCoinPayment(null); }} title={`Deposit to ${WALLET_TABS.find(t => t.key === walletTab)?.label || 'Wallet'}`} size={coinPayment ? 'md' : 'lg'}>
+        {coinPayment ? (
+          <div className="space-y-4">
+            <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-center">
+              <FiCheckCircle size={32} className="mx-auto text-emerald-500 mb-2" />
+              <p className="text-sm font-semibold text-emerald-700">Deposit Initiated!</p>
+              <p className="text-xs text-emerald-600 mt-1">Send the exact amount to the address below</p>
             </div>
-          ) : (
-            <div className="space-y-3 max-h-60 overflow-y-auto">
-              {paymentAccounts.map((acc) => (
-                <label
-                  key={acc._id}
-                  className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
-                    depositForm.accountId === acc._id
-                      ? 'border-primary-500 bg-primary-50'
-                      : 'border-dark-100 bg-white hover:border-dark-300'
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="account"
-                    value={acc._id}
-                    checked={depositForm.accountId === acc._id}
-                    onChange={(e) => setDepositForm((p) => ({ ...p, accountId: e.target.value }))}
-                    className="sr-only"
-                  />
-                  <div className="w-10 h-10 rounded-xl bg-primary-100 text-primary-600 flex items-center justify-center shrink-0">
-                    <FiLayers size={18} />
+            <div className="space-y-3 p-4 rounded-xl bg-dark-50">
+              <div>
+                <p className="text-xs text-dark-500 font-medium mb-1">Coin / Network</p>
+                <p className="text-sm font-semibold text-ink">{coinPayment.coinName} ({coinPayment.network})</p>
+              </div>
+              <div>
+                <p className="text-xs text-dark-500 font-medium mb-1">Amount</p>
+                <p className="text-lg font-bold text-ink">{formatCurrency(coinPayment.amount)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-dark-500 font-medium mb-1">Deposit Address</p>
+                <div className="flex items-center gap-2 p-3 rounded-lg bg-white border border-dark-200">
+                  <code className="text-xs font-mono text-ink break-all flex-1">{coinPayment.depositAddress}</code>
+                  <button
+                    onClick={() => { copyToClipboard(coinPayment.depositAddress); toast.success('Address copied!'); }}
+                    className="p-1.5 rounded-lg hover:bg-dark-100 text-dark-500 shrink-0"
+                  >
+                    <FiCopy size={14} />
+                  </button>
+                </div>
+              </div>
+              <div>
+                <p className="text-xs text-dark-500 font-medium mb-1">Payment Reference</p>
+                <code className="text-xs font-mono text-primary-600">{coinPayment.paymentRef}</code>
+              </div>
+            </div>
+            <div className="p-3 rounded-xl bg-amber-50 border border-amber-200">
+              <p className="text-xs text-amber-700 font-medium">Important:</p>
+              <ul className="text-xs text-amber-600 mt-1 space-y-1 list-disc list-inside">
+                <li>Send only {coinPayment.coinName} on {coinPayment.network} network</li>
+                <li>Sending other coins may result in permanent loss</li>
+                <li>Minimum 1 network confirmation required</li>
+                <li>Your deposit will be credited after confirmation</li>
+              </ul>
+            </div>
+            <p className="text-xs text-dark-400 text-center">Expires: {new Date(coinPayment.expiresAt).toLocaleString()}</p>
+            <div className="flex justify-end gap-3 pt-2">
+              <Button variant="outline" onClick={() => { setShowDeposit(false); setCoinPayment(null); setDepositForm({ accountId: '', amount: '', paymentMethod: 'bank_transfer', coinType: '' }); }}>Close</Button>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <p className="text-sm text-dark-500">Choose a payment method and enter the amount to deposit into your <strong>{WALLET_TABS.find(t => t.key === walletTab)?.label}</strong>.</p>
+
+            <Select
+              label="Payment Method"
+              options={[
+                { value: 'bank_transfer', label: 'Bank Transfer' },
+                { value: 'crypto', label: 'Cryptocurrency (USDT/BTC/ETH)' },
+                { value: 'coin', label: 'Coin Payment' },
+              ]}
+              value={depositForm.paymentMethod}
+              onChange={(e) => setDepositForm((p) => ({ ...p, paymentMethod: e.target.value, accountId: '', coinType: '' }))}
+            />
+
+            {(depositForm.paymentMethod === 'crypto' || depositForm.paymentMethod === 'coin') ? (
+              <Select
+                label="Select Coin"
+                options={[
+                  { value: '', label: 'Select a coin...' },
+                  ...Object.entries(supportedCoins).map(([key, coin]) => ({
+                    value: key,
+                    label: `${coin.name} (${coin.network})`
+                  }))
+                ]}
+                value={depositForm.coinType}
+                onChange={(e) => setDepositForm((p) => ({ ...p, coinType: e.target.value }))}
+                error={depositErrors.coinType}
+              />
+            ) : (
+              <>
+                {paymentAccounts.length === 0 ? (
+                  <div className="p-6 text-center text-dark-400 text-sm bg-dark-50 rounded-xl">
+                    No payment accounts available yet. Please contact admin.
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-ink">{acc.bankName}</p>
-                    <p className="text-xs text-dark-400">{acc.accountHolderName} &middot; {acc.accountNumber}</p>
-                    {acc.iban && <p className="text-xs text-dark-400">IBAN: {acc.iban}</p>}
+                ) : (
+                  <div className="space-y-3 max-h-60 overflow-y-auto">
+                    {paymentAccounts.map((acc) => (
+                      <label
+                        key={acc._id}
+                        className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
+                          depositForm.accountId === acc._id
+                            ? 'border-primary-500 bg-primary-50'
+                            : 'border-dark-100 bg-white hover:border-dark-300'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="account"
+                          value={acc._id}
+                          checked={depositForm.accountId === acc._id}
+                          onChange={(e) => setDepositForm((p) => ({ ...p, accountId: e.target.value }))}
+                          className="sr-only"
+                        />
+                        <div className="w-10 h-10 rounded-xl bg-primary-100 text-primary-600 flex items-center justify-center shrink-0">
+                          <FiLayers size={18} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-ink">{acc.bankName}</p>
+                          <p className="text-xs text-dark-400">{acc.accountHolderName} &middot; {acc.accountNumber}</p>
+                          {acc.iban && <p className="text-xs text-dark-400">IBAN: {acc.iban}</p>}
+                        </div>
+                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                          depositForm.accountId === acc._id ? 'border-primary-500' : 'border-dark-300'
+                        }`}>
+                          {depositForm.accountId === acc._id && <div className="w-2.5 h-2.5 rounded-full bg-primary-500" />}
+                        </div>
+                      </label>
+                    ))}
                   </div>
-                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                    depositForm.accountId === acc._id ? 'border-primary-500' : 'border-dark-300'
-                  }`}>
-                    {depositForm.accountId === acc._id && <div className="w-2.5 h-2.5 rounded-full bg-primary-500" />}
-                  </div>
-                </label>
-              ))}
+                )}
+                {depositErrors.accountId && <p className="text-xs text-red-500">{depositErrors.accountId}</p>}
+              </>
+            )}
+
+            <Input
+              label="Amount ($)"
+              type="number"
+              placeholder="Enter amount to deposit"
+              icon={FiDollarSign}
+              value={depositForm.amount}
+              onChange={(e) => setDepositForm((p) => ({ ...p, amount: e.target.value }))}
+              error={depositErrors.amount}
+              min="1"
+              step="0.01"
+            />
+
+            <div className="flex justify-end gap-3 pt-2">
+              <Button variant="outline" onClick={() => { setShowDeposit(false); setDepositErrors({}); setCoinPayment(null); }}>Cancel</Button>
+              <Button onClick={handleDeposit} loading={submitting} disabled={(depositForm.paymentMethod !== 'crypto' && depositForm.paymentMethod !== 'coin' && paymentAccounts.length === 0)}>
+                {depositForm.paymentMethod === 'crypto' || depositForm.paymentMethod === 'coin' ? 'Generate Payment' : 'Submit Deposit'}
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      <Modal isOpen={showCoupon} onClose={() => { setShowCoupon(false); setCouponResult(null); }} title="Apply Coupon / PIN" size="sm">
+        <div className="space-y-4">
+          <p className="text-sm text-dark-500">Enter your coupon code or PIN to get a discount or credit.</p>
+          <Input
+            label="Coupon Code / PIN"
+            placeholder="Enter code..."
+            icon={FiTag}
+            value={couponCode}
+            onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+          />
+          {couponResult && (
+            <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200">
+              <p className="text-sm font-semibold text-emerald-700">Coupon Applied!</p>
+              <p className="text-xs text-emerald-600 mt-1">
+                Discount: {formatCurrency(couponResult.discount)} | Final: {formatCurrency(couponResult.finalAmount)}
+              </p>
+              <p className="text-xs text-emerald-500 mt-0.5">{couponResult.coupon.description || ''}</p>
             </div>
           )}
-          {depositErrors.accountId && <p className="text-xs text-red-500">{depositErrors.accountId}</p>}
-
-          <Input
-            label="Amount ($)"
-            type="number"
-            placeholder="Enter amount to deposit"
-            icon={FiDollarSign}
-            value={depositForm.amount}
-            onChange={(e) => setDepositForm((p) => ({ ...p, amount: e.target.value }))}
-            error={depositErrors.amount}
-            min="1"
-            step="0.01"
-          />
-
           <div className="flex justify-end gap-3 pt-2">
-            <Button variant="outline" onClick={() => { setShowDeposit(false); setDepositErrors({}); }}>Cancel</Button>
-            <Button onClick={handleDeposit} loading={submitting} disabled={paymentAccounts.length === 0}>
-              Submit Deposit
-            </Button>
+            <Button variant="outline" onClick={() => { setShowCoupon(false); setCouponResult(null); }}>Close</Button>
+            <Button onClick={handleValidateCoupon} disabled={!couponCode.trim()}>Validate</Button>
           </div>
         </div>
       </Modal>
