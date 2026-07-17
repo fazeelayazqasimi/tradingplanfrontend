@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FiUsers, FiDollarSign, FiClock, FiSearch, FiEye, FiX } from 'react-icons/fi';
+import { FiUsers, FiDollarSign, FiClock, FiSearch, FiEye, FiX, FiTrash2 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
@@ -40,6 +40,7 @@ export default function Referrals() {
   const [detailModal, setDetailModal] = useState(null);
   const [detailData, setDetailData] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
   const { page, perPage, setPage, total, setTotal } = usePagination(1, 10);
 
   const fetchReferrals = async () => {
@@ -78,6 +79,21 @@ export default function Referrals() {
     e.preventDefault();
     setPage(1);
     fetchReferrals();
+  };
+
+  const handleDelete = async (referral) => {
+    if (!window.confirm('Delete this referral record? This cannot be undone.')) return;
+    const refId = getRefId(referral);
+    try {
+      setDeletingId(refId);
+      await adminService.deleteReferral(refId);
+      toast.success('Referral deleted');
+      setReferrals((prev) => prev.filter((r) => getRefId(r) !== refId));
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to delete');
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   const openDetail = async (referral) => {
@@ -153,13 +169,21 @@ export default function Referrals() {
       key: 'actions',
       header: '',
       render: (_, row) => (
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-1">
           <button
             onClick={() => openDetail(row)}
             className="rounded-xl p-2 text-dark-400 hover:bg-dark-50 hover:text-primary-600 transition-colors"
             title="View details"
           >
             <FiEye size={16} />
+          </button>
+          <button
+            onClick={() => handleDelete(row)}
+            disabled={deletingId === getRefId(row)}
+            className="rounded-xl p-2 text-dark-400 hover:bg-red-50 hover:text-red-600 transition-colors disabled:opacity-50"
+            title="Delete"
+          >
+            <FiTrash2 size={16} />
           </button>
         </div>
       ),

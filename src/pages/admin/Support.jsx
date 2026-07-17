@@ -11,6 +11,7 @@ import {
   FiCheckCircle,
   FiAlertTriangle,
   FiUserPlus,
+  FiTrash2,
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Button from '../../components/ui/Button';
@@ -85,6 +86,7 @@ export default function Support() {
   const [updating, setUpdating] = useState(false);
   const [assignTo, setAssignTo] = useState('');
   const [showAssign, setShowAssign] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
 
   const fetchTickets = useCallback(async () => {
     setLoading(true);
@@ -115,6 +117,21 @@ export default function Support() {
   const handlePriorityFilter = (value) => {
     setPriorityFilter(value);
     setPage(1);
+  };
+
+  const handleDelete = async (ticket) => {
+    if (!window.confirm('Delete this ticket? This cannot be undone.')) return;
+    const ticketId = ticket._id || ticket.id;
+    try {
+      setDeletingId(ticketId);
+      await adminService.deleteTicket(ticketId);
+      toast.success('Ticket deleted');
+      setTickets((prev) => prev.filter((t) => (t._id || t.id) !== ticketId));
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to delete ticket');
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   const openDetail = async (ticket) => {
@@ -253,13 +270,21 @@ export default function Support() {
     {
       header: '',
       accessor: (row) => (
-        <div className="flex items-center justify-end">
+        <div className="flex items-center justify-end gap-1">
           <button
             onClick={() => openDetail(row)}
             className="p-2 rounded-lg text-dark-400 hover:text-primary-500 hover:bg-primary-50 transition-colors"
             title="View conversation"
           >
             <FiEye size={15} />
+          </button>
+          <button
+            onClick={() => handleDelete(row)}
+            disabled={deletingId === (row._id || row.id)}
+            className="p-2 rounded-lg text-dark-400 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50"
+            title="Delete ticket"
+          >
+            <FiTrash2 size={15} />
           </button>
         </div>
       ),

@@ -11,6 +11,7 @@ import {
   FiUser,
   FiSave,
   FiShoppingCart,
+  FiTrash2,
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Button from '../../components/ui/Button';
@@ -133,6 +134,7 @@ export default function Subscriptions() {
   const [editingSub, setEditingSub] = useState(null);
   const [editForm, setEditForm] = useState({});
   const [editSaving, setEditSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
 
   const pagination = usePagination({ totalItems: items.length, perPage: 10 });
 
@@ -218,6 +220,25 @@ export default function Subscriptions() {
     }
   };
 
+  const handleDelete = async (row) => {
+    if (!window.confirm(`Delete this ${row._type === 'purchase' ? 'purchase' : 'subscription'}? This cannot be undone.`)) return;
+    const rowId = getSubId(row);
+    try {
+      setDeletingId(rowId);
+      if (row._type === 'purchase') {
+        await adminService.deletePurchase(rowId);
+      } else {
+        await adminService.deleteSubscription(rowId);
+      }
+      toast.success('Deleted successfully');
+      setItems((prev) => prev.filter((x) => getSubId(x) !== rowId));
+    } catch (err) {
+      toast.error(err.response?.data?.message || err.message || 'Failed to delete');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   const startEdit = (row) => {
     setEditingSub(row);
     setEditForm({
@@ -292,6 +313,14 @@ export default function Subscriptions() {
               </button>
             </>
           )}
+          <button
+            onClick={() => handleDelete(row)}
+            disabled={deletingId === rowId}
+            className="rounded-xl p-2 text-dark-400 hover:bg-red-50 hover:text-red-600 transition-colors disabled:opacity-50"
+            title="Delete"
+          >
+            <FiTrash2 className="h-4 w-4" />
+          </button>
         </div>
       );
     },

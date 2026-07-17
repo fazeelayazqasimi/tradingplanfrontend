@@ -83,5 +83,14 @@ const adminService = {
   getPendingPurchaseCount: () => unwrap(api.get('/course-purchases/pending-count')),
   approvePurchase: (id, data) => unwrap(api.put(`/course-purchases/${id}/approve`, data)),
   rejectPurchase: (id, data) => unwrap(api.put(`/course-purchases/${id}/reject`, data)),
+  deletePurchase: (id) => unwrap(api.delete(`/course-purchases/${id}`)),
+  deleteUser: (id) => unwrap(api.delete(`/users/${id}`)),
+  deleteSubscription: (id) => unwrap(api.delete(`/subscriptions/${id}`)),
+  deleteWithdrawal: (id) => unwrap(api.delete(`/withdrawals/${id}`)),
+  deleteRank: (id) => unwrap(api.delete(`/ranks/${id}`)),
+  deleteTicket: (id) => unwrap(api.delete(`/support/${id}`)),
+  deleteReferral: (id) => unwrap(api.delete(`/referrals/${id}`)),
+  deleteWallet: (id) => unwrap(api.delete(`/wallets/${id}`)),
+  deleteDeposit: (id) => unwrap(api.delete(`/deposits/${id}`)),
 };
 export default adminService;

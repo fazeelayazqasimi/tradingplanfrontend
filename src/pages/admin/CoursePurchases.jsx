@@ -8,6 +8,7 @@ import {
   FiUser,
   FiBookOpen,
   FiDollarSign,
+  FiTrash2,
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Button from '../../components/ui/Button';
@@ -39,6 +40,7 @@ export default function CoursePurchases() {
   const [selectedPurchase, setSelectedPurchase] = useState(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [processingId, setProcessingId] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
 
   const pagination = usePagination({ totalItems: purchases.length, perPage: 10 });
 
@@ -86,6 +88,22 @@ export default function CoursePurchases() {
       toast.error(err.response?.data?.message || err.message || 'Failed to approve');
     } finally {
       setProcessingId(null);
+    }
+  };
+
+  const handleDelete = async (p) => {
+    if (!window.confirm('Delete this purchase? This cannot be undone.')) return;
+    const pid = getId(p);
+    try {
+      setDeletingId(pid);
+      await adminService.deletePurchase(pid);
+      toast.success('Purchase deleted');
+      setPurchases((prev) => prev.filter((x) => getId(x) !== pid));
+      pagination.setTotalItems((prev) => Math.max(0, prev - 1));
+    } catch (err) {
+      toast.error(err.response?.data?.message || err.message || 'Failed to delete');
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -187,7 +205,7 @@ export default function CoursePurchases() {
           >
             <FiEye className="h-4 w-4" />
           </button>
-          {row.status === 'pending' && (
+            {row.status === 'pending' && (
             <>
               <button
                 onClick={() => handleApprove(row)}
@@ -207,6 +225,14 @@ export default function CoursePurchases() {
               </button>
             </>
           )}
+          <button
+            onClick={() => handleDelete(row)}
+            disabled={deletingId === rowId}
+            className="rounded-xl p-2 text-dark-400 hover:bg-red-50 hover:text-red-600 transition-colors disabled:opacity-50"
+            title="Delete"
+          >
+            <FiTrash2 className="h-4 w-4" />
+          </button>
         </div>
       );
     },

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { FiSearch, FiCheck, FiX, FiEye, FiDollarSign, FiClock, FiCheckCircle, FiXCircle } from 'react-icons/fi';
+import { FiSearch, FiCheck, FiX, FiEye, FiDollarSign, FiClock, FiCheckCircle, FiXCircle, FiTrash2 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
@@ -24,6 +24,7 @@ export default function Deposits() {
   const [detailOpen, setDetailOpen] = useState(false);
   const [processingId, setProcessingId] = useState(null);
   const [rejectNote, setRejectNote] = useState('');
+  const [deletingId, setDeletingId] = useState(null);
 
   const pagination = usePagination({ totalItems: 0, perPage: 10 });
 
@@ -58,6 +59,20 @@ export default function Deposits() {
       toast.error(err?.response?.data?.message || 'Failed to approve');
     } finally {
       setProcessingId(null);
+    }
+  };
+
+  const handleDelete = async (deposit) => {
+    if (!window.confirm('Delete this deposit record? This cannot be undone.')) return;
+    try {
+      setDeletingId(deposit._id);
+      await adminService.deleteDeposit(deposit._id);
+      toast.success('Deposit deleted');
+      fetchDeposits();
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Failed to delete');
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -140,6 +155,9 @@ export default function Deposits() {
               </button>
             </>
           )}
+          <button onClick={() => handleDelete(row)} disabled={deletingId === row._id} className="rounded-xl p-2 text-dark-400 hover:bg-red-50 hover:text-red-600 transition-colors disabled:opacity-50" title="Delete">
+            <FiTrash2 size={15} />
+          </button>
         </div>
       ),
     },

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FiCheck, FiX, FiDollarSign, FiCreditCard, FiEye, FiFilter } from 'react-icons/fi';
+import { FiCheck, FiX, FiDollarSign, FiCreditCard, FiEye, FiFilter, FiTrash2 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
@@ -33,6 +33,7 @@ export default function Withdrawals() {
   const [statusFilter, setStatusFilter] = useState('');
   const [detailModal, setDetailModal] = useState(null);
   const [processing, setProcessing] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
   const { page, perPage, setPage, total, setTotal } = usePagination(1, 10);
 
   const fetchWithdrawals = async () => {
@@ -82,6 +83,21 @@ export default function Withdrawals() {
       toast.error(err.response?.data?.message || 'Failed to reject');
     } finally {
       setProcessing(null);
+    }
+  };
+
+  const handleDelete = async (row) => {
+    if (!window.confirm('Delete this withdrawal request? This cannot be undone.')) return;
+    const id = row.id || row._id;
+    try {
+      setDeletingId(id);
+      await adminService.deleteWithdrawal(id);
+      toast.success('Withdrawal deleted');
+      fetchWithdrawals();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to delete');
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -179,6 +195,14 @@ export default function Withdrawals() {
                 <FiDollarSign size={15} />
               </button>
             )}
+            <button
+              onClick={() => handleDelete(row)}
+              disabled={deletingId === (row.id || row._id)}
+              className="rounded-xl p-2 text-dark-400 hover:bg-red-50 hover:text-red-600 transition-colors disabled:opacity-50"
+              title="Delete"
+            >
+              <FiTrash2 size={15} />
+            </button>
           </div>
         );
       },

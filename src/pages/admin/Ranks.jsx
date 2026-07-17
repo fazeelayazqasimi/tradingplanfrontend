@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FiEdit2, FiPlus, FiAward, FiTrendingUp, FiPercent, FiUsers } from 'react-icons/fi';
+import { FiEdit2, FiPlus, FiAward, FiTrendingUp, FiPercent, FiUsers, FiTrash2 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
@@ -36,6 +36,7 @@ export default function Ranks() {
   const [editData, setEditData] = useState(emptyRank);
   const [editingRankId, setEditingRankId] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
 
   const fetchRanks = async () => {
     setLoading(true);
@@ -62,6 +63,22 @@ export default function Ranks() {
     fetchRanks();
     fetchDistribution();
   }, []);
+
+  const handleDelete = async (rank) => {
+    if (!window.confirm(`Delete rank "${rank.name}"? This cannot be undone.`)) return;
+    const rankId = rank.id || rank._id;
+    try {
+      setDeletingId(rankId);
+      await adminService.deleteRank(rankId);
+      toast.success('Rank deleted');
+      fetchRanks();
+      fetchDistribution();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to delete rank');
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   const openEdit = (rank) => {
     setEditingRankId(rank.id || rank._id || null);
@@ -157,6 +174,14 @@ export default function Ranks() {
                     title="Edit rank"
                   >
                     <FiEdit2 size={15} />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(rank)}
+                    disabled={deletingId === (rank.id || rank._id)}
+                    className="p-2 rounded-xl text-dark-400 hover:bg-red-50 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-all disabled:opacity-50"
+                    title="Delete rank"
+                  >
+                    <FiTrash2 size={15} />
                   </button>
                 </div>
                 <h3 className="text-lg font-bold text-ink">{rank.name}</h3>

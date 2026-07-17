@@ -7,6 +7,7 @@ import {
   FiClock,
   FiTrendingUp,
   FiPlus,
+  FiTrash2,
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Button from '../../components/ui/Button';
@@ -164,6 +165,7 @@ export default function Wallets() {
   const [form, setForm] = useState(defaultForm);
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
+  const [deletingId, setDeletingId] = useState(null);
 
   const pagination = usePagination({ totalItems: wallets.length, perPage: 10 });
 
@@ -207,6 +209,27 @@ export default function Wallets() {
   const handleSearch = (e) => {
     e.preventDefault();
     pagination.goToPage(1);
+  };
+
+  const handleDelete = async (wallet) => {
+    if (!window.confirm('Delete this wallet? This will also delete all transactions. Cannot be undone.')) return;
+    const walletId = wallet._id || wallet.id;
+    const walletUserId = wallet.user?.id || wallet.userId;
+    try {
+      setDeletingId(walletId);
+      if (walletUserId) {
+        await adminService.deleteWallet(walletId);
+      } else {
+        await adminService.deleteWallet(walletId);
+      }
+      toast.success('Wallet deleted');
+      setWallets((prev) => prev.filter((w) => (w._id || w.id) !== walletId));
+      pagination.setTotalItems((prev) => Math.max(0, prev - 1));
+    } catch (err) {
+      toast.error(err.response?.data?.message || err.message || 'Failed to delete wallet');
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   const handleOpenCredit = (wallet) => {
@@ -259,18 +282,29 @@ export default function Wallets() {
   const actionColumn = {
     key: 'actions',
     header: 'Actions',
-    width: 'w-24',
-    render: (_, row) => (
-      <div className="flex items-center gap-1">
-        <button
-          onClick={() => handleOpenCredit(row)}
-          className="rounded-xl p-2 text-dark-400 hover:bg-emerald-50 hover:text-emerald-600 transition-all duration-200"
-          title="Credit Wallet"
-        >
-          <FiPlus className="h-4 w-4" />
-        </button>
-      </div>
-    ),
+    width: 'w-32',
+    render: (_, row) => {
+      const rowId = row._id || row.id;
+      return (
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => handleOpenCredit(row)}
+            className="rounded-xl p-2 text-dark-400 hover:bg-emerald-50 hover:text-emerald-600 transition-all duration-200"
+            title="Credit Wallet"
+          >
+            <FiPlus className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => handleDelete(row)}
+            disabled={deletingId === rowId}
+            className="rounded-xl p-2 text-dark-400 hover:bg-red-50 hover:text-red-600 transition-all duration-200 disabled:opacity-50"
+            title="Delete Wallet"
+          >
+            <FiTrash2 className="h-4 w-4" />
+          </button>
+        </div>
+      );
+    },
   };
 
   const allColumns = [...columns, actionColumn];

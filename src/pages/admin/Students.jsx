@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { FiSearch, FiEye, FiUserX, FiUserCheck, FiMail, FiPhone, FiCalendar } from 'react-icons/fi';
+import { FiSearch, FiEye, FiUserX, FiUserCheck, FiMail, FiPhone, FiCalendar, FiTrash2 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Button from '../../components/ui/Button';
 import DataTable from '../../components/ui/DataTable';
@@ -88,6 +88,7 @@ export default function Students() {
   const [detailOpen, setDetailOpen] = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
   const [togglingId, setTogglingId] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
 
   const pagination = usePagination({ totalItems: students.length, perPage: 10 });
 
@@ -123,6 +124,22 @@ export default function Students() {
     setDetailOpen(true);
   };
 
+  const handleDelete = async (student) => {
+    if (!window.confirm(`Delete student "${student.firstName} ${student.lastName}"? This cannot be undone.`)) return;
+    const studentId = getStudentId(student);
+    try {
+      setDeletingId(studentId);
+      await adminService.deleteUser(studentId);
+      toast.success('Student deleted successfully');
+      setStudents((prev) => prev.filter((s) => getStudentId(s) !== studentId));
+      pagination.setTotalItems((prev) => Math.max(0, prev - 1));
+    } catch (err) {
+      toast.error(err.response?.data?.message || err.message || 'Failed to delete student');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   const handleToggleActive = async (student) => {
     const studentId = getStudentId(student);
     try {
@@ -146,7 +163,7 @@ export default function Students() {
   const actionColumn = {
     key: 'actions',
     header: 'Actions',
-    width: 'w-24',
+    width: 'w-32',
     render: (_, row) => {
       const rowId = getStudentId(row);
       const isActive = row.isActive !== false;
@@ -174,6 +191,14 @@ export default function Students() {
             ) : (
               <FiUserCheck className="h-4 w-4" />
             )}
+          </button>
+          <button
+            onClick={() => handleDelete(row)}
+            disabled={deletingId === rowId}
+            className="rounded-xl p-2 text-dark-400 hover:bg-red-50 hover:text-red-600 transition-all duration-200 disabled:opacity-50"
+            title="Delete"
+          >
+            <FiTrash2 className="h-4 w-4" />
           </button>
         </div>
       );
