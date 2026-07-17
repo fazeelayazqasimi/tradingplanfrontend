@@ -13,6 +13,7 @@ import {
 import Skeleton from '../../components/ui/Skeleton';
 import adminService from '../../services/adminService';
 import { formatCurrency, formatDate } from '../../utils/helpers';
+import SystemFlow from '../../components/website/SystemFlow';
 
 const statCards = [
   {
@@ -228,6 +229,12 @@ export default function Dashboard() {
           </div>
         </motion.div>
       )}
+
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="mt-8">
+        <Card className="p-6">
+          <SystemFlow compact />
+        </Card>
+      </motion.div>
     </div>
   );
 }

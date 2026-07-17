@@ -42,6 +42,8 @@ import AdminAssignments from './pages/admin/Assignments';
 import AdminQuizzes from './pages/admin/Quizzes';
 import AdminCertificates from './pages/admin/Certificates';
 import AdminWallets from './pages/admin/Wallets';
+import AdminDeposits from './pages/admin/Deposits';
+import AdminPaymentAccounts from './pages/admin/PaymentAccounts';
 import AdminReports from './pages/admin/Reports';
 
 import StudentDashboard from './pages/student/Dashboard';
@@ -126,6 +128,8 @@ export const router = createBrowserRouter([
       { path: 'quizzes', element: <AdminQuizzes /> },
       { path: 'certificates', element: <AdminCertificates /> },
       { path: 'wallets', element: <AdminWallets /> },
+      { path: 'deposits', element: <AdminDeposits /> },
+      { path: 'payment-accounts', element: <AdminPaymentAccounts /> },
       { path: 'reports', element: <AdminReports /> },
     ],
   },

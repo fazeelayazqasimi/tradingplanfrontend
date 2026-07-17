@@ -1,6 +1,6 @@
 import { Link, useLocation, Outlet } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
-import { FiMenu, FiX, FiLayout, FiUsers, FiCreditCard, FiBookOpen, FiTrendingUp, FiBell, FiLink2, FiAward, FiDollarSign, FiSettings, FiLogOut, FiMessageSquare, FiHelpCircle, FiFileText, FiEdit, FiBarChart2, FiHome } from 'react-icons/fi';
+import { FiMenu, FiX, FiLayout, FiUsers, FiCreditCard, FiBookOpen, FiTrendingUp, FiBell, FiLink2, FiAward, FiDollarSign, FiSettings, FiLogOut, FiMessageSquare, FiHelpCircle, FiFileText, FiEdit, FiBarChart2, FiHome, FiBank, FiDownload } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 import { getInitials } from '../../utils/helpers';
 import adminService from '../../services/adminService';
@@ -22,6 +22,8 @@ const sidebarLinks = [
   { path: '/admin/ranks', label: 'Ranks', icon: FiAward },
   { path: '/admin/withdrawals', label: 'Withdrawals', icon: FiDollarSign },
   { path: '/admin/wallets', label: 'Wallets', icon: FiDollarSign },
+  { path: '/admin/deposits', label: 'Deposits', icon: FiDownload },
+  { path: '/admin/payment-accounts', label: 'Payment Accounts', icon: FiBank },
   { path: '/admin/certificates', label: 'Certificates', icon: FiFileText },
   { path: '/admin/support', label: 'Support', icon: FiMessageSquare },
   { path: '/admin/reports', label: 'Reports', icon: FiBarChart2 },
@@ -42,18 +44,19 @@ export default function AdminLayout() {
   const [pendingCount, setPendingCount] = useState(0);
   const [pendingList, setPendingList] = useState([]);
   const [pendingModalOpen, setPendingModalOpen] = useState(false);
+  const [pendingDeposits, setPendingDeposits] = useState(0);
   const { pathname } = useLocation();
   const { user, logout } = useAuth();
   const prevCountRef = useRef(0);
-  const notifiedRef = useRef(false);
   const hasShownModalRef = useRef(false);
 
   useEffect(() => {
     const fetchCount = async () => {
       try {
-        const [countRes, listRes] = await Promise.allSettled([
+        const [countRes, listRes, depositRes] = await Promise.allSettled([
           adminService.getPendingPurchaseCount(),
           adminService.getCoursePurchases({ status: 'pending', limit: 10, page: 1 }),
+          adminService.getAllDeposits({ status: 'pending', perPage: 1 }),
         ]);
         let count = 0;
         if (countRes.status === 'fulfilled') count = countRes.value?.data?.count ?? 0;
@@ -71,6 +74,11 @@ export default function AdminLayout() {
           }
         }
         prevCountRef.current = count;
+
+        const depositData = depositRes.value;
+        if (depositRes.status === 'fulfilled') {
+          setPendingDeposits(depositData?.pagination?.total || 0);
+        }
       } catch {}
     };
     fetchCount();
@@ -134,7 +142,7 @@ export default function AdminLayout() {
           {sidebarLinks.map((link) => {
             const Icon = link.icon;
             const active = pathname === link.path;
-            const showBadge = link.path === '/admin/subscriptions' && pendingCount > 0;
+            const showBadge = (link.path === '/admin/subscriptions' && pendingCount > 0) || (link.path === '/admin/deposits' && pendingDeposits > 0);
             return (
               <Link
                 key={link.path}
@@ -157,7 +165,7 @@ export default function AdminLayout() {
                 <span className="flex-1">{link.label}</span>
                 {showBadge && (
                   <span className="flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-red-500 text-[11px] font-bold text-white leading-none">
-                    {pendingCount > 99 ? '99+' : pendingCount}
+                    {link.path === '/admin/subscriptions' ? (pendingCount > 99 ? '99+' : pendingCount) : (pendingDeposits > 99 ? '99+' : pendingDeposits)}
                   </span>
                 )}
               </Link>

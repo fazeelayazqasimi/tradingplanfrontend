@@ -25,6 +25,7 @@ import courseService from '../../services/courseService';
 import signalService from '../../services/signalService';
 import { useAuth } from '../../context/AuthContext';
 import { formatCurrency, formatDate, getInitials } from '../../utils/helpers';
+import SystemFlow from '../../components/website/SystemFlow';
 
 const container = {
   hidden: { opacity: 0 },
@@ -512,6 +513,11 @@ export default function Dashboard() {
         </motion.div>
       </div>
 
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="mt-4">
+        <Card className="p-5">
+          <SystemFlow compact />
+        </Card>
+      </motion.div>
     </div>
   );
 }

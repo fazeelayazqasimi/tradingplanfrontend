@@ -7,13 +7,17 @@ import {
   FiX,
   FiRefreshCw,
   FiCalendar,
+  FiDollarSign,
+  FiShield,
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 import Skeleton from '../../components/ui/Skeleton';
+import Modal from '../../components/ui/Modal';
 import studentService from '../../services/studentService';
+import walletService from '../../services/walletService';
 import { formatCurrency, formatDate } from '../../utils/helpers';
 
 const container = {
@@ -62,6 +66,9 @@ export default function Subscription() {
   const [loading, setLoading] = useState(true);
   const [subscribing, setSubscribing] = useState(null);
   const [cancelling, setCancelling] = useState(false);
+  const [wallet, setWallet] = useState(null);
+  const [confirmPlan, setConfirmPlan] = useState(null);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const fetchSubscription = useCallback(async () => {
     try {
@@ -73,16 +80,24 @@ export default function Subscription() {
     }
   }, []);
 
+  const fetchWallet = useCallback(async () => {
+    try {
+      const res = await walletService.getWallet();
+      const data = res?.data?.data || res?.data || res;
+      setWallet(data);
+    } catch { /* silent */ }
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
     async function init() {
       setLoading(true);
-      await fetchSubscription();
+      await Promise.all([fetchSubscription(), fetchWallet()]);
       if (!cancelled) setLoading(false);
     }
     init();
     return () => { cancelled = true; };
-  }, [fetchSubscription]);
+  }, [fetchSubscription, fetchWallet]);
 
   const handleRefresh = () => {
     setLoading(true);
@@ -90,16 +105,28 @@ export default function Subscription() {
     toast.success('Subscription data refreshed');
   };
 
-  const handleSubscribe = async (plan) => {
-    setSubscribing(plan.key);
+  const handleSubscribeClick = (plan) => {
+    setConfirmPlan(plan);
+    setShowConfirm(true);
+  };
+
+  const handleConfirmSubscribe = async () => {
+    if (!confirmPlan) return;
+    setSubscribing(confirmPlan.key);
+    setShowConfirm(false);
     try {
-      await studentService.createSubscription({ plan: plan.key, amount: plan.amount });
-      toast.success(`Subscribed to ${plan.name} plan successfully`);
-      await fetchSubscription();
+      const res = await studentService.createSubscription({
+        plan: confirmPlan.key,
+        amount: confirmPlan.amount,
+        paymentMethod: 'wallet',
+      });
+      toast.success(`Subscribed to ${confirmPlan.name} plan successfully via wallet`);
+      await Promise.all([fetchSubscription(), fetchWallet()]);
     } catch (err) {
       toast.error(err?.response?.data?.message || 'Failed to create subscription');
     } finally {
       setSubscribing(null);
+      setConfirmPlan(null);
     }
   };
 
@@ -294,11 +321,11 @@ export default function Subscription() {
                     <Button
                       variant={plan.popular ? 'primary' : 'outline'}
                       size="md"
-                      onClick={() => handleSubscribe(plan)}
+                      onClick={() => handleSubscribeClick(plan)}
                       loading={subscribing === plan.key}
                       className="w-full"
                     >
-                      <FiCreditCard size={16} />
+                      <FiShield size={16} />
                       {hasSubscription ? 'Switch Plan' : 'Subscribe'}
                     </Button>
                   )}
@@ -308,6 +335,66 @@ export default function Subscription() {
           })}
         </motion.div>
       </div>
+
+      {wallet && (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
+          <Card className="p-5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-500 flex items-center justify-center">
+                  <FiDollarSign size={20} />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-dark-500">Wallet Balance</p>
+                  <p className="text-xl font-bold text-ink">
+                    {formatCurrency(wallet.availableBalance ?? wallet.available ?? 0)}
+                  </p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-xs text-dark-400">Pending: {formatCurrency(wallet.pendingBalance ?? 0)}</p>
+              </div>
+            </div>
+          </Card>
+        </motion.div>
+      )}
+
+      <Modal isOpen={showConfirm} onClose={() => { setShowConfirm(false); setConfirmPlan(null); }} title="Confirm Subscription" size="sm">
+        {confirmPlan && (
+          <div className="space-y-5">
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-2xl bg-primary-100 text-primary-600 flex items-center justify-center mx-auto mb-3">
+                <FiShield size={28} />
+              </div>
+              <h3 className="text-lg font-bold text-ink">{confirmPlan.name} Plan</h3>
+              <p className="text-3xl font-bold text-ink mt-2">{formatCurrency(confirmPlan.amount)}</p>
+              <p className="text-sm text-dark-400">per {confirmPlan.period}</p>
+            </div>
+            <div className="p-4 rounded-xl bg-amber-50 border border-amber-200">
+              <p className="text-sm text-amber-800">
+                <strong>Payment via Wallet:</strong> This amount will be deducted from your wallet balance.
+                {wallet && (wallet.availableBalance ?? wallet.available ?? 0) < confirmPlan.amount && (
+                  <span className="block mt-1 text-red-600">Insufficient balance! Please deposit first.</span>
+                )}
+              </p>
+            </div>
+            <div className="flex items-center gap-3 pt-2">
+              <Button
+                variant="primary"
+                className="flex-1"
+                onClick={handleConfirmSubscribe}
+                disabled={(wallet?.availableBalance ?? wallet?.available ?? 0) < confirmPlan.amount}
+                loading={subscribing === confirmPlan.key}
+              >
+                <FiCheck size={16} /> Confirm & Pay
+              </Button>
+              <Button variant="outline" onClick={() => { setShowConfirm(false); setConfirmPlan(null); }}>
+                Cancel
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }

@@ -9,6 +9,8 @@ import {
   FiFilter,
   FiCreditCard,
   FiRefreshCw,
+  FiPlus,
+  FiBank,
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
@@ -24,6 +26,8 @@ import EmptyState from '../../components/ui/EmptyState';
 import Pagination from '../../components/ui/Pagination';
 import walletService from '../../services/walletService';
 import studentService from '../../services/studentService';
+import depositService from '../../services/depositService';
+import paymentAccountService from '../../services/paymentAccountService';
 import { formatCurrency, formatDate, copyToClipboard } from '../../utils/helpers';
 import usePagination from '../../hooks/usePagination';
 
@@ -78,6 +82,7 @@ export default function Wallet() {
   const [category, setCategory] = useState('');
   const [type, setType] = useState('');
   const [showWithdraw, setShowWithdraw] = useState(false);
+  const [showDeposit, setShowDeposit] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [withdrawForm, setWithdrawForm] = useState({
     amount: '',
@@ -87,6 +92,11 @@ export default function Wallet() {
     bankName: '',
   });
   const [formErrors, setFormErrors] = useState({});
+
+  const [paymentAccounts, setPaymentAccounts] = useState([]);
+  const [depositForm, setDepositForm] = useState({ accountId: '', amount: '' });
+  const [depositErrors, setDepositErrors] = useState({});
+  const [depositHistory, setDepositHistory] = useState([]);
 
   const { page, limit, nextPage, prevPage, goToPage } = usePagination(1, 10);
   const [totalPages, setTotalPages] = useState(1);
@@ -143,6 +153,56 @@ export default function Wallet() {
   useEffect(() => {
     fetchTransactions();
   }, [fetchTransactions]);
+
+  const fetchPaymentAccounts = useCallback(async () => {
+    try {
+      const res = await paymentAccountService.getAccounts();
+      const data = res?.data?.data || res?.data || res;
+      setPaymentAccounts(Array.isArray(data) ? data : []);
+    } catch { /* silent */ }
+  }, []);
+
+  const fetchDepositHistory = useCallback(async () => {
+    try {
+      const res = await depositService.getMyDeposits();
+      const data = res?.data?.data || res?.data || res;
+      setDepositHistory(data?.docs || (Array.isArray(data) ? data : []));
+    } catch { /* silent */ }
+  }, []);
+
+  useEffect(() => {
+    fetchPaymentAccounts();
+    fetchDepositHistory();
+  }, [fetchPaymentAccounts, fetchDepositHistory]);
+
+  const validateDeposit = () => {
+    const errors = {};
+    if (!depositForm.accountId) errors.accountId = 'Select a payment account';
+    const amt = parseFloat(depositForm.amount);
+    if (!depositForm.amount || isNaN(amt) || amt <= 0) errors.amount = 'Enter a valid amount';
+    setDepositErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleDeposit = async () => {
+    if (!validateDeposit()) return;
+    setSubmitting(true);
+    try {
+      await depositService.createDeposit({
+        accountId: depositForm.accountId,
+        amount: parseFloat(depositForm.amount),
+      });
+      toast.success('Deposit request submitted! Admin will verify and approve.');
+      setShowDeposit(false);
+      setDepositForm({ accountId: '', amount: '' });
+      setDepositErrors({});
+      fetchDepositHistory();
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Failed to submit deposit request');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const handleFilterChange = (setter) => (e) => {
     setter(e.target.value);
@@ -307,6 +367,10 @@ export default function Wallet() {
           <Button variant="outline" size="sm" onClick={handleRefresh} disabled={loading || loadingTx}>
             <FiRefreshCw size={16} className={loading || loadingTx ? 'animate-spin' : ''} />
             Refresh
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => { setDepositForm({ accountId: '', amount: '' }); setDepositErrors({}); setShowDeposit(true); }}>
+            <FiPlus size={16} />
+            Deposit
           </Button>
           <Button size="sm" onClick={() => setShowWithdraw(true)}>
             <FiCreditCard size={16} />
@@ -507,6 +571,101 @@ export default function Wallet() {
           )}
         </Card>
       </motion.div>
+
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55 }}>
+        <Card className="p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-ink">Deposit History</h2>
+          </div>
+          {depositHistory.length === 0 ? (
+            <EmptyState icon={FiBank} title="No deposits yet" description="Submit a deposit request to fund your wallet." />
+          ) : (
+            <div className="space-y-2">
+              {depositHistory.slice(0, 5).map((dep) => {
+                const statusColors = { pending: 'bg-amber-100 text-amber-700', approved: 'bg-emerald-100 text-emerald-700', rejected: 'bg-red-100 text-red-700' };
+                return (
+                  <div key={dep._id} className="flex items-center justify-between p-3 rounded-xl bg-dark-50/50">
+                    <div>
+                      <p className="text-sm font-semibold text-ink">{formatCurrency(dep.amount)}</p>
+                      <p className="text-xs text-dark-400">{dep.accountId?.bankName || 'Account'} &middot; {formatDate(dep.createdAt)}</p>
+                    </div>
+                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${statusColors[dep.status] || 'bg-dark-100 text-dark-600'}`}>
+                      {dep.status}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </Card>
+      </motion.div>
+
+      <Modal isOpen={showDeposit} onClose={() => { setShowDeposit(false); setDepositErrors({}); }} title="Deposit to Wallet" size="md">
+        <div className="space-y-4">
+          <p className="text-sm text-dark-500">Select a payment account and enter the amount you want to deposit. Admin will verify and approve your request.</p>
+
+          {paymentAccounts.length === 0 ? (
+            <div className="p-6 text-center text-dark-400 text-sm bg-dark-50 rounded-xl">
+              No payment accounts available yet. Please contact admin.
+            </div>
+          ) : (
+            <div className="space-y-3 max-h-60 overflow-y-auto">
+              {paymentAccounts.map((acc) => (
+                <label
+                  key={acc._id}
+                  className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
+                    depositForm.accountId === acc._id
+                      ? 'border-primary-500 bg-primary-50'
+                      : 'border-dark-100 bg-white hover:border-dark-300'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="account"
+                    value={acc._id}
+                    checked={depositForm.accountId === acc._id}
+                    onChange={(e) => setDepositForm((p) => ({ ...p, accountId: e.target.value }))}
+                    className="sr-only"
+                  />
+                  <div className="w-10 h-10 rounded-xl bg-primary-100 text-primary-600 flex items-center justify-center shrink-0">
+                    <FiBank size={18} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-ink">{acc.bankName}</p>
+                    <p className="text-xs text-dark-400">{acc.accountHolderName} &middot; {acc.accountNumber}</p>
+                    {acc.iban && <p className="text-xs text-dark-400">IBAN: {acc.iban}</p>}
+                  </div>
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                    depositForm.accountId === acc._id ? 'border-primary-500' : 'border-dark-300'
+                  }`}>
+                    {depositForm.accountId === acc._id && <div className="w-2.5 h-2.5 rounded-full bg-primary-500" />}
+                  </div>
+                </label>
+              ))}
+            </div>
+          )}
+          {depositErrors.accountId && <p className="text-xs text-red-500">{depositErrors.accountId}</p>}
+
+          <Input
+            label="Amount ($)"
+            type="number"
+            placeholder="Enter amount to deposit"
+            icon={FiDollarSign}
+            value={depositForm.amount}
+            onChange={(e) => setDepositForm((p) => ({ ...p, amount: e.target.value }))}
+            error={depositErrors.amount}
+            min="1"
+            step="0.01"
+          />
+
+          <div className="flex justify-end gap-3 pt-2">
+            <Button variant="outline" onClick={() => { setShowDeposit(false); setDepositErrors({}); }}>Cancel</Button>
+            <Button onClick={handleDeposit} loading={submitting} disabled={paymentAccounts.length === 0}>
+              Submit Deposit
+            </Button>
+          </div>
+        </div>
+      </Modal>
 
       <Modal isOpen={showWithdraw} onClose={() => { setShowWithdraw(false); setFormErrors({}); }} title="Request Withdrawal" size="md">
         <div className="space-y-4">
