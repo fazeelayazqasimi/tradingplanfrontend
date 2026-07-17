@@ -10,7 +10,7 @@ import {
   FiCreditCard,
   FiRefreshCw,
   FiPlus,
-  FiBank,
+  FiLayers,
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
@@ -578,7 +578,7 @@ export default function Wallet() {
             <h2 className="text-lg font-semibold text-ink">Deposit History</h2>
           </div>
           {depositHistory.length === 0 ? (
-            <EmptyState icon={FiBank} title="No deposits yet" description="Submit a deposit request to fund your wallet." />
+            <EmptyState icon={FiLayers} title="No deposits yet" description="Submit a deposit request to fund your wallet." />
           ) : (
             <div className="space-y-2">
               {depositHistory.slice(0, 5).map((dep) => {
@@ -628,7 +628,7 @@ export default function Wallet() {
                     className="sr-only"
                   />
                   <div className="w-10 h-10 rounded-xl bg-primary-100 text-primary-600 flex items-center justify-center shrink-0">
-                    <FiBank size={18} />
+                    <FiLayers size={18} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-ink">{acc.bankName}</p>

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { FiPlus, FiEdit2, FiTrash2, FiCheck, FiX, FiBank, FiDollarSign } from 'react-icons/fi';
+import { FiPlus, FiEdit2, FiTrash2, FiCheck, FiX, FiLayers, FiDollarSign } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
@@ -126,7 +126,7 @@ export default function PaymentAccounts() {
       render: (_, row) => (
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-primary-50 text-primary-500 flex items-center justify-center">
-            <FiBank size={16} />
+            <FiLayers size={16} />
           </div>
           <div>
             <p className="font-semibold text-ink text-sm">{row.bankName}</p>

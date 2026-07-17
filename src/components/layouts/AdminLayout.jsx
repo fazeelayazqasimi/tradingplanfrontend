@@ -1,6 +1,6 @@
 import { Link, useLocation, Outlet } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
-import { FiMenu, FiX, FiLayout, FiUsers, FiCreditCard, FiBookOpen, FiTrendingUp, FiBell, FiLink2, FiAward, FiDollarSign, FiSettings, FiLogOut, FiMessageSquare, FiHelpCircle, FiFileText, FiEdit, FiBarChart2, FiHome, FiBank, FiDownload } from 'react-icons/fi';
+import { FiMenu, FiX, FiLayout, FiUsers, FiCreditCard, FiBookOpen, FiTrendingUp, FiBell, FiLink2, FiAward, FiDollarSign, FiSettings, FiLogOut, FiMessageSquare, FiHelpCircle, FiFileText, FiEdit, FiBarChart2, FiHome, FiLayers, FiDownload } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 import { getInitials } from '../../utils/helpers';
 import adminService from '../../services/adminService';
@@ -23,7 +23,7 @@ const sidebarLinks = [
   { path: '/admin/withdrawals', label: 'Withdrawals', icon: FiDollarSign },
   { path: '/admin/wallets', label: 'Wallets', icon: FiDollarSign },
   { path: '/admin/deposits', label: 'Deposits', icon: FiDownload },
-  { path: '/admin/payment-accounts', label: 'Payment Accounts', icon: FiBank },
+  { path: '/admin/payment-accounts', label: 'Payment Accounts', icon: FiLayers },
   { path: '/admin/certificates', label: 'Certificates', icon: FiFileText },
   { path: '/admin/support', label: 'Support', icon: FiMessageSquare },
   { path: '/admin/reports', label: 'Reports', icon: FiBarChart2 },
