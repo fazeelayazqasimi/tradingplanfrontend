@@ -10,6 +10,8 @@ import {
   FiDollarSign,
   FiCreditCard,
   FiClock,
+  FiShield,
+  FiCheck,
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Card from '../../components/ui/Card';
@@ -23,6 +25,7 @@ import EmptyState from '../../components/ui/EmptyState';
 import Pagination from '../../components/ui/Pagination';
 import courseService from '../../services/courseService';
 import studentService from '../../services/studentService';
+import walletService from '../../services/walletService';
 import { COURSE_LEVELS } from '../../constants/index';
 import { formatCurrency } from '../../utils/helpers';
 
@@ -74,6 +77,8 @@ export default function Courses() {
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [selectedBroker, setSelectedBroker] = useState('dma');
   const [paymentStep, setPaymentStep] = useState('broker');
+  const [wallet, setWallet] = useState(null);
+  const [walletPaying, setWalletPaying] = useState(false);
 
   const fetchCourses = useCallback(async () => {
     try {
@@ -157,13 +162,17 @@ export default function Courses() {
     }
   };
 
-  const openBuyModal = (e, course) => {
+  const openBuyModal = async (e, course) => {
     e.preventDefault();
     e.stopPropagation();
     setSelectedCourse(course);
     setSelectedBroker('dma');
     setPaymentStep('broker');
     setBuyModal(true);
+    try {
+      const res = await walletService.getWallet();
+      setWallet(res?.data?.data || res?.data || null);
+    } catch { setWallet(null); }
   };
 
   const handlePurchase = async () => {
@@ -184,6 +193,27 @@ export default function Courses() {
       toast.error(err.response?.data?.message || err.message || 'Purchase failed');
     } finally {
       setBuying(null);
+    }
+  };
+
+  const handleWalletPurchase = async () => {
+    if (!selectedCourse) return;
+    const courseId = selectedCourse._id || selectedCourse.id;
+    try {
+      setWalletPaying(true);
+      const res = await studentService.createPaymentIntent({
+        courseId,
+        broker: selectedBroker,
+        paymentMethod: 'wallet',
+      });
+      toast.success('Course activated via wallet!');
+      setBuyModal(false);
+      fetchPurchases();
+      fetchCourses();
+    } catch (err) {
+      toast.error(err.response?.data?.message || err.message || 'Purchase failed');
+    } finally {
+      setWalletPaying(false);
     }
   };
 
@@ -457,6 +487,40 @@ export default function Courses() {
               </div>
             </div>
 
+            {wallet && (
+              <div className="p-4 rounded-xl border border-primary-200 bg-primary-50 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-ink">Wallet Balance</p>
+                    <p className="text-lg font-bold text-ink">{formatCurrency(wallet.availableBalance ?? wallet.available ?? 0)}</p>
+                  </div>
+                  <FiShield size={24} className="text-primary-500" />
+                </div>
+                {(wallet.availableBalance ?? wallet.available ?? 0) >= (selectedCourse?.price || 0) ? (
+                  <Button
+                    variant="primary"
+                    className="w-full gap-1.5"
+                    onClick={handleWalletPurchase}
+                    loading={walletPaying}
+                  >
+                    <FiCheck size={16} />
+                    Pay with Wallet
+                  </Button>
+                ) : (
+                  <p className="text-xs text-red-600 text-center">Insufficient balance. Please deposit first.</p>
+                )}
+              </div>
+            )}
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-dark-200" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-white px-2 text-dark-400">or pay with card</span>
+              </div>
+            </div>
+
             <div className="p-4 rounded-xl border border-dark-200 space-y-3">
               <p className="text-sm font-medium text-ink">Card Details</p>
               <input
@@ -482,13 +546,13 @@ export default function Courses() {
             </div>
 
             <Button
-              variant="primary"
+              variant="outline"
               className="w-full gap-1.5"
               onClick={handlePurchase}
               loading={buying === (selectedCourse?._id || selectedCourse?.id)}
             >
               <FiCreditCard size={16} />
-              Pay ${selectedCourse?.price}
+              Pay ${selectedCourse?.price} with Card
             </Button>
             <button
               onClick={() => setPaymentStep('broker')}
