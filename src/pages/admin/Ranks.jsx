@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FiEdit2, FiPlus, FiAward, FiTrendingUp, FiPercent, FiUsers, FiTrash2 } from 'react-icons/fi';
+import { FiEdit2, FiPlus, FiAward, FiTrendingUp, FiPercent, FiUsers, FiTrash2, FiDollarSign } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
@@ -21,6 +21,13 @@ const BAR_COLORS = ['bg-dark-400', 'bg-primary-500', 'bg-blue-500', 'bg-purple-5
 
 const emptyRank = {
   name: '',
+  minDirectReferrals: '',
+  minRequiredRank: '',
+  minRequiredRankCount: '',
+  minTeamMembers: '',
+  activationGain: '',
+  quantification: '',
+  indirectIncome: '',
   minReferrals: '',
   minRevenue: '',
   commissionPercent: '',
@@ -84,6 +91,13 @@ export default function Ranks() {
     setEditingRankId(rank.id || rank._id || null);
     setEditData({
       name: rank.name || '',
+      minDirectReferrals: rank.minDirectReferrals ?? '',
+      minRequiredRank: rank.minRequiredRank || '',
+      minRequiredRankCount: rank.minRequiredRankCount ?? '',
+      minTeamMembers: rank.minTeamMembers ?? '',
+      activationGain: rank.activationGain ?? '',
+      quantification: rank.quantification ?? '',
+      indirectIncome: rank.indirectIncome ?? '',
       minReferrals: rank.minReferrals ?? '',
       minRevenue: rank.minRevenue ?? '',
       commissionPercent: rank.commissionPercent ?? '',
@@ -109,6 +123,13 @@ export default function Ranks() {
     try {
       const payload = {
         name: editData.name.trim(),
+        minDirectReferrals: Number(editData.minDirectReferrals) || 0,
+        minRequiredRank: editData.minRequiredRank.trim() || null,
+        minRequiredRankCount: Number(editData.minRequiredRankCount) || 0,
+        minTeamMembers: Number(editData.minTeamMembers) || 0,
+        activationGain: Number(editData.activationGain) || 0,
+        quantification: Number(editData.quantification) || 0,
+        indirectIncome: Number(editData.indirectIncome) || 0,
         minReferrals: Number(editData.minReferrals) || 0,
         minRevenue: Number(editData.minRevenue) || 0,
         commissionPercent: Number(editData.commissionPercent) || 0,
@@ -186,23 +207,43 @@ export default function Ranks() {
                 </div>
                 <h3 className="text-lg font-bold text-ink">{rank.name}</h3>
 
-                <div className="mt-5 space-y-3">
-                  <div className="flex items-center gap-2 text-[14.5px] text-dark-500">
-                    <FiUsers size={14} className="text-dark-400" />
-                    <span>Min Referrals: <span className="font-medium text-dark-700">{rank.minReferrals ?? 0}</span></span>
-                  </div>
-                  <div className="flex items-center gap-2 text-[14.5px] text-dark-500">
-                    <FiTrendingUp size={14} className="text-dark-400" />
-                    <span>Min Revenue: <span className="font-medium text-dark-700">{formatCurrency(rank.minRevenue ?? 0)}</span></span>
-                  </div>
-                  <div className="flex items-center gap-2 text-[14.5px] text-dark-500">
-                    <FiPercent size={14} className="text-dark-400" />
-                    <span>Commission: <span className="font-medium text-dark-700">{rank.commissionPercent ?? 0}%</span></span>
-                  </div>
-                  <div className="flex items-center gap-2 text-[14.5px] text-dark-500">
-                    <FiPercent size={14} className="text-dark-400" />
-                    <span>Profit Share: <span className="font-medium text-dark-700">{rank.profitSharePercent ?? 0}%</span></span>
-                  </div>
+                <div className="mt-5 space-y-2.5">
+                  {rank.minDirectReferrals > 0 && (
+                    <div className="flex items-center gap-2 text-[14px] text-dark-500">
+                      <FiUsers size={14} className="text-dark-400" />
+                      <span>Direct Refer: <span className="font-medium text-dark-700">{rank.minDirectReferrals}</span></span>
+                    </div>
+                  )}
+                  {rank.minRequiredRank && rank.minRequiredRankCount > 0 && (
+                    <div className="flex items-center gap-2 text-[14px] text-dark-500">
+                      <FiAward size={14} className="text-dark-400" />
+                      <span>At Least: <span className="font-medium text-dark-700">{rank.minRequiredRankCount}x {rank.minRequiredRank}</span></span>
+                    </div>
+                  )}
+                  {rank.minTeamMembers > 0 && (
+                    <div className="flex items-center gap-2 text-[14px] text-dark-500">
+                      <FiUsers size={14} className="text-dark-400" />
+                      <span>Team: <span className="font-medium text-dark-700">{rank.minTeamMembers}</span></span>
+                    </div>
+                  )}
+                  {rank.activationGain > 0 && (
+                    <div className="flex items-center gap-2 text-[14px] text-dark-500">
+                      <FiDollarSign size={14} className="text-dark-400" />
+                      <span>Activation: <span className="font-medium text-emerald-600">{formatCurrency(rank.activationGain)}</span></span>
+                    </div>
+                  )}
+                  {rank.quantification > 0 && (
+                    <div className="flex items-center gap-2 text-[14px] text-dark-500">
+                      <FiPercent size={14} className="text-dark-400" />
+                      <span>Quantification: <span className="font-medium text-dark-700">{rank.quantification}%</span></span>
+                    </div>
+                  )}
+                  {rank.indirectIncome > 0 && (
+                    <div className="flex items-center gap-2 text-[14px] text-dark-500">
+                      <FiTrendingUp size={14} className="text-dark-400" />
+                      <span>Indirect Income: <span className="font-medium text-blue-600">{formatCurrency(rank.indirectIncome)}</span></span>
+                    </div>
+                  )}
                 </div>
 
                 {rank.perks && rank.perks.length > 0 && (
@@ -268,47 +309,74 @@ export default function Ranks() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-[12px] font-semibold uppercase tracking-wider text-dark-500 mb-1.5">Min Referrals</label>
+              <label className="block text-[12px] font-semibold uppercase tracking-wider text-dark-500 mb-1.5">Directly Refer</label>
               <Input
                 type="number"
                 min="0"
-                value={editData.minReferrals}
-                onChange={(e) => setEditData((p) => ({ ...p, minReferrals: e.target.value }))}
+                value={editData.minDirectReferrals}
+                onChange={(e) => setEditData((p) => ({ ...p, minDirectReferrals: e.target.value }))}
                 placeholder="0"
               />
             </div>
             <div>
-              <label className="block text-[12px] font-semibold uppercase tracking-wider text-dark-500 mb-1.5">Min Revenue ($)</label>
+              <label className="block text-[12px] font-semibold uppercase tracking-wider text-dark-500 mb-1.5">Min Required Rank</label>
+              <Input
+                value={editData.minRequiredRank}
+                onChange={(e) => setEditData((p) => ({ ...p, minRequiredRank: e.target.value }))}
+                placeholder="e.g. V1"
+              />
+            </div>
+            <div>
+              <label className="block text-[12px] font-semibold uppercase tracking-wider text-dark-500 mb-1.5">Required Rank Count</label>
+              <Input
+                type="number"
+                min="0"
+                value={editData.minRequiredRankCount}
+                onChange={(e) => setEditData((p) => ({ ...p, minRequiredRankCount: e.target.value }))}
+                placeholder="0"
+              />
+            </div>
+            <div>
+              <label className="block text-[12px] font-semibold uppercase tracking-wider text-dark-500 mb-1.5">Team Members</label>
+              <Input
+                type="number"
+                min="0"
+                value={editData.minTeamMembers}
+                onChange={(e) => setEditData((p) => ({ ...p, minTeamMembers: e.target.value }))}
+                placeholder="0"
+              />
+            </div>
+            <div>
+              <label className="block text-[12px] font-semibold uppercase tracking-wider text-dark-500 mb-1.5">Activation Gain ($)</label>
               <Input
                 type="number"
                 min="0"
                 step="0.01"
-                value={editData.minRevenue}
-                onChange={(e) => setEditData((p) => ({ ...p, minRevenue: e.target.value }))}
+                value={editData.activationGain}
+                onChange={(e) => setEditData((p) => ({ ...p, activationGain: e.target.value }))}
                 placeholder="0"
               />
             </div>
             <div>
-              <label className="block text-[12px] font-semibold uppercase tracking-wider text-dark-500 mb-1.5">Commission %</label>
+              <label className="block text-[12px] font-semibold uppercase tracking-wider text-dark-500 mb-1.5">Quantification %</label>
               <Input
                 type="number"
                 min="0"
                 max="100"
                 step="0.1"
-                value={editData.commissionPercent}
-                onChange={(e) => setEditData((p) => ({ ...p, commissionPercent: e.target.value }))}
+                value={editData.quantification}
+                onChange={(e) => setEditData((p) => ({ ...p, quantification: e.target.value }))}
                 placeholder="0"
               />
             </div>
             <div>
-              <label className="block text-[12px] font-semibold uppercase tracking-wider text-dark-500 mb-1.5">Profit Share %</label>
+              <label className="block text-[12px] font-semibold uppercase tracking-wider text-dark-500 mb-1.5">Indirect Income ($)</label>
               <Input
                 type="number"
                 min="0"
-                max="100"
-                step="0.1"
-                value={editData.profitSharePercent}
-                onChange={(e) => setEditData((p) => ({ ...p, profitSharePercent: e.target.value }))}
+                step="0.01"
+                value={editData.indirectIncome}
+                onChange={(e) => setEditData((p) => ({ ...p, indirectIncome: e.target.value }))}
                 placeholder="0"
               />
             </div>
