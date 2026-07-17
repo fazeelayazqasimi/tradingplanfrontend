@@ -38,6 +38,10 @@ const INCOME_LABELS = {
   indirect_income: 'Indirect Income',
   trading_profit: 'Trading Profit',
   bonus: 'Bonus',
+  purchase: 'Course Purchase',
+  subscription: 'Subscription',
+  withdrawal: 'Withdrawal',
+  deposit: 'Deposit',
 };
 
 const container = {
@@ -56,8 +60,10 @@ const CATEGORY_OPTIONS = [
   { value: 'indirect_income', label: 'Indirect Income' },
   { value: 'trading_profit', label: 'Trading Profit' },
   { value: 'bonus', label: 'Bonus' },
-  { value: 'withdrawal', label: 'Withdrawal' },
+  { value: 'purchase', label: 'Course Purchase' },
   { value: 'subscription', label: 'Subscription' },
+  { value: 'withdrawal', label: 'Withdrawal' },
+  { value: 'deposit', label: 'Deposit' },
 ];
 
 const TYPE_OPTIONS = [
@@ -216,12 +222,14 @@ export default function Wallet() {
     toast.success('Wallet data refreshed');
   };
 
+  const byCategory = stats?.byCategory || {};
+  const expenses = stats?.expenses || {};
   const chartData = stats
     ? [
-        { name: 'Direct Income', value: stats.directIncome ?? stats.direct_income ?? 0 },
-        { name: 'Indirect Income', value: stats.indirectIncome ?? stats.indirect_income ?? 0 },
-        { name: 'Trading Profit', value: stats.tradingProfit ?? stats.trading_profit ?? 0 },
-        { name: 'Bonus', value: stats.bonus ?? 0 },
+        { name: 'Direct Income', value: byCategory.direct_income ?? byCategory.directIncome ?? 0 },
+        { name: 'Indirect Income', value: byCategory.indirect_income ?? byCategory.indirectIncome ?? 0 },
+        { name: 'Trading Profit', value: byCategory.trading_profit ?? byCategory.tradingProfit ?? 0 },
+        { name: 'Bonus', value: byCategory.bonus ?? 0 },
       ].filter((d) => d.value > 0)
     : [];
 
@@ -259,7 +267,7 @@ export default function Wallet() {
   const columns = [
     {
       header: 'Type',
-      render: (row) => (
+      render: (_, row) => (
         <Badge color={row.type === 'credit' ? 'success' : 'danger'}>
           <span className="flex items-center gap-1">
             {row.type === 'credit' ? <FiArrowDown size={12} /> : <FiArrowUp size={12} />}
@@ -270,7 +278,7 @@ export default function Wallet() {
     },
     {
       header: 'Category',
-      render: (row) => (
+      render: (_, row) => (
         <span className="text-dark-600 capitalize">
           {INCOME_LABELS[row.category] || row.category?.replace(/_/g, ' ') || '\u2014'}
         </span>
@@ -278,7 +286,7 @@ export default function Wallet() {
     },
     {
       header: 'Amount',
-      render: (row) => (
+      render: (_, row) => (
         <span className={`font-semibold ${row.type === 'credit' ? 'text-emerald-600' : 'text-red-500'}`}>
           {row.type === 'credit' ? '+' : '-'}{formatCurrency(row.amount)}
         </span>
@@ -286,13 +294,13 @@ export default function Wallet() {
     },
     {
       header: 'Description',
-      render: (row) => (
+      render: (_, row) => (
         <span className="text-dark-500 max-w-[200px] truncate block">{row.description || '\u2014'}</span>
       ),
     },
     {
       header: 'Date',
-      render: (row) => (
+      render: (_, row) => (
         <span className="text-dark-500 text-xs">{formatDate(row.createdAt || row.date)}</span>
       ),
     },
@@ -487,10 +495,10 @@ export default function Wallet() {
             ) : (
               <div className="space-y-4">
                 {[
-                  { label: 'Direct Income', value: stats?.directIncome ?? stats?.direct_income ?? 0, color: 'bg-emerald-500' },
-                  { label: 'Indirect Income', value: stats?.indirectIncome ?? stats?.indirect_income ?? 0, color: 'bg-blue-500' },
-                  { label: 'Trading Profit', value: stats?.tradingProfit ?? stats?.trading_profit ?? 0, color: 'bg-amber-500' },
-                  { label: 'Bonus', value: stats?.bonus ?? 0, color: 'bg-purple-500' },
+                  { label: 'Direct Income', value: byCategory.direct_income ?? byCategory.directIncome ?? 0, color: 'bg-emerald-500' },
+                  { label: 'Indirect Income', value: byCategory.indirect_income ?? byCategory.indirectIncome ?? 0, color: 'bg-blue-500' },
+                  { label: 'Trading Profit', value: byCategory.trading_profit ?? byCategory.tradingProfit ?? 0, color: 'bg-amber-500' },
+                  { label: 'Bonus', value: byCategory.bonus ?? 0, color: 'bg-purple-500' },
                 ].map((s) => (
                   <div key={s.label} className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -500,16 +508,27 @@ export default function Wallet() {
                     <span className="text-sm font-semibold text-ink">{formatCurrency(s.value)}</span>
                   </div>
                 ))}
+                {Object.keys(expenses).length > 0 && (
+                  <>
+                    <div className="pt-3 mt-3 border-t border-dark-100">
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-dark-400 mb-3">Expenses</p>
+                      {Object.entries(expenses).filter(([, v]) => v > 0).map(([cat, val]) => (
+                        <div key={cat} className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2.5 h-2.5 rounded-full bg-rose-500" />
+                            <span className="text-sm text-dark-600">{INCOME_LABELS[cat] || cat?.replace(/_/g, ' ') || cat}</span>
+                          </div>
+                          <span className="text-sm font-semibold text-red-500">-{formatCurrency(val)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
                 <div className="pt-3 mt-3 border-t border-dark-100">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-dark-700">Net Balance</span>
+                    <span className="text-sm font-medium text-dark-700">Available Balance</span>
                     <span className="text-lg font-bold text-ink">
-                      {formatCurrency(
-                        (stats?.directIncome ?? stats?.direct_income ?? 0) +
-                        (stats?.indirectIncome ?? stats?.indirect_income ?? 0) +
-                        (stats?.tradingProfit ?? stats?.trading_profit ?? 0) +
-                        (stats?.bonus ?? 0)
-                      )}
+                      {formatCurrency(wallet?.availableBalance ?? wallet?.available ?? wallet?.balance ?? 0)}
                     </span>
                   </div>
                 </div>
