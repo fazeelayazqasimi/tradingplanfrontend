@@ -13,6 +13,8 @@ import {
   FiChevronDown,
   FiChevronRight,
   FiShare2,
+  FiAward,
+  FiTrendingUp,
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Card from '../../components/ui/Card';
@@ -21,6 +23,7 @@ import Button from '../../components/ui/Button';
 import Skeleton from '../../components/ui/Skeleton';
 import EmptyState from '../../components/ui/EmptyState';
 import referralService from '../../services/referralService';
+import api from '../../services/api';
 import { formatCurrency, formatDate, copyToClipboard } from '../../utils/helpers';
 
 const container = {
@@ -46,6 +49,7 @@ export default function Referrals() {
   const [directReferrals, setDirectReferrals] = useState([]);
   const [indirectReferrals, setIndirectReferrals] = useState([]);
   const [referralTree, setReferralTree] = useState([]);
+  const [rankData, setRankData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('direct');
   const [copiedCode, setCopiedCode] = useState(false);
@@ -54,10 +58,11 @@ export default function Referrals() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const [codeRes, statsRes, treeRes] = await Promise.allSettled([
+      const [codeRes, statsRes, treeRes, rankRes] = await Promise.allSettled([
         referralService.getReferralCode(),
         referralService.getStats(),
         referralService.getTree(),
+        api.get('/ranks/me'),
       ]);
 
       if (codeRes.status === 'fulfilled') {
@@ -81,6 +86,11 @@ export default function Referrals() {
         setIndirectReferrals(Array.isArray(indirect) ? indirect : []);
         const treeData = Array.isArray(td) ? td : (td?.tree || []);
         setReferralTree(treeData.length > 0 ? treeData : []);
+      }
+
+      if (rankRes.status === 'fulfilled') {
+        const rd = rankRes.value?.data?.data || rankRes.value?.data || rankRes.value;
+        setRankData(rd);
       }
     } catch {
       toast.error('Failed to load referral data');
@@ -255,6 +265,58 @@ export default function Referrals() {
         </Card>
       </motion.div>
 
+      {!loading && rankData && (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+          <Card className="p-5 overflow-hidden">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <FiAward className="text-primary-500" size={18} />
+                <h2 className="text-lg font-semibold text-ink">My Rank</h2>
+              </div>
+              {rankData.userRank?.isLocked && <Badge color="warning">Locked</Badge>}
+            </div>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+              <div className="flex items-center gap-3 shrink-0">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white font-bold text-lg">
+                  {rankData.userRank?.currentRankId?.name?.charAt(0) || '?'}
+                </div>
+                <div>
+                  <p className="text-lg font-bold text-ink">{rankData.userRank?.currentRankId?.name || 'Unranked'}</p>
+                  <p className="text-xs text-dark-400">
+                    {rankData.directCount ?? 0} direct · {rankData.totalTeam ?? 0} team
+                  </p>
+                </div>
+              </div>
+              {rankData.nextRank && (
+                <div className="flex-1 sm:border-l sm:border-dark-100 sm:pl-6">
+                  <p className="text-xs text-dark-500 mb-1.5">Next: <span className="font-semibold text-ink">{rankData.nextRank.name}</span></p>
+                  <div className="space-y-1">
+                    {rankData.nextRank.minDirectReferrals > 0 && (
+                      <div className="flex items-center gap-2 text-xs">
+                        <span className="text-dark-400 w-28">Direct Refer:</span>
+                        <div className="flex-1 h-2 bg-dark-100 rounded-full overflow-hidden">
+                          <div className="h-full bg-primary-500 rounded-full transition-all" style={{ width: `${Math.min(100, ((rankData.directCount ?? 0) / rankData.nextRank.minDirectReferrals) * 100)}%` }} />
+                        </div>
+                        <span className="text-dark-600 w-16 text-right">{rankData.directCount ?? 0}/{rankData.nextRank.minDirectReferrals}</span>
+                      </div>
+                    )}
+                    {rankData.nextRank.minTeamMembers > 0 && (
+                      <div className="flex items-center gap-2 text-xs">
+                        <span className="text-dark-400 w-28">Team Members:</span>
+                        <div className="flex-1 h-2 bg-dark-100 rounded-full overflow-hidden">
+                          <div className="h-full bg-blue-500 rounded-full transition-all" style={{ width: `${Math.min(100, ((rankData.totalTeam ?? 0) / rankData.nextRank.minTeamMembers) * 100)}%` }} />
+                        </div>
+                        <span className="text-dark-600 w-16 text-right">{rankData.totalTeam ?? 0}/{rankData.nextRank.minTeamMembers}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </Card>
+        </motion.div>
+      )}
+
       {loading ? (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -420,6 +482,50 @@ export default function Referrals() {
           </div>
         </Card>
       </motion.div>
+
+      {!loading && rankData?.allRanks?.length > 0 && (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
+          <Card className="p-5">
+            <h2 className="text-lg font-semibold text-ink mb-4">Rank Requirements</h2>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-dark-100">
+                    <th className="text-left py-2.5 pr-4 font-semibold text-dark-600">Rank</th>
+                    <th className="text-left py-2.5 pr-4 font-semibold text-dark-600">Direct Refer</th>
+                    <th className="text-left py-2.5 pr-4 font-semibold text-dark-600">At Least</th>
+                    <th className="text-left py-2.5 pr-4 font-semibold text-dark-600">Team</th>
+                    <th className="text-left py-2.5 pr-4 font-semibold text-dark-600">Activation</th>
+                    <th className="text-left py-2.5 pr-4 font-semibold text-dark-600">Quant</th>
+                    <th className="text-left py-2.5 font-semibold text-dark-600">Indirect</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rankData.allRanks.map((r, idx) => {
+                    const isCurrent = rankData.userRank?.currentRankId?._id === r._id || rankData.userRank?.currentRankId?.id === r._id;
+                    const isNext = rankData.nextRank?._id === r._id || rankData.nextRank?.id === r._id;
+                    return (
+                      <tr key={r._id || r.id || idx} className={`border-b border-dark-50 last:border-0 ${isCurrent ? 'bg-primary-50' : isNext ? 'bg-blue-50/50' : ''}`}>
+                        <td className="py-2.5 pr-4">
+                          <span className="font-semibold text-ink">{r.name}</span>
+                          {isCurrent && <Badge color="primary" className="ml-2 text-[10px]">Current</Badge>}
+                          {isNext && <Badge color="info" className="ml-2 text-[10px]">Next</Badge>}
+                        </td>
+                        <td className="py-2.5 pr-4 text-dark-600">{r.minDirectReferrals || '\u2014'}</td>
+                        <td className="py-2.5 pr-4 text-dark-600">{r.minRequiredRank && r.minRequiredRankCount ? `${r.minRequiredRankCount}x ${r.minRequiredRank}` : '\u2014'}</td>
+                        <td className="py-2.5 pr-4 text-dark-600">{r.minTeamMembers || '\u2014'}</td>
+                        <td className="py-2.5 pr-4 font-medium text-emerald-600">{r.activationGain ? `$${r.activationGain}` : '\u2014'}</td>
+                        <td className="py-2.5 pr-4 text-dark-600">{r.quantification ? `${r.quantification}%` : '\u2014'}</td>
+                        <td className="py-2.5 font-medium text-blue-600">{r.indirectIncome ? `$${r.indirectIncome}` : '\u2014'}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        </motion.div>
+      )}
     </div>
   );
 }
