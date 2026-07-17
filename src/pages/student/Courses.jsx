@@ -12,6 +12,7 @@ import {
   FiClock,
   FiShield,
   FiCheck,
+  FiPlus,
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Card from '../../components/ui/Card';
@@ -55,18 +56,12 @@ const item = {
   show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 260, damping: 20 } },
 };
 
-const BROKER_OPTIONS = [
-  { value: 'dma', label: 'DMA Broker' },
-  { value: 'startrading', label: 'StarTrading' },
-];
-
 export default function Courses() {
   const [courses, setCourses] = useState([]);
   const [enrolledMap, setEnrolledMap] = useState({});
   const [purchasedMap, setPurchasedMap] = useState({});
   const [loading, setLoading] = useState(true);
   const [enrolling, setEnrolling] = useState(null);
-  const [buying, setBuying] = useState(null);
   const [search, setSearch] = useState('');
   const [levelFilter, setLevelFilter] = useState('');
   const [page, setPage] = useState(1);
@@ -75,8 +70,6 @@ export default function Courses() {
 
   const [buyModal, setBuyModal] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState(null);
-  const [selectedBroker, setSelectedBroker] = useState('dma');
-  const [paymentStep, setPaymentStep] = useState('broker');
   const [wallet, setWallet] = useState(null);
   const [walletPaying, setWalletPaying] = useState(false);
 
@@ -166,34 +159,11 @@ export default function Courses() {
     e.preventDefault();
     e.stopPropagation();
     setSelectedCourse(course);
-    setSelectedBroker('dma');
-    setPaymentStep('broker');
     setBuyModal(true);
     try {
       const res = await walletService.getWallet();
       setWallet(res?.data?.data || res?.data || null);
     } catch { setWallet(null); }
-  };
-
-  const handlePurchase = async () => {
-    if (!selectedCourse) return;
-    const courseId = selectedCourse._id || selectedCourse.id;
-    try {
-      setBuying(courseId);
-      const res = await studentService.createPaymentIntent({
-        courseId,
-        broker: selectedBroker,
-        paymentMethod: 'card',
-      });
-      toast.success('Payment initiated! Waiting for admin approval.');
-      setBuyModal(false);
-      fetchPurchases();
-      fetchCourses();
-    } catch (err) {
-      toast.error(err.response?.data?.message || err.message || 'Purchase failed');
-    } finally {
-      setBuying(null);
-    }
   };
 
   const handleWalletPurchase = async () => {
@@ -203,7 +173,7 @@ export default function Courses() {
       setWalletPaying(true);
       const res = await studentService.createPaymentIntent({
         courseId,
-        broker: selectedBroker,
+        broker: 'dma',
         paymentMethod: 'wallet',
       });
       toast.success('Course activated via wallet!');
@@ -388,7 +358,7 @@ export default function Courses() {
                             className="w-full gap-1.5"
                             size="sm"
                             onClick={(e) => openBuyModal(e, course)}
-                            loading={buying === courseId}
+                            loading={walletPaying}
                           >
                             <FiCreditCard size={14} />
                             Buy ${price}
@@ -426,142 +396,68 @@ export default function Courses() {
       <Modal
         isOpen={buyModal}
         onClose={() => setBuyModal(false)}
-        title={paymentStep === 'broker' ? 'Select Broker' : 'Complete Payment'}
+        title="Confirm Purchase"
         size="sm"
       >
-        {paymentStep === 'broker' ? (
-          <div className="space-y-5">
-            <p className="text-sm text-dark-500">
-              Choose your broker for <strong>{selectedCourse?.title}</strong> — ${selectedCourse?.price}
-            </p>
-            <div className="space-y-3">
-              {BROKER_OPTIONS.map((b) => (
-                <button
-                  key={b.value}
-                  onClick={() => setSelectedBroker(b.value)}
-                  className={`w-full flex items-center gap-3 p-4 rounded-xl border-2 transition-all ${
-                    selectedBroker === b.value
-                      ? 'border-primary-500 bg-primary-50'
-                      : 'border-dark-200 hover:border-dark-300'
-                  }`}
-                >
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold ${
-                    selectedBroker === b.value ? 'bg-primary-500 text-white' : 'bg-dark-100 text-dark-500'
-                  }`}>
-                    {b.label.charAt(0)}
-                  </div>
-                  <div className="text-left">
-                    <p className="font-medium text-ink text-sm">{b.label}</p>
-                    <p className="text-xs text-dark-400">Trading platform integration</p>
-                  </div>
-                  {selectedBroker === b.value && (
-                    <div className="ml-auto w-5 h-5 rounded-full bg-primary-500 flex items-center justify-center">
-                      <span className="text-white text-xs">✓</span>
-                    </div>
-                  )}
-                </button>
-              ))}
+        <div className="space-y-5">
+          <div className="p-4 rounded-xl bg-dark-50 border border-dark-100 space-y-2">
+            <div className="flex justify-between text-sm">
+              <span className="text-dark-500">Course</span>
+              <span className="font-medium text-ink">{selectedCourse?.title}</span>
             </div>
-            <Button
-              variant="primary"
-              className="w-full"
-              onClick={() => setPaymentStep('card')}
-            >
-              Continue to Payment
-            </Button>
+            <div className="border-t border-dark-200 pt-2 flex justify-between text-sm">
+              <span className="text-dark-500">Amount</span>
+              <span className="font-bold text-ink">${selectedCourse?.price}</span>
+            </div>
           </div>
-        ) : (
-          <div className="space-y-5">
-            <div className="p-4 rounded-xl bg-dark-50 border border-dark-100 space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-dark-500">Course</span>
-                <span className="font-medium text-ink">{selectedCourse?.title}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-dark-500">Broker</span>
-                <span className="font-medium text-ink capitalize">{selectedBroker}</span>
-              </div>
-              <div className="border-t border-dark-200 pt-2 flex justify-between text-sm">
-                <span className="text-dark-500">Amount</span>
-                <span className="font-bold text-ink">${selectedCourse?.price}</span>
-              </div>
-            </div>
 
-            {wallet && (
-              <div className="p-4 rounded-xl border border-primary-200 bg-primary-50 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-ink">Wallet Balance</p>
-                    <p className="text-lg font-bold text-ink">{formatCurrency(wallet.availableBalance ?? wallet.available ?? 0)}</p>
-                  </div>
-                  <FiShield size={24} className="text-primary-500" />
+          {wallet ? (
+            <div className="p-4 rounded-xl border border-primary-200 bg-primary-50 space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-ink">Wallet Balance</p>
+                  <p className="text-lg font-bold text-ink">{formatCurrency(wallet.availableBalance ?? wallet.available ?? 0)}</p>
                 </div>
-                {(wallet.availableBalance ?? wallet.available ?? 0) >= (selectedCourse?.price || 0) ? (
-                  <Button
-                    variant="primary"
-                    className="w-full gap-1.5"
-                    onClick={handleWalletPurchase}
-                    loading={walletPaying}
+                <FiShield size={24} className="text-primary-500" />
+              </div>
+              {(wallet.availableBalance ?? wallet.available ?? 0) >= (selectedCourse?.price || 0) ? (
+                <Button
+                  variant="primary"
+                  className="w-full gap-1.5"
+                  onClick={handleWalletPurchase}
+                  loading={walletPaying}
+                >
+                  <FiCheck size={16} />
+                  Buy Now — ${selectedCourse?.price}
+                </Button>
+              ) : (
+                <div className="text-center space-y-2">
+                  <p className="text-xs text-red-600">Insufficient balance.</p>
+                  <Link
+                    to="/student/wallet"
+                    className="inline-flex items-center gap-1 text-sm font-medium text-primary-600 hover:text-primary-700"
+                    onClick={() => setBuyModal(false)}
                   >
-                    <FiCheck size={16} />
-                    Pay with Wallet
-                  </Button>
-                ) : (
-                  <p className="text-xs text-red-600 text-center">Insufficient balance. Please deposit first.</p>
-                )}
-              </div>
-            )}
-
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-dark-200" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-2 text-dark-400">or pay with card</span>
-              </div>
+                    <FiPlus size={14} />
+                    Deposit to Wallet
+                  </Link>
+                </div>
+              )}
             </div>
-
-            <div className="p-4 rounded-xl border border-dark-200 space-y-3">
-              <p className="text-sm font-medium text-ink">Card Details</p>
-              <input
-                type="text"
-                placeholder="Card Number"
-                className="w-full rounded-lg border border-dark-200 bg-white px-3 py-2.5 text-sm"
-                defaultValue="4242 4242 4242 4242"
-              />
-              <div className="grid grid-cols-2 gap-3">
-                <input
-                  type="text"
-                  placeholder="MM/YY"
-                  className="w-full rounded-lg border border-dark-200 bg-white px-3 py-2.5 text-sm"
-                  defaultValue="12/28"
-                />
-                <input
-                  type="text"
-                  placeholder="CVC"
-                  className="w-full rounded-lg border border-dark-200 bg-white px-3 py-2.5 text-sm"
-                  defaultValue="123"
-                />
-              </div>
+          ) : (
+            <div className="p-4 rounded-xl border border-dark-200 text-center space-y-3">
+              <p className="text-sm text-dark-500">No wallet found.</p>
+              <Link
+                to="/student/wallet"
+                className="inline-flex items-center gap-1 text-sm font-medium text-primary-600 hover:text-primary-700"
+                onClick={() => setBuyModal(false)}
+              >
+                <FiPlus size={14} />
+                Create Wallet
+              </Link>
             </div>
-
-            <Button
-              variant="outline"
-              className="w-full gap-1.5"
-              onClick={handlePurchase}
-              loading={buying === (selectedCourse?._id || selectedCourse?.id)}
-            >
-              <FiCreditCard size={16} />
-              Pay ${selectedCourse?.price} with Card
-            </Button>
-            <button
-              onClick={() => setPaymentStep('broker')}
-              className="w-full text-center text-sm text-dark-400 hover:text-dark-600"
-            >
-              ← Change Broker
-            </button>
-          </div>
-        )}
+          )}
+        </div>
       </Modal>
     </div>
   );
