@@ -10,6 +10,7 @@ import {
   FiTrendingUp,
   FiCalendar,
 } from 'react-icons/fi';
+import Card from '../../components/ui/Card';
 import Skeleton from '../../components/ui/Skeleton';
 import adminService from '../../services/adminService';
 import { formatCurrency, formatDate } from '../../utils/helpers';
