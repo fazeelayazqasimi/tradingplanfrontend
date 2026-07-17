@@ -294,9 +294,15 @@ export default function Wallet() {
     },
     {
       header: 'Description',
-      render: (_, row) => (
-        <span className="text-dark-500 max-w-[200px] truncate block">{row.description || '\u2014'}</span>
-      ),
+      render: (_, row) => {
+        const refName = row.metadata?.referredName;
+        return (
+          <span className="text-dark-500 max-w-[220px] truncate block" title={row.description || ''}>
+            {row.description || '\u2014'}
+            {refName && <span className="text-primary-500 font-medium"> ({refName})</span>}
+          </span>
+        );
+      },
     },
     {
       header: 'Date',
