@@ -10,6 +10,9 @@ import {
   FiUserPlus,
   FiLayers,
   FiRefreshCw,
+  FiChevronDown,
+  FiChevronRight,
+  FiShare2,
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Card from '../../components/ui/Card';
@@ -33,6 +36,7 @@ const item = {
 const TABS = [
   { key: 'direct', label: 'Direct Referrals', icon: FiUserPlus },
   { key: 'indirect', label: 'Indirect Referrals', icon: FiLayers },
+  { key: 'tree', label: 'Tree View', icon: FiShare2 },
 ];
 
 export default function Referrals() {
@@ -41,6 +45,7 @@ export default function Referrals() {
   const [stats, setStats] = useState(null);
   const [directReferrals, setDirectReferrals] = useState([]);
   const [indirectReferrals, setIndirectReferrals] = useState([]);
+  const [referralTree, setReferralTree] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('direct');
   const [copiedCode, setCopiedCode] = useState(false);
@@ -74,6 +79,8 @@ export default function Referrals() {
         const indirect = td?.indirect || td?.indirectReferrals || td?.level2 || [];
         setDirectReferrals(Array.isArray(direct) ? direct : []);
         setIndirectReferrals(Array.isArray(indirect) ? indirect : []);
+        const treeData = Array.isArray(td) ? td : (td?.tree || []);
+        setReferralTree(treeData.length > 0 ? treeData : []);
       }
     } catch {
       toast.error('Failed to load referral data');
@@ -141,7 +148,46 @@ export default function Referrals() {
     },
   ];
 
-  const activeList = activeTab === 'direct' ? directReferrals : indirectReferrals;
+  const activeList = activeTab === 'direct' ? directReferrals : activeTab === 'indirect' ? indirectReferrals : [];
+
+  function TreeNode({ node, depth = 0 }) {
+    const [expanded, setExpanded] = useState(true);
+    const u = node.user || {};
+    const name = (u.firstName ? `${u.firstName} ${u.lastName}` : null) || 'Unknown';
+    const initials = name.split(' ').map((n) => n[0]).join('').toUpperCase().substring(0, 2);
+
+    return (
+      <div>
+        <div
+          className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-dark-50 cursor-pointer transition-colors"
+          style={{ marginLeft: depth * 24 }}
+        >
+          {node.children?.length > 0 ? (
+            <button onClick={() => setExpanded(!expanded)} className="p-0.5 text-dark-400 hover:text-dark-600">
+              {expanded ? <FiChevronDown size={14} /> : <FiChevronRight size={14} />}
+            </button>
+          ) : (
+            <span className="w-[18px]" />
+          )}
+          <div className="w-7 h-7 rounded-full bg-primary-500 flex items-center justify-center text-white text-[11px] font-bold shrink-0">
+            {initials}
+          </div>
+          <span className="text-sm font-medium text-ink truncate flex-1">{name}</span>
+          <span className="text-[11px] text-dark-400">Lvl {node.level}</span>
+          {node.commission > 0 && (
+            <span className="text-[11px] font-semibold text-emerald-600">+{formatCurrency(node.commission)}</span>
+          )}
+        </div>
+        {expanded && node.children?.length > 0 && (
+          <div className="border-l-2 border-dark-200 ml-[22px]">
+            {node.children.map((child, i) => (
+              <TreeNode key={child._id || i} node={child} depth={depth + 1} />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -291,6 +337,20 @@ export default function Referrals() {
               >
                 {loading ? (
                   <Skeleton count={4} className="h-16 w-full" />
+                ) : activeTab === 'tree' ? (
+                  referralTree.length === 0 ? (
+                    <EmptyState
+                      icon={FiShare2}
+                      title="No referral tree yet"
+                      description="Start by sharing your referral code. Your tree will grow as people join through your links."
+                    />
+                  ) : (
+                    <div className="space-y-1">
+                      {referralTree.map((node, i) => (
+                        <TreeNode key={node._id || i} node={node} depth={0} />
+                      ))}
+                    </div>
+                  )
                 ) : activeList.length === 0 ? (
                   <EmptyState
                     icon={FiUsers}
@@ -353,7 +413,9 @@ export default function Referrals() {
             <p className="text-xs text-dark-400">
               {activeTab === 'direct'
                 ? `${directReferrals.length} direct referral${directReferrals.length !== 1 ? 's' : ''}`
-                : `${indirectReferrals.length} indirect referral${indirectReferrals.length !== 1 ? 's' : ''}`}
+                : activeTab === 'indirect'
+                ? `${indirectReferrals.length} indirect referral${indirectReferrals.length !== 1 ? 's' : ''}`
+                : `${referralTree.length} branches in your tree`}
             </p>
           </div>
         </Card>
