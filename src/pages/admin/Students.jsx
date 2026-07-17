@@ -219,18 +219,18 @@ export default function Students() {
         {pagination.totalPages > 1 && (
           <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-dark-100">
             <p className="text-sm text-dark-400">
-              Showing {pagination.from}–{pagination.to} of {pagination.totalItems} students
+              Page {pagination.currentPage} of {pagination.totalPages} ({pagination.totalItems} students)
             </p>
             <div className="flex items-center gap-1.5">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={pagination.prevPage}
-                disabled={!pagination.hasPrev}
+                disabled={pagination.currentPage <= 1}
               >
                 Previous
               </Button>
-              {pagination.pageNumbers.map((page) => (
+              {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((page) => (
                 <Button
                   key={page}
                   variant={page === pagination.currentPage ? 'primary' : 'outline'}
@@ -244,7 +244,7 @@ export default function Students() {
                 variant="outline"
                 size="sm"
                 onClick={pagination.nextPage}
-                disabled={!pagination.hasNext}
+                disabled={pagination.currentPage >= pagination.totalPages}
               >
                 Next
               </Button>

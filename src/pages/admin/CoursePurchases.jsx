@@ -269,18 +269,16 @@ export default function CoursePurchases() {
         {pagination.totalPages > 1 && (
           <div className="px-6 py-4 border-t border-dark-100 flex items-center justify-between">
             <p className="text-sm text-dark-500">
-              Showing {pagination.from} to {pagination.to} of {pagination.totalItems} purchases
+              Page {pagination.currentPage} of {pagination.totalPages} ({pagination.totalItems} purchases)
             </p>
             <div className="flex items-center gap-1">
-              <Button variant="outline" size="sm" onClick={pagination.prevPage} disabled={!pagination.hasPrev}>
+              <Button variant="outline" size="sm" onClick={pagination.prevPage} disabled={pagination.currentPage <= 1}>
                 Previous
               </Button>
-              {pagination.pageNumbers.map((p) => (
-                <Button key={p} variant={p === pagination.currentPage ? 'primary' : 'outline'} size="sm" onClick={() => pagination.goToPage(p)}>
-                  {p}
-                </Button>
+              {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((p) => (
+                <Button key={p} variant={p === pagination.currentPage ? 'primary' : 'outline'} size="sm" onClick={() => pagination.goToPage(p)}>{p}</Button>
               ))}
-              <Button variant="outline" size="sm" onClick={pagination.nextPage} disabled={!pagination.hasNext}>
+              <Button variant="outline" size="sm" onClick={pagination.nextPage} disabled={pagination.currentPage >= pagination.totalPages}>
                 Next
               </Button>
             </div>
