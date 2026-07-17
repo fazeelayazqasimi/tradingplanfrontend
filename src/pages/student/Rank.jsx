@@ -30,30 +30,30 @@ const item = {
 };
 
 const RANK_GRADIENTS = {
-  D1: 'from-gray-400 to-gray-500',
-  D2: 'from-amber-400 to-amber-600',
-  D3: 'from-blue-400 to-blue-600',
-  D4: 'from-purple-400 to-purple-600',
-  D5: 'from-rose-400 to-rose-600',
-  D6: 'from-emerald-400 to-emerald-600',
+  V1: 'from-gray-400 to-gray-500',
+  V2: 'from-amber-400 to-amber-600',
+  V3: 'from-blue-400 to-blue-600',
+  V4: 'from-purple-400 to-purple-600',
+  V5: 'from-rose-400 to-rose-600',
+  V6: 'from-emerald-400 to-emerald-600',
 };
 
 const RANK_BG = {
-  D1: 'bg-gray-50',
-  D2: 'bg-amber-50',
-  D3: 'bg-blue-50',
-  D4: 'bg-purple-50',
-  D5: 'bg-rose-50',
-  D6: 'bg-emerald-50',
+  V1: 'bg-gray-50',
+  V2: 'bg-amber-50',
+  V3: 'bg-blue-50',
+  V4: 'bg-purple-50',
+  V5: 'bg-rose-50',
+  V6: 'bg-emerald-50',
 };
 
 const RANK_BORDER = {
-  D1: 'border-gray-200',
-  D2: 'border-amber-200',
-  D3: 'border-blue-200',
-  D4: 'border-purple-200',
-  D5: 'border-rose-200',
-  D6: 'border-emerald-200',
+  V1: 'border-gray-200',
+  V2: 'border-amber-200',
+  V3: 'border-blue-200',
+  V4: 'border-purple-200',
+  V5: 'border-rose-200',
+  V6: 'border-emerald-200',
 };
 
 
@@ -107,7 +107,7 @@ export default function Rank() {
 
   const RANK_ORDER = displayRanks.map((r) => r.name);
 
-  const rankName = currentRank?.name || currentRank?.rank || currentRank?.rankName || 'D1';
+  const rankName = currentRank?.name || currentRank?.rank || currentRank?.rankName || 'V1';
   const directCount = currentRank?.directReferrals ?? currentRank?.direct_count ?? currentRank?.totalDirectReferrals ?? 0;
   const totalRevenue = currentRank?.totalRevenue ?? currentRank?.revenue ?? currentRank?.total_revenue ?? 0;
   const promotionDate = currentRank?.promotedAt || currentRank?.rankUpdatedAt || currentRank?.updatedAt;

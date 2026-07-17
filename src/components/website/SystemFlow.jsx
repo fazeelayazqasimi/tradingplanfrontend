@@ -55,7 +55,7 @@ const steps = [
   },
   {
     icon: FiAward,
-    title: 'Climb Ranks (D1-D6)',
+    title: 'Climb Ranks (V1-V6)',
     description: 'More referrals & team volume unlock higher ranks with bigger commissions',
     color: 'from-indigo-500 to-indigo-600',
     bgLight: 'bg-indigo-50',

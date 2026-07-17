@@ -4,18 +4,18 @@ import websiteService from '../../services/websiteService';
 import gsap from 'gsap';
 
 const defaultRanks = [
-  { tier: 'D1', direct: 0, team: 0, commission: '$30', profitShare: '4%' },
-  { tier: 'D2', direct: 3, team: 20, commission: '$40', profitShare: '6%' },
-  { tier: 'D3', direct: 5, team: 100, commission: '$50', profitShare: '8%' },
-  { tier: 'D4', direct: 8, team: 300, commission: '$60', profitShare: '10%' },
-  { tier: 'D5', direct: 12, team: 800, commission: '$65', profitShare: '11%' },
-  { tier: 'D6', direct: 20, team: 1500, commission: '$70', profitShare: '12%' },
+  { tier: 'V1', direct: 0, team: 0, commission: '$30', profitShare: '4%' },
+  { tier: 'V2', direct: 3, team: 20, commission: '$40', profitShare: '6%' },
+  { tier: 'V3', direct: 5, team: 100, commission: '$50', profitShare: '8%' },
+  { tier: 'V4', direct: 8, team: 300, commission: '$60', profitShare: '10%' },
+  { tier: 'V5', direct: 12, team: 800, commission: '$65', profitShare: '11%' },
+  { tier: 'V6', direct: 20, team: 1500, commission: '$70', profitShare: '12%' },
 ];
 
 const benefits = [
   { icon: '💰', title: 'Direct Commission', desc: 'Earn up to $70 per direct referral based on your rank.' },
   { icon: '👥', title: 'Indirect Income', desc: 'Earn from your entire team network as it grows.' },
-  { icon: '📈', title: 'Rank Progression', desc: 'Climb from D1 to D6 with clear requirements.' },
+  { icon: '📈', title: 'Rank Progression', desc: 'Climb from V1 to V6 with clear requirements.' },
   { icon: '🎯', title: 'Profit Sharing', desc: 'Get up to 12% from the network profit pool.' },
   { icon: '🔗', title: 'Personal Referral Link', desc: 'Share your unique link and track every signup.' },
   { icon: '🏆', title: 'Bonus Rewards', desc: 'Additional bonuses for top-performing members.' },
@@ -143,10 +143,10 @@ export default function ReferralProgram() {
               <h3 className="font-bold text-xl mb-4">Example Earnings</h3>
               <div className="space-y-4">
                 {[
-                  { label: '5 Direct Referrals (D2)', amount: '$200', color: 'text-emerald-500' },
-                  { label: '20 Team Members (D3)', amount: '$1,000+', color: 'text-primary-500' },
-                  { label: '100 Team Members (D4)', amount: '$6,000+', color: 'text-amber-500' },
-                  { label: 'Full Network (D6)', amount: '$30,000+', color: 'text-purple-500' },
+                  { label: '5 Direct Referrals (V2)', amount: '$200', color: 'text-emerald-500' },
+                  { label: '20 Team Members (V3)', amount: '$1,000+', color: 'text-primary-500' },
+                  { label: '100 Team Members (V4)', amount: '$6,000+', color: 'text-amber-500' },
+                  { label: 'Full Network (V6)', amount: '$30,000+', color: 'text-purple-500' },
                 ].map((e, i) => (
                   <div key={i} className="flex justify-between items-center py-3 border-b border-dark-100 last:border-b-0">
                     <span className="text-sm">{e.label}</span>

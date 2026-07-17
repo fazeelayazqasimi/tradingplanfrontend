@@ -10,7 +10,7 @@ const defaultFaqs = [
   { q: 'Can I attend onsite training remotely?', a: 'Onsite workshops are in-person by design, but every session is followed by recorded highlights added to your online course library.' },
   { q: 'What is Trading Institute?', a: 'Trading Institute is a comprehensive platform offering structured trading education, live signals, copy trading, and a referral earning system built by professional traders.' },
   { q: 'How do I withdraw my earnings?', a: 'Go to Wallet > Withdraw. Enter your payment details and submit a request. Admin will review and approve it within one business day.' },
-  { q: 'What are the ranks?', a: 'We have 6 ranks (D1-D6) based on your referrals and revenue. Higher ranks mean higher commissions and profit sharing percentages.' },
+  { q: 'What are the ranks?', a: 'We have 6 ranks (V1-V6) based on your referrals and revenue. Higher ranks mean higher commissions and profit sharing percentages.' },
   { q: 'Can I get a refund?', a: 'We offer a 14-day money-back guarantee. If you are not satisfied, contact support for a full refund, no questions asked.' },
 ];
 
