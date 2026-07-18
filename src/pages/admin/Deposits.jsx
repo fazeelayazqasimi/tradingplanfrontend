@@ -13,7 +13,7 @@ import adminService from '../../services/adminService';
 import { formatCurrency, formatDate } from '../../utils/helpers';
 import usePagination from '../../hooks/usePagination';
 
-const statusColor = { pending: 'warning', approved: 'success', rejected: 'danger' };
+const statusColor = { pending: 'warning', approved: 'success', rejected: 'danger', expired: 'neutral', failed: 'danger' };
 
 export default function Deposits() {
   const [deposits, setDeposits] = useState([]);
@@ -206,6 +206,8 @@ export default function Deposits() {
               <option value="pending">Pending</option>
               <option value="approved">Approved</option>
               <option value="rejected">Rejected</option>
+              <option value="expired">Expired</option>
+              <option value="failed">Failed</option>
             </select>
             <Button type="submit">Search</Button>
           </form>
@@ -228,18 +230,49 @@ export default function Deposits() {
                 <span className="text-sm text-dark-500">Amount</span>
                 <span className="text-lg font-bold text-ink">{formatCurrency(selected.amount)}</span>
               </div>
-              <div className="flex items-center justify-between px-4 py-3">
-                <span className="text-sm text-dark-500">Bank</span>
-                <span className="text-sm font-medium text-ink">{selected.accountId?.bankName || 'N/A'}</span>
-              </div>
-              <div className="flex items-center justify-between px-4 py-3">
-                <span className="text-sm text-dark-500">Account Holder</span>
-                <span className="text-sm font-medium text-ink">{selected.accountId?.accountHolderName || 'N/A'}</span>
-              </div>
-              <div className="flex items-center justify-between px-4 py-3">
-                <span className="text-sm text-dark-500">Account Number</span>
-                <span className="text-sm font-medium text-ink">{selected.accountId?.accountNumber || 'N/A'}</span>
-              </div>
+              {selected.paymentMethod === 'crypto' || selected.paymentMethod === 'coin' || selected.paymentMethod === 'usdt_bep20' ? (
+                <>
+                  <div className="flex items-center justify-between px-4 py-3">
+                    <span className="text-sm text-dark-500">Coin Type</span>
+                    <span className="text-sm font-medium text-ink">{selected.coinType || 'N/A'}</span>
+                  </div>
+                  <div className="flex items-center justify-between px-4 py-3">
+                    <span className="text-sm text-dark-500">Deposit Address</span>
+                    <span className="text-sm font-mono text-ink max-w-[200px] truncate block text-right">{selected.depositAddress || 'N/A'}</span>
+                  </div>
+                  <div className="flex items-center justify-between px-4 py-3">
+                    <span className="text-sm text-dark-500">Txn ID</span>
+                    <span className="text-sm font-mono text-ink max-w-[200px] truncate block text-right">{selected.coinPaymentsTxnId || selected.coinPaymentRef || 'N/A'}</span>
+                  </div>
+                  {selected.confirmsReceived !== undefined && (
+                    <div className="flex items-center justify-between px-4 py-3">
+                      <span className="text-sm text-dark-500">Confirmations</span>
+                      <span className="text-sm font-medium text-ink">{selected.confirmsReceived || 0} / {selected.confirmsNeeded || '?'}</span>
+                    </div>
+                  )}
+                  {selected.webhookProcessed && (
+                    <div className="flex items-center justify-between px-4 py-3">
+                      <span className="text-sm text-dark-500">Webhook</span>
+                      <span className="text-sm font-medium text-emerald-600">Processed</span>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between px-4 py-3">
+                    <span className="text-sm text-dark-500">Bank</span>
+                    <span className="text-sm font-medium text-ink">{selected.accountId?.bankName || 'N/A'}</span>
+                  </div>
+                  <div className="flex items-center justify-between px-4 py-3">
+                    <span className="text-sm text-dark-500">Account Holder</span>
+                    <span className="text-sm font-medium text-ink">{selected.accountId?.accountHolderName || 'N/A'}</span>
+                  </div>
+                  <div className="flex items-center justify-between px-4 py-3">
+                    <span className="text-sm text-dark-500">Account Number</span>
+                    <span className="text-sm font-medium text-ink">{selected.accountId?.accountNumber || 'N/A'}</span>
+                  </div>
+                </>
+              )}
               <div className="flex items-center justify-between px-4 py-3">
                 <span className="text-sm text-dark-500">Status</span>
                 <Badge color={statusColor[selected.status] || 'neutral'}>{selected.status}</Badge>

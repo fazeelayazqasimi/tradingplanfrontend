@@ -16,15 +16,19 @@ const STATUS_OPTIONS = [
   { value: '', label: 'All Statuses' },
   { value: 'pending', label: 'Pending' },
   { value: 'approved', label: 'Approved' },
+  { value: 'processing', label: 'Processing' },
   { value: 'rejected', label: 'Rejected' },
   { value: 'paid', label: 'Paid' },
+  { value: 'failed', label: 'Failed' },
 ];
 
 const STATUS_CONFIG = {
   pending: { label: 'Pending', color: 'warning' },
   approved: { label: 'Approved', color: 'success' },
+  processing: { label: 'Processing', color: 'info' },
   rejected: { label: 'Rejected', color: 'danger' },
-  paid: { label: 'Paid', color: 'info' },
+  paid: { label: 'Paid', color: 'success' },
+  failed: { label: 'Failed', color: 'danger' },
 };
 
 export default function Withdrawals() {
@@ -295,34 +299,73 @@ export default function Withdrawals() {
                 <p className="text-[15px] font-semibold text-ink">Payment Details</p>
               </div>
               <div className="bg-dark-50 rounded-[18px] p-5 space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-[12px] font-semibold uppercase tracking-wider text-dark-500">Bank Name</p>
-                    <p className="text-[15px] font-medium text-ink mt-0.5">
-                      {detailModal.bankName || detailModal.bank?.name || '—'}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-[12px] font-semibold uppercase tracking-wider text-dark-500">Account Name</p>
-                    <p className="text-[15px] font-medium text-ink mt-0.5">
-                      {detailModal.accountName || '—'}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-[12px] font-semibold uppercase tracking-wider text-dark-500">Account Number</p>
-                    <p className="text-[15px] font-mono font-medium text-ink mt-0.5">
-                      {detailModal.accountNumber || '—'}
-                    </p>
-                  </div>
-                  {(detailModal.routingNumber || detailModal.swiftCode || detailModal.iban) && (
-                    <div>
-                      <p className="text-[12px] font-semibold uppercase tracking-wider text-dark-500">Routing / SWIFT / IBAN</p>
-                      <p className="text-[15px] font-mono font-medium text-ink mt-0.5">
-                        {detailModal.routingNumber || detailModal.swiftCode || detailModal.iban}
+                {(detailModal.paymentMethod === 'crypto' || detailModal.paymentMethod === 'usdt_bep20') ? (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="col-span-2">
+                      <p className="text-[12px] font-semibold uppercase tracking-wider text-dark-500">Wallet Address</p>
+                      <p className="text-[15px] font-mono font-medium text-ink mt-0.5 break-all">
+                        {detailModal.paymentDetails?.walletAddress || detailModal.walletAddress || '—'}
                       </p>
                     </div>
-                  )}
-                </div>
+                    <div>
+                      <p className="text-[12px] font-semibold uppercase tracking-wider text-dark-500">Cryptocurrency</p>
+                      <p className="text-[15px] font-medium text-ink mt-0.5">
+                        {detailModal.paymentDetails?.cryptoCurrency || detailModal.cryptocurrency || 'USDT'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[12px] font-semibold uppercase tracking-wider text-dark-500">Network</p>
+                      <p className="text-[15px] font-medium text-ink mt-0.5">
+                        {detailModal.network || 'BEP20'}
+                      </p>
+                    </div>
+                    {detailModal.coinPaymentsTxnId && (
+                      <div className="col-span-2">
+                        <p className="text-[12px] font-semibold uppercase tracking-wider text-dark-500">CoinPayments Txn ID</p>
+                        <p className="text-[15px] font-mono font-medium text-ink mt-0.5 break-all">
+                          {detailModal.coinPaymentsTxnId}
+                        </p>
+                      </div>
+                    )}
+                    {detailModal.payoutError && (
+                      <div className="col-span-2">
+                        <p className="text-[12px] font-semibold uppercase tracking-wider text-dark-500">Payout Error</p>
+                        <p className="text-[15px] font-medium text-red-500 mt-0.5">
+                          {detailModal.payoutError}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-[12px] font-semibold uppercase tracking-wider text-dark-500">Bank Name</p>
+                      <p className="text-[15px] font-medium text-ink mt-0.5">
+                        {detailModal.bankName || detailModal.bank?.name || '—'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[12px] font-semibold uppercase tracking-wider text-dark-500">Account Name</p>
+                      <p className="text-[15px] font-medium text-ink mt-0.5">
+                        {detailModal.accountName || '—'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[12px] font-semibold uppercase tracking-wider text-dark-500">Account Number</p>
+                      <p className="text-[15px] font-mono font-medium text-ink mt-0.5">
+                        {detailModal.accountNumber || '—'}
+                      </p>
+                    </div>
+                    {(detailModal.routingNumber || detailModal.swiftCode || detailModal.iban) && (
+                      <div>
+                        <p className="text-[12px] font-semibold uppercase tracking-wider text-dark-500">Routing / SWIFT / IBAN</p>
+                        <p className="text-[15px] font-mono font-medium text-ink mt-0.5">
+                          {detailModal.routingNumber || detailModal.swiftCode || detailModal.iban}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 

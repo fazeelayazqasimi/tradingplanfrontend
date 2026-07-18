@@ -80,7 +80,8 @@ const TYPE_OPTIONS = [
 const PAYMENT_METHODS = [
   { value: 'bank_transfer', label: 'Bank Transfer' },
   { value: 'paypal', label: 'PayPal' },
-  { value: 'crypto', label: 'Cryptocurrency' },
+  { value: 'usdt_bep20', label: 'USDT (BEP20)' },
+  { value: 'crypto', label: 'Other Cryptocurrency' },
   { value: 'mobile_money', label: 'Mobile Money' },
 ];
 
@@ -156,7 +157,7 @@ export default function Wallet() {
   const fetchTransactions = useCallback(async () => {
     setLoadingTx(true);
     try {
-      const params = { page, perPage: limit };
+      const params = { page, limit };
       if (category) params.category = category;
       if (type) params.type = type;
       const res = await walletService.getTransactions(params);
@@ -733,6 +734,11 @@ export default function Wallet() {
                 <p className="text-xs text-dark-500 font-medium mb-1">Amount</p>
                 <p className="text-lg font-bold text-ink">{formatCurrency(coinPayment.amount)}</p>
               </div>
+              {coinPayment.qrcodeUrl && (
+                <div className="flex justify-center">
+                  <img src={coinPayment.qrcodeUrl} alt="QR Code" className="w-40 h-40 rounded-xl border border-dark-200" />
+                </div>
+              )}
               <div>
                 <p className="text-xs text-dark-500 font-medium mb-1">Deposit Address</p>
                 <div className="flex items-center gap-2 p-3 rounded-lg bg-white border border-dark-200">
@@ -772,14 +778,15 @@ export default function Wallet() {
               label="Payment Method"
               options={[
                 { value: 'bank_transfer', label: 'Bank Transfer' },
-                { value: 'crypto', label: 'Cryptocurrency (USDT/BTC/ETH)' },
+                { value: 'usdt_bep20', label: 'USDT (BEP20) \u2014 Auto-credit' },
+                { value: 'crypto', label: 'Other Cryptocurrency' },
                 { value: 'coin', label: 'Coin Payment' },
               ]}
               value={depositForm.paymentMethod}
-              onChange={(e) => setDepositForm((p) => ({ ...p, paymentMethod: e.target.value, accountId: '', coinType: '' }))}
+              onChange={(e) => setDepositForm((p) => ({ ...p, paymentMethod: e.target.value, accountId: '', coinType: e.target.value === 'usdt_bep20' ? 'USDT_BEP20' : '' }))}
             />
 
-            {(depositForm.paymentMethod === 'crypto' || depositForm.paymentMethod === 'coin') ? (
+            {(depositForm.paymentMethod === 'crypto' || depositForm.paymentMethod === 'coin' || depositForm.paymentMethod === 'usdt_bep20') ? (
               <Select
                 label="Select Coin"
                 options={[
@@ -853,8 +860,8 @@ export default function Wallet() {
 
             <div className="flex justify-end gap-3 pt-2">
               <Button variant="outline" onClick={() => { setShowDeposit(false); setDepositErrors({}); setCoinPayment(null); }}>Cancel</Button>
-              <Button onClick={handleDeposit} loading={submitting} disabled={(depositForm.paymentMethod !== 'crypto' && depositForm.paymentMethod !== 'coin' && paymentAccounts.length === 0)}>
-                {depositForm.paymentMethod === 'crypto' || depositForm.paymentMethod === 'coin' ? 'Generate Payment' : 'Submit Deposit'}
+              <Button onClick={handleDeposit} loading={submitting} disabled={(depositForm.paymentMethod !== 'crypto' && depositForm.paymentMethod !== 'coin' && depositForm.paymentMethod !== 'usdt_bep20' && paymentAccounts.length === 0)}>
+                {depositForm.paymentMethod === 'crypto' || depositForm.paymentMethod === 'coin' || depositForm.paymentMethod === 'usdt_bep20' ? 'Generate Payment' : 'Submit Deposit'}
               </Button>
             </div>
           </div>

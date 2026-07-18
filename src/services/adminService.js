@@ -33,6 +33,7 @@ const adminService = {
   createAnnouncement: (data) => unwrap(api.post('/announcements', data)),
   deleteAnnouncement: (id) => unwrap(api.delete(`/announcements/${id}`)),
   getSupportTickets: (params) => unwrap(api.get('/support', { params })),
+  getSupportTicket: (id) => unwrap(api.get(`/support/${id}`)),
   updateTicketStatus: (id, data) => unwrap(api.put(`/support/${id}/status`, data)),
   assignTicket: (id, data) => unwrap(api.put(`/support/${id}/assign`, data)),
   getFAQs: (params) => unwrap(api.get('/faqs', { params })),

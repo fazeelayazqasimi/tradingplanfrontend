@@ -34,7 +34,8 @@ const STATUS_CONFIG = {
 const PAYMENT_METHODS = [
   { value: 'bank_transfer', label: 'Bank Transfer' },
   { value: 'paypal', label: 'PayPal' },
-  { value: 'crypto', label: 'Cryptocurrency' },
+  { value: 'usdt_bep20', label: 'USDT (BEP20)' },
+  { value: 'crypto', label: 'Other Cryptocurrency' },
   { value: 'mobile_money', label: 'Mobile Money' },
 ];
 
@@ -61,6 +62,8 @@ export default function Withdrawals() {
     accountNumber: '',
     accountName: '',
     bankName: '',
+    walletAddress: '',
+    cryptocurrency: 'USDT',
   });
   const [formErrors, setFormErrors] = useState({});
 
@@ -186,14 +189,21 @@ export default function Withdrawals() {
     if (!form.paymentMethod) {
       errors.paymentMethod = 'Select a payment method';
     }
-    if (!form.accountNumber?.trim()) {
-      errors.accountNumber = 'Account number is required';
-    }
-    if (!form.accountName?.trim()) {
-      errors.accountName = 'Account name is required';
-    }
-    if (form.paymentMethod === 'bank_transfer' && !form.bankName?.trim()) {
-      errors.bankName = 'Bank name is required for bank transfers';
+    const isCrypto = form.paymentMethod === 'usdt_bep20' || form.paymentMethod === 'crypto';
+    if (isCrypto) {
+      if (!form.walletAddress?.trim()) {
+        errors.walletAddress = 'Wallet address is required';
+      }
+    } else {
+      if (!form.accountNumber?.trim()) {
+        errors.accountNumber = 'Account number is required';
+      }
+      if (!form.accountName?.trim()) {
+        errors.accountName = 'Account name is required';
+      }
+      if (form.paymentMethod === 'bank_transfer' && !form.bankName?.trim()) {
+        errors.bankName = 'Bank name is required for bank transfers';
+      }
     }
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -203,16 +213,23 @@ export default function Withdrawals() {
     if (!validateForm()) return;
     setSubmitting(true);
     try {
-      await studentService.requestWithdrawal({
+      const isCrypto = form.paymentMethod === 'usdt_bep20' || form.paymentMethod === 'crypto';
+      const payload = {
         amount: parseFloat(form.amount),
         paymentMethod: form.paymentMethod,
-        accountNumber: form.accountNumber.trim(),
-        accountName: form.accountName.trim(),
-        bankName: form.bankName.trim() || undefined,
-      });
+      };
+      if (isCrypto) {
+        payload.walletAddress = form.walletAddress.trim();
+        payload.cryptocurrency = form.cryptocurrency || 'USDT';
+      } else {
+        payload.accountNumber = form.accountNumber.trim();
+        payload.accountName = form.accountName.trim();
+        payload.bankName = form.bankName.trim() || undefined;
+      }
+      await studentService.requestWithdrawal(payload);
       toast.success('Withdrawal request submitted successfully');
       setShowModal(false);
-      setForm({ amount: '', paymentMethod: '', accountNumber: '', accountName: '', bankName: '' });
+      setForm({ amount: '', paymentMethod: '', accountNumber: '', accountName: '', bankName: '', walletAddress: '', cryptocurrency: 'USDT' });
       setFormErrors({});
       fetchWallet();
       fetchWithdrawals();
@@ -350,20 +367,47 @@ export default function Withdrawals() {
               error={formErrors.bankName}
             />
           )}
-          <Input
-            label="Account Number"
-            placeholder="Enter account number"
-            value={form.accountNumber}
-            onChange={updateField('accountNumber')}
-            error={formErrors.accountNumber}
-          />
-          <Input
-            label="Account Name"
-            placeholder="Enter account holder name"
-            value={form.accountName}
-            onChange={updateField('accountName')}
-            error={formErrors.accountName}
-          />
+          {(form.paymentMethod === 'usdt_bep20' || form.paymentMethod === 'crypto') ? (
+            <>
+              <Input
+                label="Wallet Address"
+                placeholder="Enter your USDT BEP20 wallet address"
+                value={form.walletAddress}
+                onChange={updateField('walletAddress')}
+                error={formErrors.walletAddress}
+              />
+              {form.paymentMethod === 'crypto' && (
+                <Select
+                  label="Cryptocurrency"
+                  options={[
+                    { value: 'USDT', label: 'USDT' },
+                    { value: 'BTC', label: 'Bitcoin' },
+                    { value: 'ETH', label: 'Ethereum' },
+                    { value: 'BNB', label: 'BNB' },
+                  ]}
+                  value={form.cryptocurrency}
+                  onChange={updateField('cryptocurrency')}
+                />
+              )}
+            </>
+          ) : (
+            <>
+              <Input
+                label="Account Number"
+                placeholder="Enter account number"
+                value={form.accountNumber}
+                onChange={updateField('accountNumber')}
+                error={formErrors.accountNumber}
+              />
+              <Input
+                label="Account Name"
+                placeholder="Enter account holder name"
+                value={form.accountName}
+                onChange={updateField('accountName')}
+                error={formErrors.accountName}
+              />
+            </>
+          )}
 
           {wallet && (
             <div className="p-3 rounded-[11px] bg-dark-50">

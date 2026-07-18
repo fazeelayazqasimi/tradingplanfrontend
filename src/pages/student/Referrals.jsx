@@ -23,6 +23,7 @@ import Button from '../../components/ui/Button';
 import Skeleton from '../../components/ui/Skeleton';
 import EmptyState from '../../components/ui/EmptyState';
 import referralService from '../../services/referralService';
+import studentService from '../../services/studentService';
 import api from '../../services/api';
 import { formatCurrency, formatDate, copyToClipboard } from '../../utils/helpers';
 
@@ -62,7 +63,7 @@ export default function Referrals() {
         referralService.getReferralCode(),
         referralService.getStats(),
         referralService.getTree(),
-        api.get('/ranks/me'),
+        studentService.getMyRank(),
       ]);
 
       if (codeRes.status === 'fulfilled') {
