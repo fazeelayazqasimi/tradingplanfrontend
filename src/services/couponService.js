@@ -5,6 +5,7 @@ const couponService = {
   createCoupon: (data) => api.post('/coupons', data),
   updateCoupon: (id, data) => api.put(`/coupons/${id}`, data),
   deleteCoupon: (id) => api.delete(`/coupons/${id}`),
+  generateCoupons: (data) => api.post('/coupons/generate', data),
   validateCoupon: (data) => api.post('/coupons/validate', data),
   applyCoupon: (data) => api.post('/coupons/apply', data),
 };

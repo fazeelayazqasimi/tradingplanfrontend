@@ -47,6 +47,7 @@ import AdminDeposits from './pages/admin/Deposits';
 import AdminPaymentAccounts from './pages/admin/PaymentAccounts';
 import AdminCoupons from './pages/admin/Coupons';
 import AdminReports from './pages/admin/Reports';
+import AdminBrokers from './pages/admin/Brokers';
 
 import StudentDashboard from './pages/student/Dashboard';
 import StudentCourses from './pages/student/Courses';
@@ -134,6 +135,7 @@ export const router = createBrowserRouter([
       { path: 'deposits', element: <AdminDeposits /> },
       { path: 'payment-accounts', element: <AdminPaymentAccounts /> },
       { path: 'coupons', element: <AdminCoupons /> },
+      { path: 'brokers', element: <AdminBrokers /> },
       { path: 'reports', element: <AdminReports /> },
     ],
   },

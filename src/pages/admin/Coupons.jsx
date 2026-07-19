@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { FiSearch, FiPlus, FiEdit2, FiTrash2, FiTag, FiPercent, FiDollarSign, FiToggleLeft, FiToggleRight } from 'react-icons/fi';
+import { FiSearch, FiPlus, FiEdit2, FiTrash2, FiTag, FiPercent, FiDollarSign, FiToggleLeft, FiToggleRight, FiCpu } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
@@ -33,6 +33,9 @@ export default function Coupons() {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [showGenerate, setShowGenerate] = useState(false);
+  const [generateForm, setGenerateForm] = useState({ count: 5, commission: 'yes', value: 0 });
+  const [generating, setGenerating] = useState(false);
   const [form, setForm] = useState({
     code: '', type: 'percentage', value: '', minPurchase: 0, maxDiscount: '',
     usageLimit: '', perUserLimit: 1, applicableTo: 'all',
@@ -176,6 +179,9 @@ export default function Coupons() {
             />
           </div>
           <Button size="sm" onClick={() => { resetForm(); setShowForm(true); }}><FiPlus size={16} /> Create Coupon</Button>
+          <Button size="sm" variant="outline" onClick={() => { setShowGenerate(true); setGenerateForm({ count: 5, commission: 'yes', value: 0 }); }}>
+            <FiCpu size={16} /> Generate PINs
+          </Button>
         </div>
       </div>
 
@@ -200,6 +206,86 @@ export default function Coupons() {
           )}
         </Card>
       </motion.div>
+
+      <Modal isOpen={showGenerate} onClose={() => setShowGenerate(false)} title="Generate PINs" size="sm">
+        <div className="space-y-4">
+          <div>
+            <label className="block text-[13px] font-semibold text-ink mb-1.5">Commission Type</label>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setGenerateForm(p => ({ ...p, commission: 'yes' }))}
+                className={`flex-1 p-3 rounded-xl border-2 text-sm font-semibold transition-all ${
+                  generateForm.commission === 'yes'
+                    ? 'border-primary-500 bg-primary-50 text-primary-700'
+                    : 'border-dark-200 text-dark-500 hover:border-dark-300'
+                }`}
+              >
+                With Commission
+              </button>
+              <button
+                type="button"
+                onClick={() => setGenerateForm(p => ({ ...p, commission: 'no' }))}
+                className={`flex-1 p-3 rounded-xl border-2 text-sm font-semibold transition-all ${
+                  generateForm.commission === 'no'
+                    ? 'border-primary-500 bg-primary-50 text-primary-700'
+                    : 'border-dark-200 text-dark-500 hover:border-dark-300'
+                }`}
+              >
+                Without Commission
+              </button>
+            </div>
+          </div>
+          <div>
+            <label className="block text-[13px] font-semibold text-ink mb-1.5">How many to generate?</label>
+            <div className="flex gap-2 flex-wrap">
+              {[1,2,3,4,5,6,7,8,9,10].map((n) => (
+                <button
+                  key={n}
+                  type="button"
+                  onClick={() => setGenerateForm(p => ({ ...p, count: n }))}
+                  className={`w-9 h-9 rounded-xl text-sm font-bold transition-all ${
+                    generateForm.count === n
+                      ? 'bg-primary-500 text-white shadow-sm'
+                      : 'bg-dark-100 text-dark-500 hover:bg-dark-200'
+                  }`}
+                >
+                  {n}
+                </button>
+              ))}
+            </div>
+          </div>
+          <Input label="PIN Value ($)" type="number" placeholder="0" value={generateForm.value}
+            onChange={(e) => setGenerateForm(p => ({ ...p, value: e.target.value }))} min="0" step="0.01" />
+          <div className="flex justify-end gap-3 pt-2">
+            <Button variant="outline" type="button" onClick={() => setShowGenerate(false)}>Cancel</Button>
+            <Button
+              type="button"
+              loading={generating}
+              onClick={async () => {
+                try {
+                  setGenerating(true);
+                  const res = await couponService.generateCoupons({
+                    count: generateForm.count,
+                    commission: generateForm.commission === 'yes',
+                    value: parseFloat(generateForm.value) || 0,
+                  });
+                  const codes = res?.data?.data || [];
+                  toast.success(`${codes.length} PIN(s) generated successfully`);
+                  setShowGenerate(false);
+                  fetchCoupons();
+                } catch (err) {
+                  toast.error(err?.response?.data?.message || 'Failed to generate PINs');
+                } finally {
+                  setGenerating(false);
+                }
+              }}
+            >
+              Generate
+            </Button>
+          </div>
+        </div>
+      </Modal>
 
       <Modal isOpen={showForm} onClose={() => { setShowForm(false); resetForm(); }} title={editing ? 'Edit Coupon' : 'Create Coupon'} size="lg">
         <form onSubmit={handleSubmit} className="space-y-4">

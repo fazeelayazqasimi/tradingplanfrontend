@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
-import { FiSearch, FiEye, FiUserX, FiUserCheck, FiMail, FiPhone, FiCalendar, FiTrash2 } from 'react-icons/fi';
+import { FiSearch, FiEye, FiUserX, FiUserCheck, FiMail, FiPhone, FiCalendar, FiTrash2, FiAward } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Button from '../../components/ui/Button';
 import DataTable from '../../components/ui/DataTable';
 import Modal from '../../components/ui/Modal';
 import Badge from '../../components/ui/Badge';
+import Select from '../../components/ui/Select';
 import Skeleton from '../../components/ui/Skeleton';
 import adminService from '../../services/adminService';
 import { formatDate } from '../../utils/helpers';
@@ -89,8 +90,35 @@ export default function Students() {
   const [detailLoading, setDetailLoading] = useState(false);
   const [togglingId, setTogglingId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
+  const [ranks, setRanks] = useState([]);
+  const [selectedRankId, setSelectedRankId] = useState('');
+  const [overridingRank, setOverridingRank] = useState(false);
 
   const pagination = usePagination({ totalItems: students.length, perPage: 10 });
+
+  const fetchRanks = useCallback(async () => {
+    try {
+      const res = await adminService.getRanks();
+      setRanks(res.data || []);
+    } catch {}
+  }, []);
+
+  useEffect(() => { fetchRanks(); }, [fetchRanks]);
+
+  const handleOverrideRank = async () => {
+    if (!selectedStudent || !selectedRankId) return;
+    try {
+      setOverridingRank(true);
+      await adminService.overrideRank({ userId: selectedStudent._id, rankId: selectedRankId, reason: 'Admin override' });
+      toast.success('Rank updated successfully');
+      setSelectedRankId('');
+      fetchRanks();
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Failed to update rank');
+    } finally {
+      setOverridingRank(false);
+    }
+  };
 
   const fetchStudents = useCallback(async () => {
     try {
@@ -361,6 +389,26 @@ export default function Students() {
                   </div>
                 </div>
               )}
+            </div>
+
+            <div className="rounded-xl border border-dark-100 p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <FiAward className="text-primary-500" size={18} />
+                <span className="text-sm font-semibold text-ink">Change Rank/Level</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="flex-1">
+                  <Select
+                    placeholder="Select rank..."
+                    value={selectedRankId}
+                    onChange={(e) => setSelectedRankId(e.target.value)}
+                    options={ranks.map((r) => ({ value: r._id, label: `${r.name} (${r.commissionPercent}% commission)` }))}
+                  />
+                </div>
+                <Button size="sm" onClick={handleOverrideRank} disabled={!selectedRankId || overridingRank} loading={overridingRank}>
+                  Apply
+                </Button>
+              </div>
             </div>
 
             <div className="flex items-center gap-3 pt-2">

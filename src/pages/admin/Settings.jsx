@@ -47,6 +47,7 @@ const SETTING_FIELDS = {
     { key: 'institute_address', label: 'Address', icon: FiMapPin, placeholder: '123 Trading St, New York, NY' },
     { key: 'site_tagline', label: 'Site Tagline', placeholder: 'Master the Markets' },
     { key: 'site_description', label: 'Site Description', placeholder: 'Your journey to financial freedom starts here', multiline: true },
+    { key: 'free_registration_bonus_enabled', label: 'Free Registration $1 Bonus', type: 'toggle', description: 'When enabled, new users get $1 free on registration' },
   ],
   social: [
     { key: 'instagram', label: 'Instagram', icon: FiInstagram, placeholder: 'https://instagram.com/yourpage' },
@@ -227,6 +228,33 @@ export default function Settings() {
     const value = editedSettings[field.key] ?? '';
     const isDirty = dirtyFields.has(field.key);
     const isReadonly = field.readOnly;
+
+    if (field.type === 'toggle') {
+      const isEnabled = value === true || value === 'true';
+      return (
+        <div key={field.key} className="space-y-1.5">
+          <div className="flex items-center justify-between p-4 rounded-xl bg-dark-50 border border-dark-100">
+            <div>
+              <label className="text-sm font-medium text-ink">{field.label}</label>
+              {field.description && <p className="text-xs text-dark-400 mt-0.5">{field.description}</p>}
+            </div>
+            <button
+              type="button"
+              onClick={() => handleChange(field.key, !isEnabled)}
+              className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${isEnabled ? 'bg-primary-500' : 'bg-dark-300'}`}
+            >
+              <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-200 ${isEnabled ? 'translate-x-6' : 'translate-x-0'}`} />
+            </button>
+          </div>
+          {dirtyFields.has(field.key) && (
+            <button onClick={() => handleSaveField(field.key)} disabled={saving}
+              className="text-xs font-medium text-primary-600 hover:text-primary-700">
+              Save change
+            </button>
+          )}
+        </div>
+      );
+    }
 
     if (field.type === 'logo') {
       const logoUrl = editedSettings.institute_logo || settings.institute_logo || '';

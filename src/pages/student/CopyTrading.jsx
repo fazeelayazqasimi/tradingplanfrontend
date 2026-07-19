@@ -10,6 +10,9 @@ import {
   FiAlertCircle,
   FiRefreshCw,
   FiCopy,
+  FiServer,
+  FiExternalLink,
+  FiCheck,
 } from "react-icons/fi";
 import toast from "react-hot-toast";
 import Button from "../../components/ui/Button";
@@ -148,6 +151,9 @@ export default function CopyTrading() {
   const [loadingSubs, setLoadingSubs] = useState(true);
   const [loadingHistory, setLoadingHistory] = useState(true);
   const [error, setError] = useState(null);
+  const [brokers, setBrokers] = useState([]);
+  const [loadingBrokers, setLoadingBrokers] = useState(true);
+  const [selectedBroker, setSelectedBroker] = useState(null);
 
   const {
     page,
@@ -159,6 +165,19 @@ export default function CopyTrading() {
   });
 
   const [historyTotalPages, setHistoryTotalPages] = useState(1);
+
+  const fetchBrokers = useCallback(async () => {
+    setLoadingBrokers(true);
+    try {
+      const response = await studentService.getBrokers();
+      const data = response?.data?.data || response?.data || response || [];
+      setBrokers(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Failed to fetch brokers:", err);
+    } finally {
+      setLoadingBrokers(false);
+    }
+  }, []);
 
   const fetchStats = useCallback(async () => {
     setLoadingStats(true);
@@ -211,12 +230,14 @@ export default function CopyTrading() {
   }, [page, perPage]);
 
   useEffect(() => {
+    fetchBrokers();
     fetchStats();
     fetchSubscriptions();
     fetchHistory();
-  }, [fetchStats, fetchSubscriptions, fetchHistory]);
+  }, [fetchBrokers, fetchStats, fetchSubscriptions, fetchHistory]);
 
   const handleRefresh = () => {
+    fetchBrokers();
     fetchStats();
     fetchSubscriptions();
     fetchHistory();
@@ -291,6 +312,88 @@ export default function CopyTrading() {
           />
         </div>
       )}
+
+      <div>
+        <h2 className="mb-4 text-lg font-semibold text-ink">
+          Connect Account
+        </h2>
+        <p className="mb-4 text-sm text-dark-500">
+          Select a broker to view available trading accounts
+        </p>
+        {loadingBrokers ? (
+          <div className="grid grid-cols-2 gap-4">
+            {Array.from({ length: 2 }).map((_, i) => (
+              <Card key={i} className="p-6">
+                <Skeleton className="h-6 w-32 mb-2" />
+                <Skeleton className="h-4 w-48" />
+              </Card>
+            ))}
+          </div>
+        ) : brokers.length === 0 ? (
+          <Card className="p-6 mb-6">
+            <EmptyState icon={FiServer} title="No brokers available" description="Trading brokers will be available soon." />
+          </Card>
+        ) : (
+          <div className="space-y-4 mb-6">
+            <div className="grid grid-cols-2 gap-4">
+              {brokers.map((broker) => (
+                <motion.button
+                  key={broker._id}
+                  onClick={() => setSelectedBroker(selectedBroker?._id === broker._id ? null : broker)}
+                  className={`relative p-6 rounded-2xl border-2 text-left transition-all duration-200 ${
+                    selectedBroker?._id === broker._id
+                      ? 'border-primary-500 bg-primary-50 shadow-md'
+                      : 'border-dark-200 bg-white hover:border-primary-200 hover:shadow-sm'
+                  }`}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-500 to-emerald-500 flex items-center justify-center mb-4">
+                    <FiServer className="h-7 w-7 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-ink mb-1">{broker.name}</h3>
+                  <p className="text-sm text-dark-400">{broker.accounts?.length || 0} account(s) available</p>
+                  {selectedBroker?._id === broker._id && (
+                    <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-primary-500 flex items-center justify-center">
+                      <FiCheck className="h-4 w-4 text-white" />
+                    </div>
+                  )}
+                </motion.button>
+              ))}
+            </div>
+
+            {selectedBroker && selectedBroker.accounts && selectedBroker.accounts.length > 0 && (
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="grid gap-4 sm:grid-cols-3">
+                {selectedBroker.accounts.map((acc) => (
+                  <Card key={acc._id} className="p-5 hover:shadow-md transition-shadow group">
+                    <div className="flex items-start justify-between mb-3">
+                      <h4 className="font-bold text-ink text-base">{acc.name}</h4>
+                    </div>
+                    {acc.description && (
+                      <p className="text-sm text-dark-500 mb-4">{acc.description}</p>
+                    )}
+                    <a
+                      href={acc.externalLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-xl bg-primary-500 text-white text-sm font-semibold hover:bg-primary-600 transition-colors"
+                    >
+                      <FiExternalLink size={16} />
+                      Open Account
+                    </a>
+                  </Card>
+                ))}
+              </motion.div>
+            )}
+
+            {selectedBroker && (!selectedBroker.accounts || selectedBroker.accounts.length === 0) && (
+              <Card className="p-6 text-center text-dark-400">
+                <p className="text-sm">No accounts available for this broker yet.</p>
+              </Card>
+            )}
+          </div>
+        )}
+      </div>
 
       <div>
         <h2 className="mb-3 text-lg font-semibold text-ink">

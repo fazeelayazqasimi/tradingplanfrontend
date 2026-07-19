@@ -93,5 +93,13 @@ const adminService = {
   deleteReferral: (id) => unwrap(api.delete(`/referrals/${id}`)),
   deleteWallet: (id) => unwrap(api.delete(`/wallets/${id}`)),
   deleteDeposit: (id) => unwrap(api.delete(`/deposits/${id}`)),
+
+  getBrokers: () => unwrap(api.get('/brokers/all')),
+  createBroker: (data) => unwrap(api.post('/brokers', data)),
+  updateBroker: (id, data) => unwrap(api.put(`/brokers/${id}`, data)),
+  deleteBroker: (id) => unwrap(api.delete(`/brokers/${id}`)),
+  createAccount: (brokerId, data) => unwrap(api.post(`/brokers/${brokerId}/accounts`, data)),
+  updateAccount: (brokerId, accountId, data) => unwrap(api.put(`/brokers/${brokerId}/accounts/${accountId}`, data)),
+  deleteAccount: (brokerId, accountId) => unwrap(api.delete(`/brokers/${brokerId}/accounts/${accountId}`)),
 };
 export default adminService;
