@@ -7,6 +7,8 @@ import {
   FiFileText,
   FiLayout,
   FiLoader,
+  FiEdit2,
+  FiX,
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Button from '../../components/ui/Button';
