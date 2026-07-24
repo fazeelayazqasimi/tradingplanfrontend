@@ -45,6 +45,7 @@ export default function CopyTrading() {
   const [steps, setSteps] = useState(defaultSteps);
   const [benefits, setBenefits] = useState(defaultBenefits);
   const [stats, setStats] = useState(defaultStats);
+  const [resultVideos, setResultVideos] = useState([]);
 
   useEffect(() => {
     websiteService.getContent('copy-trading')
@@ -61,6 +62,17 @@ export default function CopyTrading() {
         }
       })
       .catch(() => {});
+    // Load result videos from global content
+    websiteService.getAllContent().then(({ data }) => {
+      const all = Array.isArray(data?.data) ? data.data : [];
+      const videoItem = all.find(c => c.key === 'copy_trading_results_videos');
+      if (videoItem?.value) {
+        try {
+          const parsed = typeof videoItem.value === 'string' ? JSON.parse(videoItem.value) : videoItem.value;
+          setResultVideos(Array.isArray(parsed) ? parsed : []);
+        } catch {}
+      }
+    }).catch(() => {});
   }, []);
 
   return (
@@ -74,8 +86,8 @@ export default function CopyTrading() {
       <section className="pt-24 pb-16">
         <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <ScrollReveal>
-            <p className="eyebrow mb-3.5">Copy Trading</p>
-            <h1 className="text-[28px] sm:text-[36px] lg:text-[44px] font-extrabold mb-5 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"', letterSpacing: '-0.02em' }}>
+            <p className="eyebrow mb-3.5 text-[13px] sm:text-sm">Copy Trading</p>
+            <h1 className="text-[32px] sm:text-[40px] lg:text-[48px] font-extrabold mb-5 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"', letterSpacing: '-0.02em' }}>
               {visitorName ? `${visitorName}, start automated copy trading` : 'Automated Copy Trading'}
             </h1>
             <p className="text-dark-500 text-[17px] leading-relaxed font-inter max-w-[600px] mx-auto">
@@ -160,6 +172,36 @@ export default function CopyTrading() {
           </div>
         </div>
       </section>
+
+      {/* Trading Results Videos */}
+      {resultVideos.length > 0 && (
+        <section className="section">
+          <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center max-w-[640px] mx-auto mb-10 sm:mb-16">
+              <p className="eyebrow mb-3.5 text-[13px] sm:text-sm">Trading Results</p>
+              <h2 className="text-[24px] sm:text-[32px] lg:text-[38px] font-extrabold mb-3.5 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>See our performance</h2>
+              <p className="text-dark-500 text-[16.5px] leading-relaxed font-inter">Real trading results from our professional team.</p>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {resultVideos.map((video, i) => (
+                <ScrollReveal key={i} delay={i * 100}>
+                  <div className="rounded-[16px] overflow-hidden border border-dark-100 shadow-card">
+                    <div className="relative pb-[56.25%] h-0 bg-ink">
+                      <iframe src={video.url || video} className="absolute top-0 left-0 w-full h-full" allowFullScreen title={video.title || `Result ${i + 1}`} style={{ border: 'none' }} />
+                    </div>
+                    {video.title && (
+                      <div className="p-3 sm:p-4">
+                        <h4 className="font-bold text-[13px] sm:text-[14px]" style={{ fontFamily: '"Plus Jakarta Sans"' }}>{video.title}</h4>
+                        {video.description && <p className="text-[12px] text-dark-500 mt-1 font-inter">{video.description}</p>}
+                      </div>
+                    )}
+                  </div>
+                </ScrollReveal>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="section">
         <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">

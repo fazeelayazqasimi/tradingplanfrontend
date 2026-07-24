@@ -25,6 +25,7 @@ import CopyTradingPublic from './pages/website/CopyTrading';
 import ReferralProgramPublic from './pages/website/ReferralProgram';
 import TradingCalculators from './pages/website/TradingCalculators';
 import Tools from './pages/website/Tools';
+import Brokers from './pages/website/Brokers';
 
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminStudents from './pages/admin/Students';
@@ -103,6 +104,7 @@ export const router = createBrowserRouter([
       { path: 'referral-program', element: <ReferralProgramPublic /> },
       { path: 'calculators', element: <TradingCalculators /> },
       { path: 'tools', element: <Tools /> },
+      { path: 'brokers', element: <Brokers /> },
     ],
   },
   { path: '/login', element: <GuestRoute><Login /></GuestRoute> },

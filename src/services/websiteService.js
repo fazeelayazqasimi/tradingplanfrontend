@@ -12,5 +12,6 @@ const websiteService = {
   getGoldPrice: () => api.get('/market/gold-price'),
   getEconomicEvents: () => api.get('/market/economic-events'),
   getMarketSessions: () => api.get('/market/market-sessions'),
+  getBrokers: () => api.get('/brokers'),
 };
 export default websiteService;

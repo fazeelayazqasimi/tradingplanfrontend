@@ -60,7 +60,7 @@ export default function ReferralProgram() {
 
       <section className="pt-32 pb-16 bg-dark-50">
         <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8" ref={heroRef}>
-          <p className="eyebrow mb-3">Referral Program</p>
+          <p className="eyebrow mb-3">Affiliate Program</p>
           <h1 className="text-[32px] sm:text-[40px] lg:text-[48px] font-extrabold mb-4 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"', letterSpacing: '-0.02em' }}>
             Earn by <span className="text-primary-500">Sharing</span>
           </h1>
@@ -168,7 +168,7 @@ export default function ReferralProgram() {
             </div>
             <div className="flex flex-col sm:flex-row gap-3 flex-shrink-0 w-full sm:w-auto">
               <Link to="/register" className="btn-blue text-center">Join Now</Link>
-              <Link to="/pricing" className="btn-outline text-center">View Pricing</Link>
+              <Link to="/pricing" className="btn-outline text-center">View Membership</Link>
             </div>
           </div>
         </div>

@@ -6,14 +6,15 @@ import { useName } from '../../context/NameContext';
 import { useSettings } from '../../context/SettingsContext';
 
 const defaultFeatures = [
-  { icon: 'Γûñ', title: 'Online Education', desc: 'Self-paced video courses with notes, quizzes and completion certificates.' },
-  { icon: 'ΓùÄ', title: 'Onsite Training', desc: 'In-person workshops led by senior mentors in select cities each quarter.' },
-  { icon: 'Γåù', title: 'Trading Signals', desc: 'Daily entries across forex, indices and metals with full risk context.' },
-  { icon: 'Γçä', title: 'Copy Trading', desc: 'Mirror institute trades directly, with transparent profit distribution.' },
-  { icon: 'Γùê', title: 'Referral Rewards', desc: 'Earn commissions and rank up by growing your own trading network.' },
-  { icon: 'ΓùÉ', title: 'Expert Mentorship', desc: 'Direct access to mentors for trade reviews and strategy sessions.' },
-  { icon: 'Γûú', title: 'Certificates', desc: 'Recognized completion certificates for every course you finish.' },
-  { icon: 'Γùë', title: 'Lifetime Community', desc: 'Ongoing access to the Dream Trader community, long after your course ends.' },
+  { icon: 'Γûñ', title: 'Online Education', desc: 'Learn Forex from beginner to advanced through structured online courses, live sessions, practical assignments, and lifetime access.' },
+  { icon: 'ΓùÄ', title: 'Physical Training (Onsite Classes)', desc: 'Attend professional classroom sessions with experienced mentors for practical market training and hands-on learning.' },
+  { icon: 'Γåù', title: 'Premium Trading Signals', desc: 'Receive high-accuracy Forex signals with complete entry, stop loss, take profit, and risk management guidance.' },
+  { icon: 'Γçä', title: 'Copy Trading', desc: 'Copy professional traders automatically and benefit from proven strategies without trading experience.' },
+  { icon: 'Γùê', title: 'Free Referral Rewards', desc: 'Invite friends to register for free and earn $1 Reward Credit for every verified direct referral. Grow your community and use your rewards toward your membership.' },
+  { icon: 'ΓùÉ', title: 'Affiliate Rewards', desc: 'Build your network and earn industry-leading commissions through our transparent rank-based affiliate program.' },
+  { icon: 'Γûú', title: 'Expert Mentorship', desc: 'Get direct support from experienced traders through mentorship sessions, market analysis, and live Q&A.' },
+  { icon: 'Γùê', title: 'Certificates', desc: 'Earn professional course completion certificates after successfully completing your Forex learning journey.' },
+  { icon: 'Γùë', title: 'Lifetime Community', desc: 'Stay connected with our trading community for lifetime support, updates, webinars, and continuous learning.' },
 ];
 
 const defaultTimeline = [
@@ -85,10 +86,13 @@ export default function Home() {
   const [faqs, setFaqs] = useState([]);
   const [stats, setStats] = useState(defaultStats);
   const [pricingFeatures, setPricingFeatures] = useState(defaultPricingFeatures);
-  const [pricing, setPricing] = useState({ price: '100', period: '/ year' });
+  const [pricing, setPricing] = useState({ price: '120', period: '/ year' });
   const [bottomStats, setBottomStats] = useState(defaultBottomStats);
   const [goldPrice, setGoldPrice] = useState('2,394.10');
   const [goldChange, setGoldChange] = useState('+0.35%');
+  const [featuredVideo, setFeaturedVideo] = useState('');
+  const [screenshots, setScreenshots] = useState([]);
+  const [reviews, setReviews] = useState([]);
 
   const instituteName = getSetting('institute_name', 'Trading Institute');
   const siteTagline = getSetting('site_tagline', 'Master the markets. Trade with confidence.');
@@ -102,21 +106,29 @@ export default function Home() {
       .fromTo(heroRatesRef.current, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5 }, '-=0.2')
       .fromTo(heroImageRef.current, { opacity: 0, x: 60 }, { opacity: 1, x: 0, duration: 0.9 }, '-=0.6');
 
-    const i = setInterval(() => {
-      const base = 2385 + Math.random() * 20;
-      setGoldPrice(base.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ','));
-      setGoldChange(`${Math.random() > 0.5 ? '+' : '-'}${(Math.random() * 0.8 + 0.1).toFixed(2)}%`);
-    }, 5000);
+    const fetchGold = async () => {
+      try {
+        const res = await websiteService.getGoldPrice();
+        const data = res?.data?.data;
+        if (data) {
+          setGoldPrice(Number(data.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+          setGoldChange(data.change);
+        }
+      } catch {}
+    };
+    fetchGold();
+    const i = setInterval(fetchGold, 30000);
     return () => clearInterval(i);
   }, []);
 
   useEffect(() => {
     (async () => {
       try {
-        const [ranksRes, faqsRes, homeContentRes] = await Promise.all([
+        const [ranksRes, faqsRes, homeContentRes, globalContentRes] = await Promise.all([
           websiteService.getRanks().catch(() => null),
           websiteService.getFAQs().catch(() => null),
           websiteService.getContent('home').catch(() => null),
+          websiteService.getAllContent().catch(() => null),
         ]);
         if (ranksRes?.data?.data?.length) {
           setRanks(ranksRes.data.data.map((r, i) => ({
@@ -125,6 +137,31 @@ export default function Home() {
           })));
         }
         if (faqsRes?.data?.data?.length) setFaqs(faqsRes.data.data.map(f => ({ q: f.question, a: f.answer })));
+
+        // Load media content from global/page content
+        if (globalContentRes?.data?.data) {
+          const all = Array.isArray(globalContentRes.data.data) ? globalContentRes.data.data : [];
+          const findVal = (key) => {
+            const item = all.find(c => c.key === key);
+            return item ? item.value : null;
+          };
+          const video = findVal('home_featured_video');
+          if (video) setFeaturedVideo(video);
+          const shots = findVal('home_screenshots');
+          if (shots) {
+            try {
+              const parsed = typeof shots === 'string' ? JSON.parse(shots) : shots;
+              setScreenshots(Array.isArray(parsed) ? parsed : []);
+            } catch { setScreenshots([]); }
+          }
+          const revs = findVal('home_reviews');
+          if (revs) {
+            try {
+              const parsed = typeof revs === 'string' ? JSON.parse(revs) : revs;
+              setReviews(Array.isArray(parsed) ? parsed : []);
+            } catch { setReviews([]); }
+          }
+        }
       } catch (e) {}
     })();
   }, []);
@@ -221,7 +258,8 @@ export default function Home() {
       <section className="py-[60px] sm:py-[80px] lg:py-[120px] bg-dark-50">
         <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-[640px] mx-auto mb-10 sm:mb-12 lg:mb-16">
-            <h2 className="text-[24px] sm:text-[32px] lg:text-[38px] font-extrabold mb-3 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"', letterSpacing: '-0.02em' }}>One membership. Every tool you need to trade.</h2>
+            <p className="eyebrow mb-3 text-[13px] sm:text-sm">Features</p>
+            <h2 className="text-[28px] sm:text-[36px] lg:text-[44px] font-extrabold mb-3 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"', letterSpacing: '-0.02em' }}>One membership. Every tool you need to trade.</h2>
             <p className="text-dark-500 text-[14px] sm:text-[16px] lg:text-[16.5px] leading-relaxed font-inter">From your first lesson to your first copied trade, everything lives inside a single Dream Trader membership.</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-[18px] lg:gap-[22px]">
@@ -238,11 +276,89 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Dream Trader Academy Partner */}
+      <section className="py-[40px] sm:py-[60px] bg-gradient-to-r from-primary-50 to-emerald-50">
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <ScrollReveal>
+            <p className="eyebrow mb-2 text-[11px] sm:text-xs text-primary-500">Education Partner</p>
+            <h2 className="text-[22px] sm:text-[28px] lg:text-[34px] font-extrabold mb-3" style={{ fontFamily: '"Plus Jakarta Sans"' }}>
+              Dream Trader Academy
+            </h2>
+            <p className="text-dark-500 text-[14px] sm:text-[16px] max-w-[600px] mx-auto font-inter">
+              Dream Trader Academy is our official education partner, providing world-class Forex training and mentorship programs.
+            </p>
+          </ScrollReveal>
+        </div>
+      </section>
+
+      {/* Featured Video + Screenshots Gallery */}
+      {(featuredVideo || screenshots.length > 0) && (
+        <section className="py-[60px] sm:py-[80px] bg-dark-50">
+          <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center max-w-[640px] mx-auto mb-10 sm:mb-12">
+              <p className="eyebrow mb-3 text-[13px] sm:text-sm">Gallery</p>
+              <h2 className="text-[28px] sm:text-[36px] lg:text-[44px] font-extrabold mb-3 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>See our results</h2>
+            </div>
+            {featuredVideo && (
+              <div className="max-w-[800px] mx-auto mb-8 sm:mb-10 rounded-[18px] overflow-hidden shadow-card-lg">
+                <div className="relative pb-[56.25%] h-0 bg-ink">
+                  <iframe src={featuredVideo} className="absolute top-0 left-0 w-full h-full" allowFullScreen title="Featured Video" style={{ border: 'none' }} />
+                </div>
+              </div>
+            )}
+            {screenshots.length > 0 && (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+                {screenshots.map((src, i) => (
+                  <ScrollReveal key={i} delay={i * 60}>
+                    <div className="rounded-[14px] overflow-hidden border border-dark-100 shadow-sm hover:shadow-card-md transition-all duration-300">
+                      <img src={src} alt={`Screenshot ${i + 1}`} className="w-full h-auto object-cover" loading="lazy" />
+                    </div>
+                  </ScrollReveal>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* Student Reviews */}
+      {reviews.length > 0 && (
+        <section className="py-[60px] sm:py-[80px] lg:py-[100px]">
+          <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center max-w-[640px] mx-auto mb-10 sm:mb-12">
+              <p className="eyebrow mb-3 text-[13px] sm:text-sm">Testimonials</p>
+              <h2 className="text-[28px] sm:text-[36px] lg:text-[44px] font-extrabold mb-3 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>What our students say</h2>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {reviews.map((review, i) => (
+                <ScrollReveal key={i} delay={i * 80}>
+                  <div className="bg-white border border-dark-100 rounded-[18px] p-5 sm:p-6 shadow-card h-full flex flex-col">
+                    {review.image && (
+                      <div className="w-14 h-14 rounded-full overflow-hidden mb-3 border-2 border-primary-100 flex-shrink-0">
+                        <img src={review.image} alt={review.name || 'Student'} className="w-full h-full object-cover" />
+                      </div>
+                    )}
+                    {!review.image && review.name && (
+                      <div className="w-14 h-14 rounded-full bg-primary-50 text-primary-500 flex items-center justify-center text-lg font-bold mb-3 flex-shrink-0">
+                        {review.name[0]}
+                      </div>
+                    )}
+                    <h4 className="font-bold text-[15px] mb-1" style={{ fontFamily: '"Plus Jakarta Sans"' }}>{review.name}</h4>
+                    {review.role && <p className="text-[11px] text-dark-400 mb-2 font-inter">{review.role}</p>}
+                    <p className="text-[13px] text-dark-500 leading-relaxed flex-1 font-inter">{review.text || review.comment}</p>
+                  </div>
+                </ScrollReveal>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       <section className="py-[60px] sm:py-[80px] lg:py-[120px]">
         <div className="max-w-[920px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-[640px] mb-10 sm:mb-12 lg:mb-16">
-            <p className="eyebrow mb-3 text-[11px] sm:text-xs">Learning Path</p>
-            <h2 className="text-[24px] sm:text-[32px] lg:text-[38px] font-extrabold mb-3 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Your path through the institute.</h2>
+            <p className="eyebrow mb-3 text-[13px] sm:text-sm">Learning Path</p>
+            <h2 className="text-[28px] sm:text-[36px] lg:text-[44px] font-extrabold mb-3 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Your path through the institute.</h2>
             <p className="text-dark-500 text-[14px] sm:text-[16.5px] leading-relaxed font-inter">Eight steps take you from registration to earning through copy trading and referrals - in order, with nothing skipped.</p>
           </div>
           <div className="relative ml-[20px] sm:ml-[23px]">
@@ -265,8 +381,8 @@ export default function Home() {
       <section className="py-[60px] sm:py-[80px] lg:py-[120px] bg-dark-50" id="signals">
         <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-[640px] mb-10 sm:mb-16">
-            <p className="eyebrow mb-3 text-[11px] sm:text-xs">Trading Signals</p>
-            <h2 className="text-[24px] sm:text-[32px] lg:text-[38px] font-extrabold mb-3 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Every signal, fully transparent.</h2>
+            <p className="eyebrow mb-3 text-[13px] sm:text-sm">Trading Signals</p>
+            <h2 className="text-[28px] sm:text-[36px] lg:text-[44px] font-extrabold mb-3 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Every signal, fully transparent.</h2>
             <p className="text-dark-500 text-[14px] sm:text-[16.5px] leading-relaxed font-inter">Market, pair, entry, stop loss, take profit and risk level - published before execution, with status tracked live.</p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
@@ -297,8 +413,8 @@ export default function Home() {
       <section className="py-[60px] sm:py-[80px] lg:py-[120px]" id="copytrading">
         <div className="max-w-[1000px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-[640px] mx-auto mb-10 sm:mb-16">
-            <p className="eyebrow mb-3 text-[11px] sm:text-xs">Copy Trading</p>
-            <h2 className="text-[24px] sm:text-[32px] lg:text-[38px] font-extrabold mb-3 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Follow the institute's trades, automatically.</h2>
+            <p className="eyebrow mb-3 text-[13px] sm:text-sm">Copy Trading</p>
+            <h2 className="text-[28px] sm:text-[36px] lg:text-[44px] font-extrabold mb-3 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Follow the institute's trades, automatically.</h2>
             <p className="text-dark-500 text-[14px] sm:text-[16.5px] leading-relaxed font-inter">A simple, transparent flow - from execution to distribution - so you always know where your capital stands.</p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -318,8 +434,8 @@ export default function Home() {
       <section className="py-[60px] sm:py-[80px] lg:py-[120px] bg-dark-50">
         <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-[640px] mx-auto mb-10 sm:mb-16">
-            <p className="eyebrow mb-3 text-[11px] sm:text-xs">Rank Progression</p>
-            <h2 className="text-[24px] sm:text-[32px] lg:text-[38px] font-extrabold mb-3 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Six tiers. Clear requirements at every step.</h2>
+            <p className="eyebrow mb-3 text-[13px] sm:text-sm">Rank Progression</p>
+            <h2 className="text-[28px] sm:text-[36px] lg:text-[44px] font-extrabold mb-3 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Six tiers. Clear requirements at every step.</h2>
             <p className="text-dark-500 text-[14px] sm:text-[16.5px] leading-relaxed font-inter">Ranks unlock as your direct referrals and team size grow - with commission percentage rising alongside.</p>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
@@ -341,8 +457,8 @@ export default function Home() {
       <section className="py-[60px] sm:py-[80px] lg:py-[120px]" id="pricing">
         <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-[640px] mx-auto mb-10 sm:mb-16">
-            <p className="eyebrow mb-3 text-[11px] sm:text-xs">Pricing</p>
-            <h2 className="text-[24px] sm:text-[32px] lg:text-[38px] font-extrabold mb-3 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>One membership. Everything included.</h2>
+            <p className="eyebrow mb-3 text-[13px] sm:text-sm">Membership</p>
+            <h2 className="text-[28px] sm:text-[36px] lg:text-[44px] font-extrabold mb-3 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>One membership. Everything included.</h2>
             <p className="text-dark-500 text-[14px] sm:text-[16.5px] leading-relaxed font-inter">No hidden tiers, no add-ons - a single annual membership unlocks the full institute.</p>
           </div>
           <ScrollReveal>
@@ -350,7 +466,7 @@ export default function Home() {
               <div className="absolute -top-[13px] left-1/2 -translate-x-1/2 bg-ink text-white text-[10px] sm:text-[10.5px] font-bold tracking-wide px-3 sm:px-4 py-1.5 rounded-full">MOST POPULAR</div>
               <div className="font-semibold text-[14px] sm:text-[15px] text-dark-500 font-inter">Annual Membership</div>
               <div className="text-[40px] sm:text-[48px] lg:text-[52px] font-extrabold mt-3 sm:mt-4 mb-1" style={{ fontFamily: '"Plus Jakarta Sans"' }}>${pricing.price}<span className="text-base sm:text-lg font-medium text-dark-500">{pricing.period}</span></div>
-              <div className="text-[12px] sm:text-sm text-dark-500 font-inter mb-2">Less than $9/month</div>
+              <div className="text-[12px] sm:text-sm text-dark-500 font-inter mb-2">Less than $10/month</div>
               <ul className="text-left flex flex-col gap-3 my-6 sm:my-8">
                 {pricingFeatures.map((f, i) => (
                   <li key={i} className="flex gap-2 items-center text-[13px] sm:text-[14.5px] font-inter"><span className="text-emerald-500 font-bold flex-shrink-0">&#10003;</span> {f}</li>
@@ -366,8 +482,8 @@ export default function Home() {
       <section className="py-[60px] sm:py-[80px] lg:py-[120px] bg-dark-50" ref={faqRef}>
         <div className="max-w-[760px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-[640px] mb-10 sm:mb-16">
-            <p className="eyebrow mb-3 text-[11px] sm:text-xs">FAQ</p>
-            <h2 className="text-[28px] sm:text-[38px] font-extrabold mb-3 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Questions, answered.</h2>
+            <p className="eyebrow mb-3 text-[13px] sm:text-sm">FAQ</p>
+            <h2 className="text-[32px] sm:text-[42px] font-extrabold mb-3 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Questions, answered.</h2>
           </div>
           <div>
             {(faqs.length ? faqs : [
@@ -420,7 +536,7 @@ export default function Home() {
             </div>
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 flex-shrink-0 w-full sm:w-auto">
               <Link to="/contact" className="btn-primary text-center text-[13px] sm:text-sm">Talk to Our Team</Link>
-              <Link to="/pricing" className="btn-outline text-center text-[13px] sm:text-sm">View Pricing</Link>
+              <Link to="/pricing" className="btn-outline text-center text-[13px] sm:text-sm">View Membership</Link>
             </div>
           </div>
         </div>

@@ -34,6 +34,7 @@ const SECTIONS = [
   { id: 'referral', label: 'Referral Commissions', icon: FiUsers },
   { id: 'broker', label: 'Broker APIs', icon: FiServer },
   { id: 'withdrawal', label: 'Withdrawals', icon: FiDollarSign },
+  { id: 'funding', label: 'Funding Wallet', icon: FiDollarSign },
   { id: 'trading', label: 'Trading', icon: FiTrendingUp },
   { id: 'smtp', label: 'SMTP', icon: FiMail },
 ];
@@ -47,7 +48,6 @@ const SETTING_FIELDS = {
     { key: 'institute_address', label: 'Address', icon: FiMapPin, placeholder: '123 Trading St, New York, NY' },
     { key: 'site_tagline', label: 'Site Tagline', placeholder: 'Master the Markets' },
     { key: 'site_description', label: 'Site Description', placeholder: 'Your journey to financial freedom starts here', multiline: true },
-    { key: 'free_registration_bonus_enabled', label: 'Free Registration $1 Bonus', type: 'toggle', description: 'When enabled, new users get $1 free on registration' },
   ],
   social: [
     { key: 'instagram', label: 'Instagram', icon: FiInstagram, placeholder: 'https://instagram.com/yourpage' },
@@ -80,6 +80,10 @@ const SETTING_FIELDS = {
   withdrawal: [
     { key: 'min_withdrawal', label: 'Minimum Withdrawal ($)', icon: FiDollarSign, type: 'number', placeholder: '10' },
     { key: 'max_withdrawal', label: 'Maximum Withdrawal ($)', icon: FiDollarSign, type: 'number', placeholder: '5000' },
+  ],
+  funding: [
+    { key: 'free_registration_bonus_enabled', label: 'Free Registration $1 Bonus', type: 'toggle', description: 'When enabled, new users get $1 free in funding wallet on registration' },
+    { key: 'funding_wallet_usage_percent', label: 'Funding Wallet Usage %', type: 'number', icon: FiDollarSign, placeholder: '20', description: 'Max percentage of membership amount that can be paid from funding wallet' },
   ],
   trading: [
     { key: 'broker_share_percent', label: 'Broker Share (%)', type: 'number', placeholder: '20' },

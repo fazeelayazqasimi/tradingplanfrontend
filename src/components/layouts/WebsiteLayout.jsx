@@ -65,10 +65,11 @@ const mainNav = [
     children: [
       { label: 'Calculators', path: '/calculators', desc: 'Position size, risk, margin & more' },
       { label: 'Market Tools', path: '/tools', desc: 'Economic calendar, heat map, charts' },
+      { label: 'Brokers', path: '/brokers', desc: 'Trusted broker partners & registration' },
     ],
   },
-  { label: 'Referral', path: '/referral-program' },
-  { label: 'Pricing', path: '/pricing' },
+  { label: 'Affiliate Program', path: '/referral-program' },
+  { label: 'Membership', path: '/pricing' },
   { label: 'FAQs', path: '/faq' },
   { label: 'Contact', path: '/contact' },
 ];
@@ -241,7 +242,8 @@ export default function WebsiteLayout() {
               <h5 className="text-[12px] font-bold text-dark-500 mb-3 tracking-wide">TOOLS</h5>
               <Link to="/calculators" className="block text-[13px] text-ink opacity-80 hover:opacity-100 hover:text-primary-500 mb-2 transition-colors">Trading Calculators</Link>
               <Link to="/tools" className="block text-[13px] text-ink opacity-80 hover:opacity-100 hover:text-primary-500 mb-2 transition-colors">Market Tools</Link>
-              <Link to="/referral-program" className="block text-[13px] text-ink opacity-80 hover:opacity-100 hover:text-primary-500 mb-2 transition-colors">Referral Program</Link>
+              <Link to="/referral-program" className="block text-[13px] text-ink opacity-80 hover:opacity-100 hover:text-primary-500 mb-2 transition-colors">Affiliate Program</Link>
+              <Link to="/brokers" className="block text-[13px] text-ink opacity-80 hover:opacity-100 hover:text-primary-500 mb-2 transition-colors">Brokers</Link>
             </div>
             <div>
               <h5 className="text-[12px] font-bold text-dark-500 mb-3 tracking-wide">SUPPORT</h5>

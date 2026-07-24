@@ -31,7 +31,7 @@ function ScrollReveal({ children, className = '', delay = 0 }) {
 export default function Pricing() {
   const { visitorName } = useName();
   const [features, setFeatures] = useState(defaultFeatures);
-  const [price, setPrice] = useState('100');
+  const [price, setPrice] = useState('120');
   const [period, setPeriod] = useState('/ year');
 
   useEffect(() => {
@@ -74,8 +74,8 @@ export default function Pricing() {
       <section className="section">
         <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-[640px] mx-auto mb-10 sm:mb-16">
-            <p className="eyebrow mb-3.5">Pricing</p>
-            <h2 className="text-[24px] sm:text-[32px] lg:text-[38px] font-extrabold mb-3.5 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>{visitorName ? `${visitorName}, one membership. Everything included.` : 'One membership. Everything included.'}</h2>
+            <p className="eyebrow mb-3.5">Membership</p>
+            <h2 className="text-[28px] sm:text-[36px] lg:text-[44px] font-extrabold mb-3.5 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>{visitorName ? `${visitorName}, one membership. Everything included.` : 'One membership. Everything included.'}</h2>
             <p className="text-dark-500 text-[16.5px] leading-relaxed font-inter">No hidden tiers, no add-ons - a single annual membership unlocks the full institute.</p>
           </div>
 
