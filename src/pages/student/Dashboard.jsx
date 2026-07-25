@@ -15,14 +15,21 @@ import {
   FiShoppingCart,
   FiCopy,
   FiLink,
+  FiTag,
+  FiShield,
+  FiUsers,
+  FiServer,
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
+import Input from '../../components/ui/Input';
+import Modal from '../../components/ui/Modal';
 import Skeleton from '../../components/ui/Skeleton';
 import EmptyState from '../../components/ui/EmptyState';
 import studentService from '../../services/studentService';
+import walletService from '../../services/walletService';
 import referralService from '../../services/referralService';
 import courseService from '../../services/courseService';
 import signalService from '../../services/signalService';
@@ -54,8 +61,16 @@ export default function Dashboard() {
   const [enrolled, setEnrolled] = useState([]);
   const [signals, setSignals] = useState([]);
   const [wallet, setWallet] = useState(null);
+  const [allWallets, setAllWallets] = useState([]);
   const [rank, setRank] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [activating, setActivating] = useState(false);
+  const [showPinModal, setShowPinModal] = useState(false);
+  const [pinCode, setPinCode] = useState('');
+  const [pinError, setPinError] = useState('');
+  const [showUplineModal, setShowUplineModal] = useState(false);
+  const [uplineEmail, setUplineEmail] = useState('');
+  const [uplineError, setUplineError] = useState('');
   const [approvalStatus, setApprovalStatus] = useState(null);
   const [referralCode, setReferralCode] = useState('');
   const [copied, setCopied] = useState(false);
@@ -94,6 +109,11 @@ export default function Dashboard() {
           const wd = walletRes.value.data || walletRes.value;
           setWallet(wd.balance ?? wd.data?.balance ?? 0);
         }
+        try {
+          const walletsRes = await walletService.getAllWallets();
+          const wData = walletsRes?.data?.data || walletsRes?.data || [];
+          setAllWallets(Array.isArray(wData) ? wData : []);
+        } catch { /* silent */ }
 
         if (rankRes.status === 'fulfilled' && rankRes.value) {
           const rd = rankRes.value.data || rankRes.value;
@@ -117,6 +137,53 @@ export default function Dashboard() {
     fetchDashboard();
     return () => { cancelled = true; };
   }, []);
+
+  const handleActivateWithPin = async () => {
+    if (!pinCode.trim()) { setPinError('Please enter a PIN code'); return; }
+    setActivating(true);
+    setPinError('');
+    try {
+      await studentService.activateWithPin({ code: pinCode });
+      toast.success('Account activated successfully via PIN!');
+      setShowPinModal(false);
+      setPinCode('');
+      window.location.reload();
+    } catch (err) {
+      setPinError(err?.response?.data?.message || 'Failed to activate with PIN');
+    } finally {
+      setActivating(false);
+    }
+  };
+
+  const handleActivateWithBalance = async () => {
+    setActivating(true);
+    try {
+      await studentService.activateWithBalance();
+      toast.success('Account activated successfully via balance!');
+      window.location.reload();
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Failed to activate with balance');
+    } finally {
+      setActivating(false);
+    }
+  };
+
+  const handleUplineActivate = async () => {
+    if (!uplineEmail.trim()) { setUplineError('Please enter username or email'); return; }
+    setActivating(true);
+    setUplineError('');
+    try {
+      await studentService.activateByUpline({ usernameOrEmail: uplineEmail });
+      toast.success('Member activated successfully!');
+      setShowUplineModal(false);
+      setUplineEmail('');
+      window.location.reload();
+    } catch (err) {
+      setUplineError(err?.response?.data?.message || 'Failed to activate member');
+    } finally {
+      setActivating(false);
+    }
+  };
 
   const statCards = [
     {
@@ -220,26 +287,55 @@ export default function Dashboard() {
           </motion.div>
         )}
 
-      {approvalStatus && !loading && !approvalStatus.isApproved && (
+      {!loading && !user?.isApproved && (
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-          <Card className="p-8 bg-amber-50 border-amber-200 border text-center">
-            <div className="flex flex-col items-center gap-3 max-w-md mx-auto">
-              <div className="w-16 h-16 rounded-2xl bg-amber-100 flex items-center justify-center">
-                <FiClock className="text-amber-600" size={32} />
+          <Card className="p-6 border-2 border-primary-200 bg-gradient-to-br from-primary-50/50 to-white">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 rounded-2xl bg-primary-100 flex items-center justify-center mx-auto mb-3">
+                <FiShield className="text-primary-600" size={32} />
               </div>
-              <h2 className="font-bold text-amber-800 text-lg">
-                {approvalStatus.hasPending ? 'Purchase Pending Approval' : 'Welcome! Purchase a Course to Begin'}
-              </h2>
-              <p className="text-sm text-amber-700">
-                {approvalStatus.hasPending
-                  ? 'Your course purchase request has been submitted. An admin will review and approve it shortly. You will get full access to all features once approved.'
-                  : 'Choose a course, complete your payment, and an admin will activate your access. Full dashboard with signals, copy trading, wallet, and more awaits.'}
-              </p>
-              <Link to="/student/courses">
-                <Button variant="primary" size="md" className="mt-2">
-                  <FiShoppingCart size={16} /> Activate Your Account
-                </Button>
-              </Link>
+              <h2 className="font-bold text-ink text-xl">Activate Your Account</h2>
+              <p className="text-sm text-dark-500 mt-1">Choose a method to activate your membership and access all features.</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Card className="p-5 border border-dark-100 hover:border-primary-300 transition-colors">
+                <div className="flex flex-col items-center text-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center">
+                    <FiDollarSign className="text-emerald-600" size={24} />
+                  </div>
+                  <h3 className="font-semibold text-ink text-sm">Deposit & Activate</h3>
+                  <p className="text-xs text-dark-500">Deposit USDT and use your wallet balance to activate instantly.</p>
+                  <Link to="/student/wallet" className="w-full">
+                    <Button variant="outline" size="sm" className="w-full">
+                      Go to Wallet
+                    </Button>
+                  </Link>
+                </div>
+              </Card>
+              <Card className="p-5 border border-dark-100 hover:border-primary-300 transition-colors">
+                <div className="flex flex-col items-center text-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center">
+                    <FiTag className="text-purple-600" size={24} />
+                  </div>
+                  <h3 className="font-semibold text-ink text-sm">Enter PIN Code</h3>
+                  <p className="text-xs text-dark-500">Use a PIN code or coupon to activate your membership.</p>
+                  <Button variant="outline" size="sm" className="w-full" onClick={() => { setShowPinModal(true); setPinCode(''); setPinError(''); }}>
+                    Enter PIN
+                  </Button>
+                </div>
+              </Card>
+              <Card className="p-5 border border-dark-100 hover:border-primary-300 transition-colors">
+                <div className="flex flex-col items-center text-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center">
+                    <FiUsers className="text-blue-600" size={24} />
+                  </div>
+                  <h3 className="font-semibold text-ink text-sm">Ask Your Upline</h3>
+                  <p className="text-xs text-dark-500">Ask your upline to activate your account using your email.</p>
+                  <Button variant="outline" size="sm" className="w-full" onClick={() => { setShowUplineModal(true); setUplineEmail(''); setUplineError(''); }}>
+                    Request Activation
+                  </Button>
+                </div>
+              </Card>
             </div>
           </Card>
         </motion.div>
@@ -566,6 +662,69 @@ export default function Dashboard() {
           <SystemFlow compact />
         </Card>
       </motion.div>
+
+      {!user?.isApproved && (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}>
+          <Card className="p-5 border-2 border-emerald-200 bg-emerald-50/50">
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center shrink-0">
+                <FiDollarSign className="text-emerald-600" size={24} />
+              </div>
+              <div className="flex-1 text-center sm:text-left">
+                <h3 className="font-semibold text-ink text-sm">Activate with Balance</h3>
+                <p className="text-xs text-dark-500 mt-0.5">
+                  {allWallets.length > 0
+                    ? `Main: ${formatCurrency(allWallets.find(w => w.type === 'main')?.availableBalance || 0)} | Funding: ${formatCurrency(allWallets.find(w => w.type === 'funding')?.availableBalance || 0)}`
+                    : 'Deposit USDT to get started.'}
+                </p>
+              </div>
+              <Button variant="primary" size="sm" onClick={handleActivateWithBalance} loading={activating}>
+                <FiShield size={16} /> Activate Now
+              </Button>
+            </div>
+          </Card>
+        </motion.div>
+      )}
+
+      <Modal isOpen={showPinModal} onClose={() => { setShowPinModal(false); setPinError(''); }} title="Activate with PIN Code" size="sm">
+        <div className="space-y-4">
+          <p className="text-sm text-dark-500">Enter your PIN code to activate your membership instantly.</p>
+          <Input
+            label="PIN Code"
+            placeholder="Enter your PIN code"
+            icon={FiTag}
+            value={pinCode}
+            onChange={(e) => { setPinCode(e.target.value.toUpperCase()); setPinError(''); }}
+            error={pinError}
+          />
+          <div className="flex justify-end gap-3 pt-2">
+            <Button variant="outline" onClick={() => { setShowPinModal(false); setPinError(''); }}>Cancel</Button>
+            <Button onClick={handleActivateWithPin} loading={activating} disabled={!pinCode.trim()}>
+              <FiShield size={16} /> Activate
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal isOpen={showUplineModal} onClose={() => { setShowUplineModal(false); setUplineError(''); }} title="Activate Downline Member" size="sm">
+        <div className="space-y-4">
+          <p className="text-sm text-dark-500">Enter your direct downline member's email or username to activate their account. The activation fee will be deducted from your main wallet.</p>
+          <Input
+            label="Email or Username"
+            placeholder="Enter member's email or username"
+            icon={FiUsers}
+            value={uplineEmail}
+            onChange={(e) => { setUplineEmail(e.target.value); setUplineError(''); }}
+            error={uplineError}
+          />
+          <div className="flex justify-end gap-3 pt-2">
+            <Button variant="outline" onClick={() => { setShowUplineModal(false); setUplineError(''); }}>Cancel</Button>
+            <Button onClick={handleUplineActivate} loading={activating} disabled={!uplineEmail.trim()}>
+              <FiShield size={16} /> Activate Member
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

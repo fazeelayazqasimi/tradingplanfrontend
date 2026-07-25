@@ -25,6 +25,10 @@ const INCOME_LABELS = {
   indirect_income: 'Indirect Income',
   trading_profit: 'Trading Profit',
   bonus: 'Bonus',
+  deposit: 'Deposit',
+  subscription: 'Subscription',
+  withdrawal: 'Withdrawal',
+  purchase: 'Course Purchase',
 };
 
 const container = {
@@ -43,8 +47,10 @@ const CATEGORY_OPTIONS = [
   { value: 'indirect_income', label: 'Indirect Income' },
   { value: 'trading_profit', label: 'Trading Profit' },
   { value: 'bonus', label: 'Bonus' },
-  { value: 'withdrawal', label: 'Withdrawal' },
+  { value: 'deposit', label: 'Deposit' },
   { value: 'subscription', label: 'Subscription' },
+  { value: 'withdrawal', label: 'Withdrawal' },
+  { value: 'purchase', label: 'Course Purchase' },
 ];
 
 const TYPE_OPTIONS = [
@@ -65,7 +71,7 @@ export default function Transactions() {
   const fetchTransactions = useCallback(async () => {
     setLoading(true);
     try {
-      const params = { page, perPage: limit };
+      const params = { page, limit };
       if (category) params.category = category;
       if (type) params.type = type;
       const res = await walletService.getTransactions(params);

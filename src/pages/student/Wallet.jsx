@@ -84,7 +84,7 @@ const PAYMENT_METHODS = [
 const WALLET_TABS = [
   { key: 'main', label: 'Main Wallet', icon: FiDollarSign },
   { key: 'funding', label: 'Funding Wallet', icon: FiServer },
-  { key: 'ib', label: 'IB Wallet', icon: FiLayers },
+  { key: 'ib', label: 'Rebate', icon: FiLayers },
 ];
 
 export default function Wallet() {
@@ -224,7 +224,6 @@ export default function Wallet() {
     try {
       const payload = {
         amount: parseFloat(depositForm.amount),
-        walletType: walletTab,
       };
       const res = await depositService.createDeposit(payload);
       toast.success('Deposit successful! Wallet credited instantly.');
@@ -382,7 +381,6 @@ export default function Wallet() {
         amount: parseFloat(withdrawForm.amount),
         paymentMethod: 'usdt_bep20',
         walletAddress: withdrawForm.walletAddress.trim(),
-        walletType: walletTab,
       });
       toast.success('Withdrawal request submitted successfully');
       setShowWithdraw(false);
@@ -434,7 +432,7 @@ export default function Wallet() {
 
       {/* Wallet Type Tabs */}
       <div className="flex gap-2 bg-dark-50 p-1.5 rounded-xl">
-        {WALLET_TABS.map((tab) => {
+        {WALLET_TABS.filter(t => t.key !== 'ib').map((tab) => {
           const Icon = tab.icon;
           const w = allWallets.find(w => w.type === tab.key);
           return (

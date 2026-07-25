@@ -252,6 +252,9 @@ export default function Wallets() {
     if (!form.category) {
       newErrors.category = 'Select a category';
     }
+    if (!form.description?.trim()) {
+      newErrors.description = 'Description / comment is required';
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -446,6 +449,12 @@ export default function Wallets() {
             </div>
 
             <form onSubmit={handleCredit} className="space-y-4">
+              <div className="p-3 rounded-xl bg-blue-50 border border-blue-200">
+                <p className="text-xs text-blue-700">
+                  <strong>Note:</strong> Credits will be added to the user's <strong>Funding Wallet</strong>.
+                  This wallet is used for free dollars, bonuses, and admin credits only.
+                </p>
+              </div>
               <Input
                 label="Amount"
                 type="number"
@@ -487,15 +496,18 @@ export default function Wallets() {
 
               <div className="w-full">
                 <label className="block text-[13px] font-semibold text-ink mb-1.5">
-                  Description
+                  Description / Comment <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   rows={3}
-                  placeholder="Optional description for this credit..."
+                  placeholder="Enter reason/comment for this credit..."
                   value={form.description}
                   onChange={(e) => handleChange('description', e.target.value)}
-                  className="w-full rounded-[11px] border border-dark-200 bg-dark-50 px-4 py-3 text-[14.5px] text-ink placeholder-dark-400 outline-none transition-colors focus:border-primary-500 focus:bg-white resize-none"
+                  className={`w-full rounded-[11px] border ${errors.description ? 'border-red-400 bg-red-50' : 'border-dark-200 bg-dark-50'} px-4 py-3 text-[14.5px] text-ink placeholder-dark-400 outline-none transition-colors focus:border-primary-500 focus:bg-white resize-none`}
                 />
+                {errors.description && (
+                  <p className="mt-1 text-xs text-red-500">{errors.description}</p>
+                )}
               </div>
 
               <div className="flex items-center gap-3 pt-2">

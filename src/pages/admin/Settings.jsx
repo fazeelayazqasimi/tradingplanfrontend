@@ -60,6 +60,7 @@ const SETTING_FIELDS = {
     { key: 'membership_duration', label: 'Duration (days)', type: 'number', placeholder: '30' },
   ],
   referral: [
+    { key: 'referral_signup_bonus', label: 'Referral Signup Bonus ($)', icon: FiDollarSign, type: 'number', placeholder: '10', description: 'Bonus given to referrer when their referral signs up' },
     { key: 'referral_level_1_commission', label: 'Level 1 Commission ($)', icon: FiDollarSign, type: 'number', placeholder: '30' },
     { key: 'referral_level_2_commission', label: 'Level 2 Commission ($)', icon: FiDollarSign, type: 'number', placeholder: '10' },
     { key: 'referral_level_3_commission', label: 'Level 3 Commission ($)', icon: FiDollarSign, type: 'number', placeholder: '5' },
@@ -112,7 +113,10 @@ export default function Settings() {
       setLoading(true);
       const res = await adminService.getSettings();
       const data = res.data || res;
-      const flat = data.settings || data;
+      const arr = data?.settings || data;
+      const flat = Array.isArray(arr)
+        ? arr.reduce((acc, s) => { acc[s.key] = s.value; return acc; }, {})
+        : {};
       setSettings(flat);
       setEditedSettings({ ...flat });
       setDirtyFields(new Set());
@@ -412,7 +416,7 @@ export default function Settings() {
                         : activeSection === 'subscription'
                           ? 'Membership pricing and duration'
                           : activeSection === 'referral'
-                            ? 'Configure referral commission amounts per level'
+                            ? 'Configure referral signup bonus and commission amounts per level'
                             : activeSection === 'broker'
                               ? 'DMA and StarTrading broker API configuration'
                               : activeSection === 'withdrawal'
