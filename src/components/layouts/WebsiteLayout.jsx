@@ -110,7 +110,7 @@ export default function WebsiteLayout() {
   const { pathname } = useLocation();
   const { user } = useAuth();
   const { getSetting } = useSettings();
-  const instituteName = getSetting('institute_name', 'Dream Trader');
+  const instituteName = getSetting('institute_name', '');
   const instituteLogo = getSetting('institute_logo', '');
   const dashboardLink = user?.role === 'admin' ? '/admin/dashboard' : user?.role === 'student' ? '/student/dashboard' : null;
   useEffect(() => { setMobileOpen(false); setOpenSubMenu(null); }, [pathname]);

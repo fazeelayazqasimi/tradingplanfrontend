@@ -7,7 +7,7 @@ export default function Privacy() {
         <h2>Information We Collect</h2><p className="text-dark-600">We collect information you provide directly, including name, email, payment information, and trading preferences.</p>
         <h2>How We Use Your Information</h2><p className="text-dark-600">We use your information to provide services, process payments, send communications, and improve our platform.</p>
         <h2>Data Security</h2><p className="text-dark-600">We implement industry-standard security measures to protect your personal information.</p>
-        <h2>Contact Us</h2><p className="text-dark-600">For privacy-related inquiries, contact us at privacy@tradinginstitute.com.</p>
+        <h2>Contact Us</h2><p className="text-dark-600">For privacy-related inquiries, contact our support team.</p>
       </div></section>
     </div>
   );

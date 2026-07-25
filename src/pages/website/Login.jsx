@@ -3,10 +3,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
+import { useSettings } from '../../context/SettingsContext';
 
 export default function Login() {
   const { register, handleSubmit, formState: { errors } } = useForm();
   const { login } = useAuth();
+  const { getSetting } = useSettings();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
@@ -32,7 +34,7 @@ export default function Login() {
               <span className="absolute left-[5px] top-[11px] w-[4px] h-[6px] bg-white rounded-[1px]" />
               <span className="absolute left-[10px] top-[6px] w-[4px] h-[11px] bg-white rounded-[1px]" />
             </div>
-            <span className="font-extrabold text-lg text-ink" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Dream Trader</span>
+            <span className="font-extrabold text-lg text-ink" style={{ fontFamily: '"Plus Jakarta Sans"' }}>{getSetting('institute_name', '')}</span>
           </Link>
           <h1 className="text-[28px] font-extrabold text-ink" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Welcome Back</h1>
           <p className="text-sm text-dark-500 mt-1.5 font-inter">Sign in to your account</p>

@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiX, FiMail } from 'react-icons/fi';
 import { useName } from '../../context/NameContext';
+import { useSettings } from '../../context/SettingsContext';
 
 export default function NewsletterPopup() {
   const { visitorName, setVisitorName } = useName();
+  const { getSetting } = useSettings();
   const [show, setShow] = useState(false);
   const [input, setInput] = useState('');
   const [dismissed, setDismissed] = useState(false);
@@ -59,7 +61,7 @@ export default function NewsletterPopup() {
             </div>
 
             <h2 className="text-2xl font-extrabold text-ink mb-2" style={{ fontFamily: '"Plus Jakarta Sans"' }}>
-              Welcome to Dream Trader
+              Welcome to {getSetting('institute_name', '')}
             </h2>
             <p className="text-dark-500 text-sm mb-6 leading-relaxed">
               Enter your name to personalize your experience and get started on your trading journey.

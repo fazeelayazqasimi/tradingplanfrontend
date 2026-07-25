@@ -3,18 +3,18 @@ import toast from 'react-hot-toast';
 import websiteService from '../../services/websiteService';
 import api from '../../services/api';
 import { useName } from '../../context/NameContext';
-
-const defaultContact = {
-  email: 'support@dreamtrader.edu',
-  phone: '+92 300 1234567',
-  address: 'Clifton Block 5, Karachi, Pakistan',
-};
+import { useSettings } from '../../context/SettingsContext';
 
 export default function Contact() {
   const { visitorName } = useName();
+  const { getSetting } = useSettings();
   const [form, setForm] = useState({ name: '', email: '', message: '' });
   const [loading, setLoading] = useState(false);
-  const [contact, setContact] = useState(defaultContact);
+  const [contact, setContact] = useState({
+    email: getSetting('institute_email', ''),
+    phone: getSetting('institute_phone', ''),
+    address: getSetting('institute_address', ''),
+  });
 
   useEffect(() => {
     websiteService.getContent('contact')

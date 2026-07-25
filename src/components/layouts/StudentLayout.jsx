@@ -2,6 +2,7 @@ import { Link, useLocation, Outlet } from 'react-router-dom';
 import { useState } from 'react';
 import { FiMenu, FiLayout, FiBookOpen, FiTrendingUp, FiCopy, FiPieChart, FiDollarSign, FiLink2, FiAward, FiFileText, FiBell, FiMessageSquare, FiSettings, FiLogOut, FiX, FiCreditCard, FiClock, FiUsers, FiPercent, FiHome, FiBarChart2 } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
+import { useSettings } from '../../context/SettingsContext';
 import { getInitials } from '../../utils/helpers';
 import ThemeToggle from '../ui/ThemeToggle';
 
@@ -38,6 +39,7 @@ export default function StudentLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { pathname } = useLocation();
   const { user, logout } = useAuth();
+  const { getSetting } = useSettings();
 
   const getPageTitle = () => {
     const current = sidebarLinks.find(l => pathname === l.path || pathname.startsWith(l.path + '/'));
@@ -67,7 +69,7 @@ export default function StudentLayout() {
                 <div className="w-3.5 h-[2px] bg-white rounded-full" />
               </div>
             </div>
-            <span className="font-semibold text-ink text-sm">Dream Trader</span>
+            <span className="font-semibold text-ink text-sm">{getSetting('institute_name', '')}</span>
           </div>
           <button
             onClick={() => setSidebarOpen(false)}

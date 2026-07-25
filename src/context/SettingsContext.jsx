@@ -4,12 +4,12 @@ import websiteService from '../services/websiteService';
 const SettingsContext = createContext(null);
 
 const DEFAULTS = {
-  institute_name: 'Dream Trader',
-  institute_email: 'support@dreamtrader.edu',
-  institute_phone: '+92 300 1234567',
-  institute_address: 'Clifton Block 5, Karachi, Pakistan',
+  institute_name: 'The 4x Hub',
+  institute_email: '',
+  institute_phone: '',
+  institute_address: '',
   site_tagline: 'Master the Markets',
-  site_description: 'Professional trading education, signals and community for serious students of the market.',
+  site_description: '',
   institute_logo: '',
   social_instagram: '#',
   social_twitter: '#',

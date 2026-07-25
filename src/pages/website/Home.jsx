@@ -23,7 +23,7 @@ const defaultTimeline = [
   { num: 3, title: 'Admin Approval', desc: 'Our team verifies your account, typically within one business day.' },
   { num: 4, title: 'Access Courses', desc: 'Begin your structured curriculum at your own pace.' },
   { num: 5, title: 'Receive Signals', desc: 'Start receiving daily trading signals with full risk breakdowns.' },
-  { num: 6, title: 'Build Referral Network', desc: 'Invite students and start growing your own team inside Dream Trader.' },
+  { num: 6, title: 'Build Referral Network', desc: 'Invite students and start growing your own team.' },
   { num: 7, title: 'Earn Commissions', desc: 'Unlock commission tiers as your referral network grows.' },
   { num: 8, title: 'Copy Trading', desc: 'Mirror institute trades directly once you\'re fully onboarded.' },
 ];
@@ -35,7 +35,7 @@ const defaultSignals = [
 ];
 
 const defaultCopyTradingSteps = [
-  { step: '1', title: 'Institute Executes', desc: "Dream Trader's desk places trades under strict risk rules." },
+  { step: '1', title: 'Institute Executes', desc: 'Our desk places trades under strict risk rules.' },
   { step: '2', title: 'Students Participate', desc: 'Your allocated capital mirrors each trade proportionally.' },
   { step: '3', title: 'Profits Generated', desc: 'Results are tracked and recorded in real time.' },
   { step: '4', title: 'Profit Distributed', desc: 'Your share is credited directly to your wallet.' },
@@ -94,7 +94,7 @@ export default function Home() {
   const [screenshots, setScreenshots] = useState([]);
   const [reviews, setReviews] = useState([]);
 
-  const instituteName = getSetting('institute_name', 'Trading Institute');
+  const instituteName = getSetting('institute_name', '');
   const siteTagline = getSetting('site_tagline', 'Master the markets. Trade with confidence.');
   const siteDescription = getSetting('site_description', '');
 
@@ -260,7 +260,7 @@ export default function Home() {
           <div className="text-center max-w-[640px] mx-auto mb-10 sm:mb-12 lg:mb-16">
             <p className="eyebrow mb-3 text-[13px] sm:text-sm">Features</p>
             <h2 className="text-[28px] sm:text-[36px] lg:text-[44px] font-extrabold mb-3 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"', letterSpacing: '-0.02em' }}>One membership. Every tool you need to trade.</h2>
-            <p className="text-dark-500 text-[14px] sm:text-[16px] lg:text-[16.5px] leading-relaxed font-inter">From your first lesson to your first copied trade, everything lives inside a single Dream Trader membership.</p>
+            <p className="text-dark-500 text-[14px] sm:text-[16px] lg:text-[16.5px] leading-relaxed font-inter">From your first lesson to your first copied trade, everything lives inside a single membership.</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-[18px] lg:gap-[22px]">
             {defaultFeatures.map((f, i) => (
@@ -276,20 +276,22 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Dream Trader Academy Partner */}
-      <section className="py-[40px] sm:py-[60px] bg-gradient-to-r from-primary-50 to-emerald-50">
-        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <ScrollReveal>
-            <p className="eyebrow mb-2 text-[11px] sm:text-xs text-primary-500">Education Partner</p>
-            <h2 className="text-[22px] sm:text-[28px] lg:text-[34px] font-extrabold mb-3" style={{ fontFamily: '"Plus Jakarta Sans"' }}>
-              Dream Trader Academy
-            </h2>
-            <p className="text-dark-500 text-[14px] sm:text-[16px] max-w-[600px] mx-auto font-inter">
-              Dream Trader Academy is our official education partner, providing world-class Forex training and mentorship programs.
-            </p>
-          </ScrollReveal>
-        </div>
-      </section>
+      {/* Academy Partner */}
+      {getSetting('institute_name', '') && (
+        <section className="py-[40px] sm:py-[60px] bg-gradient-to-r from-primary-50 to-emerald-50">
+          <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <ScrollReveal>
+              <p className="eyebrow mb-2 text-[11px] sm:text-xs text-primary-500">Education Partner</p>
+              <h2 className="text-[22px] sm:text-[28px] lg:text-[34px] font-extrabold mb-3" style={{ fontFamily: '"Plus Jakarta Sans"' }}>
+                {getSetting('institute_name', '')} Academy
+              </h2>
+              <p className="text-dark-500 text-[14px] sm:text-[16px] max-w-[600px] mx-auto font-inter">
+                {getSetting('institute_name', '')} Academy is our official education partner, providing world-class Forex training and mentorship programs.
+              </p>
+            </ScrollReveal>
+          </div>
+        </section>
+      )}
 
       {/* Featured Video + Screenshots Gallery */}
       {(featuredVideo || screenshots.length > 0) && (

@@ -2,6 +2,7 @@ import { Link, useLocation, Outlet } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import { FiMenu, FiX, FiLayout, FiUsers, FiCreditCard, FiBookOpen, FiTrendingUp, FiBell, FiLink2, FiAward, FiDollarSign, FiSettings, FiLogOut, FiMessageSquare, FiHelpCircle, FiFileText, FiEdit, FiBarChart2, FiHome, FiLayers, FiDownload, FiTag, FiServer } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
+import { useSettings } from '../../context/SettingsContext';
 import { getInitials } from '../../utils/helpers';
 import adminService from '../../services/adminService';
 import ThemeToggle from '../ui/ThemeToggle';
@@ -49,6 +50,7 @@ export default function AdminLayout() {
   const [pendingDeposits, setPendingDeposits] = useState(0);
   const { pathname } = useLocation();
   const { user, logout } = useAuth();
+  const { getSetting } = useSettings();
   const prevCountRef = useRef(0);
   const hasShownModalRef = useRef(false);
 
@@ -128,7 +130,7 @@ export default function AdminLayout() {
               </div>
             </div>
             <div>
-              <span className="font-bold text-ink text-sm tracking-tight">Dream Trader</span>
+              <span className="font-bold text-ink text-sm tracking-tight">{getSetting('institute_name', 'Admin')}</span>
               <p className="text-[10px] text-dark-400 uppercase tracking-widest">Admin</p>
             </div>
           </div>
