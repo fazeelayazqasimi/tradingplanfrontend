@@ -380,7 +380,9 @@ export default function Wallet() {
     try {
       await studentService.requestWithdrawal({
         amount: parseFloat(withdrawForm.amount),
+        paymentMethod: 'usdt_bep20',
         walletAddress: withdrawForm.walletAddress.trim(),
+        walletType: walletTab,
       });
       toast.success('Withdrawal request submitted successfully');
       setShowWithdraw(false);

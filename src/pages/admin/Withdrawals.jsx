@@ -123,7 +123,7 @@ export default function Withdrawals() {
       key: 'student',
       header: 'Student',
       render: (_, row) => (
-        <span className="font-medium text-ink">{row.student?.firstName ? `${row.student.firstName} ${row.student.lastName}` : '—'}</span>
+        <span className="font-medium text-ink">{row.userId?.firstName ? `${row.userId.firstName} ${row.userId.lastName}` : '—'}</span>
       ),
     },
     {
@@ -264,7 +264,7 @@ export default function Withdrawals() {
               <div>
                 <p className="text-[12px] font-semibold uppercase tracking-wider text-dark-500">Student</p>
                 <p className="text-[15px] font-medium text-ink mt-1">
-                  {detailModal.student?.firstName ? `${detailModal.student.firstName} ${detailModal.student.lastName}` : '—'}
+                  {detailModal.userId?.firstName ? `${detailModal.userId.firstName} ${detailModal.userId.lastName}` : '—'}
                 </p>
               </div>
               <div>
