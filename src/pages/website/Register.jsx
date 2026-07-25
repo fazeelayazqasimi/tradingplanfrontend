@@ -34,7 +34,7 @@ export default function Register() {
   const sendOtp = async (data) => {
     setOtpLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/auth/send-otp`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/auth/send-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: data.email }),
@@ -58,7 +58,7 @@ export default function Register() {
     }
     setLoading(true);
     try {
-      const verifyRes = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/auth/verify-otp`, {
+      const verifyRes = await fetch(`${import.meta.env.VITE_API_URL || ''}/auth/verify-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: data.email, otp: otpCode }),

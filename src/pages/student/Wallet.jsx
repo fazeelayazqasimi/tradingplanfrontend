@@ -78,11 +78,7 @@ const TYPE_OPTIONS = [
 ];
 
 const PAYMENT_METHODS = [
-  { value: 'bank_transfer', label: 'Bank Transfer' },
-  { value: 'paypal', label: 'PayPal' },
   { value: 'usdt_bep20', label: 'USDT (BEP20)' },
-  { value: 'crypto', label: 'Other Cryptocurrency' },
-  { value: 'mobile_money', label: 'Mobile Money' },
 ];
 
 const WALLET_TABS = [
@@ -106,10 +102,7 @@ export default function Wallet() {
   const [submitting, setSubmitting] = useState(false);
   const [withdrawForm, setWithdrawForm] = useState({
     amount: '',
-    paymentMethod: '',
-    accountNumber: '',
-    accountName: '',
-    bankName: '',
+    walletAddress: '',
   });
   const [formErrors, setFormErrors] = useState({});
 
@@ -221,11 +214,6 @@ export default function Wallet() {
     const errors = {};
     const amt = parseFloat(depositForm.amount);
     if (!depositForm.amount || isNaN(amt) || amt <= 0) errors.amount = 'Enter a valid amount';
-    if (depositForm.paymentMethod === 'crypto' || depositForm.paymentMethod === 'coin') {
-      if (!depositForm.coinType) errors.coinType = 'Select a coin type';
-    } else {
-      if (!depositForm.accountId) errors.accountId = 'Select a payment account';
-    }
     setDepositErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -236,25 +224,17 @@ export default function Wallet() {
     try {
       const payload = {
         amount: parseFloat(depositForm.amount),
-        paymentMethod: depositForm.paymentMethod,
         walletType: walletTab,
       };
-      if (depositForm.paymentMethod === 'crypto' || depositForm.paymentMethod === 'coin') {
-        payload.coinType = depositForm.coinType;
-      } else {
-        payload.accountId = depositForm.accountId;
-      }
       const res = await depositService.createDeposit(payload);
-      if (depositForm.paymentMethod === 'crypto' || depositForm.paymentMethod === 'coin') {
-        setCoinPayment(res?.data?.data?.coinPayment || null);
-        toast.success('Coin deposit initiated! Send payment to the address below.');
-      } else {
-        toast.success('Deposit request submitted! Admin will verify and approve.');
-        setShowDeposit(false);
-        setDepositForm({ accountId: '', amount: '', paymentMethod: 'bank_transfer', coinType: '' });
-        setDepositErrors({});
-        fetchDepositHistory();
-      }
+      toast.success('Deposit successful! Wallet credited instantly.');
+      setShowDeposit(false);
+      setDepositForm({ amount: '' });
+      setDepositErrors({});
+      fetchWallet();
+      fetchStats();
+      fetchAllWallets();
+      fetchDepositHistory();
     } catch (err) {
       toast.error(err?.response?.data?.message || 'Failed to submit deposit request');
     } finally {
@@ -387,17 +367,8 @@ export default function Wallet() {
     if (amt > available) {
       errors.amount = 'Insufficient balance';
     }
-    if (!withdrawForm.paymentMethod) {
-      errors.paymentMethod = 'Select a payment method';
-    }
-    if (!withdrawForm.accountNumber?.trim()) {
-      errors.accountNumber = 'Account number is required';
-    }
-    if (!withdrawForm.accountName?.trim()) {
-      errors.accountName = 'Account name is required';
-    }
-    if ((withdrawForm.paymentMethod === 'bank_transfer') && !withdrawForm.bankName?.trim()) {
-      errors.bankName = 'Bank name is required for bank transfers';
+    if (!withdrawForm.walletAddress?.trim()) {
+      errors.walletAddress = 'Wallet address is required';
     }
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -409,14 +380,11 @@ export default function Wallet() {
     try {
       await studentService.requestWithdrawal({
         amount: parseFloat(withdrawForm.amount),
-        paymentMethod: withdrawForm.paymentMethod,
-        accountNumber: withdrawForm.accountNumber.trim(),
-        accountName: withdrawForm.accountName.trim(),
-        bankName: withdrawForm.bankName.trim() || undefined,
+        walletAddress: withdrawForm.walletAddress.trim(),
       });
       toast.success('Withdrawal request submitted successfully');
       setShowWithdraw(false);
-      setWithdrawForm({ amount: '', paymentMethod: '', accountNumber: '', accountName: '', bankName: '' });
+      setWithdrawForm({ amount: '', walletAddress: '' });
       setFormErrors({});
       fetchWallet();
       fetchStats();
@@ -451,7 +419,7 @@ export default function Wallet() {
             <FiRefreshCw size={16} className={loading || loadingTx ? 'animate-spin' : ''} />
             Refresh
           </Button>
-          <Button variant="outline" size="sm" onClick={() => { setDepositForm({ accountId: '', amount: '', paymentMethod: 'bank_transfer', coinType: '' }); setCoinPayment(null); setDepositErrors({}); setShowDeposit(true); }}>
+          <Button variant="outline" size="sm" onClick={() => { setDepositForm({ amount: '' }); setCoinPayment(null); setDepositErrors({}); setShowDeposit(true); }}>
             <FiPlus size={16} />
             Deposit
           </Button>
@@ -717,134 +685,19 @@ export default function Wallet() {
         </Card>
       </motion.div>
 
-      <Modal isOpen={showDeposit} onClose={() => { setShowDeposit(false); setDepositErrors({}); setCoinPayment(null); }} title={`Deposit to ${WALLET_TABS.find(t => t.key === walletTab)?.label || 'Wallet'}`} size={coinPayment ? 'md' : 'lg'}>
-        {coinPayment ? (
+      <Modal isOpen={showDeposit} onClose={() => { setShowDeposit(false); setDepositErrors({}); setCoinPayment(null); }} title={`Deposit to ${WALLET_TABS.find(t => t.key === walletTab)?.label || 'Wallet'}`} size="sm">
           <div className="space-y-4">
-            <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-center">
-              <FiCheckCircle size={32} className="mx-auto text-emerald-500 mb-2" />
-              <p className="text-sm font-semibold text-emerald-700">Deposit Initiated!</p>
-              <p className="text-xs text-emerald-600 mt-1">Send the exact amount to the address below</p>
-            </div>
-            <div className="space-y-3 p-4 rounded-xl bg-dark-50">
-              <div>
-                <p className="text-xs text-dark-500 font-medium mb-1">Coin / Network</p>
-                <p className="text-sm font-semibold text-ink">{coinPayment.coinName} ({coinPayment.network})</p>
-              </div>
-              <div>
-                <p className="text-xs text-dark-500 font-medium mb-1">Amount</p>
-                <p className="text-lg font-bold text-ink">{formatCurrency(coinPayment.amount)}</p>
-              </div>
-              {coinPayment.qrcodeUrl && (
-                <div className="flex justify-center">
-                  <img src={coinPayment.qrcodeUrl} alt="QR Code" className="w-40 h-40 rounded-xl border border-dark-200" />
+            <div className="p-4 rounded-xl bg-blue-50 border border-blue-200">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
+                  <FiDollarSign className="text-blue-600" size={20} />
                 </div>
-              )}
-              <div>
-                <p className="text-xs text-dark-500 font-medium mb-1">Deposit Address</p>
-                <div className="flex items-center gap-2 p-3 rounded-lg bg-white border border-dark-200">
-                  <code className="text-xs font-mono text-ink break-all flex-1">{coinPayment.depositAddress}</code>
-                  <button
-                    onClick={() => { copyToClipboard(coinPayment.depositAddress); toast.success('Address copied!'); }}
-                    className="p-1.5 rounded-lg hover:bg-dark-100 text-dark-500 shrink-0"
-                  >
-                    <FiCopy size={14} />
-                  </button>
+                <div>
+                  <p className="text-sm font-semibold text-blue-800">USDT (BEP20)</p>
+                  <p className="text-xs text-blue-600">Auto-approved & credited instantly</p>
                 </div>
               </div>
-              <div>
-                <p className="text-xs text-dark-500 font-medium mb-1">Payment Reference</p>
-                <code className="text-xs font-mono text-primary-600">{coinPayment.paymentRef}</code>
-              </div>
             </div>
-            <div className="p-3 rounded-xl bg-amber-50 border border-amber-200">
-              <p className="text-xs text-amber-700 font-medium">Important:</p>
-              <ul className="text-xs text-amber-600 mt-1 space-y-1 list-disc list-inside">
-                <li>Send only {coinPayment.coinName} on {coinPayment.network} network</li>
-                <li>Sending other coins may result in permanent loss</li>
-                <li>Minimum 1 network confirmation required</li>
-                <li>Your deposit will be credited after confirmation</li>
-              </ul>
-            </div>
-            <p className="text-xs text-dark-400 text-center">Expires: {new Date(coinPayment.expiresAt).toLocaleString()}</p>
-            <div className="flex justify-end gap-3 pt-2">
-              <Button variant="outline" onClick={() => { setShowDeposit(false); setCoinPayment(null); setDepositForm({ accountId: '', amount: '', paymentMethod: 'bank_transfer', coinType: '' }); }}>Close</Button>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <p className="text-sm text-dark-500">Choose a payment method and enter the amount to deposit into your <strong>{WALLET_TABS.find(t => t.key === walletTab)?.label}</strong>.</p>
-
-            <Select
-              label="Payment Method"
-              options={[
-                { value: 'bank_transfer', label: 'Bank Transfer' },
-                { value: 'usdt_bep20', label: 'USDT (BEP20) \u2014 Auto-credit' },
-                { value: 'crypto', label: 'Other Cryptocurrency' },
-                { value: 'coin', label: 'Coin Payment' },
-              ]}
-              value={depositForm.paymentMethod}
-              onChange={(e) => setDepositForm((p) => ({ ...p, paymentMethod: e.target.value, accountId: '', coinType: e.target.value === 'usdt_bep20' ? 'USDT_BEP20' : '' }))}
-            />
-
-            {(depositForm.paymentMethod === 'crypto' || depositForm.paymentMethod === 'coin' || depositForm.paymentMethod === 'usdt_bep20') ? (
-              <Select
-                label="Select Coin"
-                options={[
-                  { value: '', label: 'Select a coin...' },
-                  ...Object.entries(supportedCoins).map(([key, coin]) => ({
-                    value: key,
-                    label: `${coin.name} (${coin.network})`
-                  }))
-                ]}
-                value={depositForm.coinType}
-                onChange={(e) => setDepositForm((p) => ({ ...p, coinType: e.target.value }))}
-                error={depositErrors.coinType}
-              />
-            ) : (
-              <>
-                {paymentAccounts.length === 0 ? (
-                  <div className="p-6 text-center text-dark-400 text-sm bg-dark-50 rounded-xl">
-                    No payment accounts available yet. Please contact admin.
-                  </div>
-                ) : (
-                  <div className="space-y-3 max-h-60 overflow-y-auto">
-                    {paymentAccounts.map((acc) => (
-                      <label
-                        key={acc._id}
-                        className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
-                          depositForm.accountId === acc._id
-                            ? 'border-primary-500 bg-primary-50'
-                            : 'border-dark-100 bg-white hover:border-dark-300'
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          name="account"
-                          value={acc._id}
-                          checked={depositForm.accountId === acc._id}
-                          onChange={(e) => setDepositForm((p) => ({ ...p, accountId: e.target.value }))}
-                          className="sr-only"
-                        />
-                        <div className="w-10 h-10 rounded-xl bg-primary-100 text-primary-600 flex items-center justify-center shrink-0">
-                          <FiLayers size={18} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-ink">{acc.bankName}</p>
-                          <p className="text-xs text-dark-400">{acc.accountHolderName} &middot; {acc.accountNumber}</p>
-                          {acc.iban && <p className="text-xs text-dark-400">IBAN: {acc.iban}</p>}
-                        </div>
-                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                          depositForm.accountId === acc._id ? 'border-primary-500' : 'border-dark-300'
-                        }`}>
-                          {depositForm.accountId === acc._id && <div className="w-2.5 h-2.5 rounded-full bg-primary-500" />}
-                        </div>
-                      </label>
-                    ))}
-                  </div>
-                )}
-                {depositErrors.accountId && <p className="text-xs text-red-500">{depositErrors.accountId}</p>}
-              </>
-            )}
 
             <Input
               label="Amount ($)"
@@ -859,14 +712,13 @@ export default function Wallet() {
             />
 
             <div className="flex justify-end gap-3 pt-2">
-              <Button variant="outline" onClick={() => { setShowDeposit(false); setDepositErrors({}); setCoinPayment(null); }}>Cancel</Button>
-              <Button onClick={handleDeposit} loading={submitting} disabled={(depositForm.paymentMethod !== 'crypto' && depositForm.paymentMethod !== 'coin' && depositForm.paymentMethod !== 'usdt_bep20' && paymentAccounts.length === 0)}>
-                {depositForm.paymentMethod === 'crypto' || depositForm.paymentMethod === 'coin' || depositForm.paymentMethod === 'usdt_bep20' ? 'Generate Payment' : 'Submit Deposit'}
+              <Button variant="outline" onClick={() => { setShowDeposit(false); setDepositErrors({}); }}>Cancel</Button>
+              <Button onClick={handleDeposit} loading={submitting}>
+                Deposit & Credit Instantly
               </Button>
             </div>
           </div>
-        )}
-      </Modal>
+        </Modal>
 
       <Modal isOpen={showCoupon} onClose={() => { setShowCoupon(false); setCouponResult(null); }} title="Apply Coupon / PIN" size="sm">
         <div className="space-y-4">
@@ -894,69 +746,59 @@ export default function Wallet() {
         </div>
       </Modal>
 
-      <Modal isOpen={showWithdraw} onClose={() => { setShowWithdraw(false); setFormErrors({}); }} title="Request Withdrawal" size="md">
-        <div className="space-y-4">
-          <Input
-            label="Amount ($)"
-            type="number"
-            placeholder="0.00"
-            icon={FiDollarSign}
-            value={withdrawForm.amount}
-            onChange={updateWithdrawField('amount')}
-            error={formErrors.amount}
-            min="0"
-            step="0.01"
-          />
-          <Select
-            label="Payment Method"
-            options={PAYMENT_METHODS}
-            value={withdrawForm.paymentMethod}
-            onChange={updateWithdrawField('paymentMethod')}
-            error={formErrors.paymentMethod}
-          />
-          {withdrawForm.paymentMethod === 'bank_transfer' && (
-            <Input
-              label="Bank Name"
-              placeholder="Enter your bank name"
-              value={withdrawForm.bankName}
-              onChange={updateWithdrawField('bankName')}
-              error={formErrors.bankName}
-            />
-          )}
-          <Input
-            label="Account Number"
-            placeholder="Enter account number"
-            value={withdrawForm.accountNumber}
-            onChange={updateWithdrawField('accountNumber')}
-            error={formErrors.accountNumber}
-          />
-          <Input
-            label="Account Name"
-            placeholder="Enter account holder name"
-            value={withdrawForm.accountName}
-            onChange={updateWithdrawField('accountName')}
-            error={formErrors.accountName}
-          />
-
-          {wallet && (
-            <div className="p-3 rounded-[11px] bg-dark-50">
-              <p className="text-xs text-dark-500">Available for withdrawal</p>
-              <p className="text-lg font-bold text-ink">
-                {formatCurrency(wallet?.availableBalance ?? wallet?.available ?? wallet?.balance ?? 0)}
-              </p>
+      <Modal isOpen={showWithdraw} onClose={() => { setShowWithdraw(false); setFormErrors({}); }} title="Request Withdrawal (USDT BEP20)" size="sm">
+          <div className="space-y-4">
+            <div className="p-4 rounded-xl bg-purple-50 border border-purple-200">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center shrink-0">
+                  <FiCreditCard className="text-purple-600" size={20} />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-purple-800">Withdraw USDT (BEP20)</p>
+                  <p className="text-xs text-purple-600">Funds sent to your wallet address</p>
+                </div>
+              </div>
             </div>
-          )}
 
-          <div className="flex justify-end gap-3 pt-2">
-            <Button variant="outline" onClick={() => { setShowWithdraw(false); setFormErrors({}); }}>
-              Cancel
-            </Button>
-            <Button onClick={handleWithdraw} loading={submitting}>
-              Submit Request
-            </Button>
+            <Input
+              label="Amount ($)"
+              type="number"
+              placeholder="0.00"
+              icon={FiDollarSign}
+              value={withdrawForm.amount}
+              onChange={updateWithdrawField('amount')}
+              error={formErrors.amount}
+              min="0"
+              step="0.01"
+            />
+
+            <Input
+              label="USDT BEP20 Wallet Address"
+              placeholder="Enter your USDT BEP20 wallet address"
+              value={withdrawForm.walletAddress}
+              onChange={updateWithdrawField('walletAddress')}
+              error={formErrors.walletAddress}
+            />
+
+            {wallet && (
+              <div className="p-3 rounded-[11px] bg-dark-50">
+                <p className="text-xs text-dark-500">Available for withdrawal</p>
+                <p className="text-lg font-bold text-ink">
+                  {formatCurrency(wallet?.availableBalance ?? wallet?.available ?? wallet?.balance ?? 0)}
+                </p>
+              </div>
+            )}
+
+            <div className="flex justify-end gap-3 pt-2">
+              <Button variant="outline" onClick={() => { setShowWithdraw(false); setFormErrors({}); }}>
+                Cancel
+              </Button>
+              <Button onClick={handleWithdraw} loading={submitting}>
+                Submit Request
+              </Button>
+            </div>
           </div>
-        </div>
-      </Modal>
+        </Modal>
     </div>
   );
 }

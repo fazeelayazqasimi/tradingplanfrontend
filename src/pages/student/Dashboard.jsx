@@ -13,6 +13,8 @@ import {
   FiClock,
   FiCheckCircle,
   FiShoppingCart,
+  FiCopy,
+  FiLink,
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Card from '../../components/ui/Card';
@@ -21,10 +23,11 @@ import Button from '../../components/ui/Button';
 import Skeleton from '../../components/ui/Skeleton';
 import EmptyState from '../../components/ui/EmptyState';
 import studentService from '../../services/studentService';
+import referralService from '../../services/referralService';
 import courseService from '../../services/courseService';
 import signalService from '../../services/signalService';
 import { useAuth } from '../../context/AuthContext';
-import { formatCurrency, formatDate, getInitials } from '../../utils/helpers';
+import { formatCurrency, formatDate, getInitials, copyToClipboard } from '../../utils/helpers';
 import SystemFlow from '../../components/website/SystemFlow';
 
 const container = {
@@ -54,6 +57,8 @@ export default function Dashboard() {
   const [rank, setRank] = useState(null);
   const [loading, setLoading] = useState(true);
   const [approvalStatus, setApprovalStatus] = useState(null);
+  const [referralCode, setReferralCode] = useState('');
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -94,6 +99,14 @@ export default function Dashboard() {
           const rd = rankRes.value.data || rankRes.value;
           setRank(rd.rank || rd.data?.rank || null);
         }
+
+        // Fetch referral code
+        try {
+          const refRes = await referralService.getReferralCode();
+          const cd = refRes?.data?.data || refRes?.data || refRes;
+          const code = cd?.code || cd?.referralCode || cd || '';
+          setReferralCode(typeof code === 'string' ? code : code?.toString() || '');
+        } catch { /* silent */ }
       } catch {
         if (!cancelled) toast.error('Failed to load dashboard data');
       } finally {
@@ -168,9 +181,44 @@ export default function Dashboard() {
           <div className="hidden sm:flex items-center gap-1.5 text-white/60">
             <FiUser size={16} />
             <span className="text-sm">{user?.email}</span>
-          </div>
-        </Card>
-      </motion.div>
+</div>
+          </Card>
+        </motion.div>
+
+        {referralCode && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}>
+            <Card className="p-[22px]">
+              <div className="flex items-center justify-between mb-2">
+                <h2 className="text-sm font-semibold text-ink flex items-center gap-2">
+                  <FiLink size={16} className="text-primary-500" />
+                  Your Referral Link
+                </h2>
+                <Link to="/student/referrals" className="text-xs text-primary-500 hover:text-primary-600 font-medium flex items-center gap-1">
+                  View All <FiArrowRight size={12} />
+                </Link>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  readOnly
+                  value={`${window.location.origin}/register?ref=${referralCode}`}
+                  className="flex-1 text-sm font-mono text-ink bg-dark-50 border border-dark-200 rounded-xl px-4 py-2.5 outline-none"
+                />
+                <button
+                  onClick={() => {
+                    copyToClipboard(`${window.location.origin}/register?ref=${referralCode}`);
+                    setCopied(true);
+                    toast.success('Referral link copied!');
+                    setTimeout(() => setCopied(false), 2000);
+                  }}
+                  className="p-2.5 rounded-xl bg-primary-50 text-primary-600 hover:bg-primary-100 transition-colors"
+                >
+                  {copied ? <FiCheckCircle size={18} /> : <FiCopy size={18} />}
+                </button>
+              </div>
+            </Card>
+          </motion.div>
+        )}
 
       {approvalStatus && !loading && !approvalStatus.isApproved && (
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
@@ -189,7 +237,7 @@ export default function Dashboard() {
               </p>
               <Link to="/student/courses">
                 <Button variant="primary" size="md" className="mt-2">
-                  <FiShoppingCart size={16} /> Browse & Purchase Courses
+                  <FiShoppingCart size={16} /> Activate Your Account
                 </Button>
               </Link>
             </div>
@@ -247,8 +295,8 @@ export default function Dashboard() {
                             <Icon className={`h-5 w-5 ${card.iconColor}`} />
                           </div>
                           <div className="min-w-0 flex-1">
-                            <p className="truncate text-xs font-medium text-dark-500">{card.label}</p>
-                            <p className="mt-0.5 text-xl font-bold text-ink">
+                            <p className="text-xs font-medium text-dark-500">{card.label}</p>
+                            <p className="mt-0.5 text-xl font-bold text-ink break-words">
                               {card.value}
                             </p>
                           </div>
