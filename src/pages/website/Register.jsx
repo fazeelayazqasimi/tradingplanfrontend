@@ -70,6 +70,7 @@ export default function Register() {
         name: data.name,
         email: data.email,
         password: data.password,
+        confirmPassword: data.password,
         phone: `${data.phoneCode}${data.phone}`,
         country: data.country,
         referralCode: data.referralCode,
