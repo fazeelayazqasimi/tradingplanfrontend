@@ -4,7 +4,6 @@ import {
   FiCreditCard,
   FiCheck,
   FiClock,
-  FiX,
   FiRefreshCw,
   FiCalendar,
   FiDollarSign,
@@ -18,6 +17,7 @@ import Skeleton from '../../components/ui/Skeleton';
 import Modal from '../../components/ui/Modal';
 import studentService from '../../services/studentService';
 import walletService from '../../services/walletService';
+import api from '../../services/api';
 import { formatCurrency, formatDate } from '../../utils/helpers';
 
 const container = {
@@ -30,31 +30,6 @@ const item = {
   show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 260, damping: 20 } },
 };
 
-const PLANS = [
-  {
-    key: 'basic',
-    name: 'Basic',
-    amount: 29,
-    period: 'month',
-    features: ['Market analysis access', 'Basic trading signals', 'Community forum access', 'Email support'],
-  },
-  {
-    key: 'pro',
-    name: 'Pro',
-    amount: 49,
-    period: 'month',
-    features: ['Everything in Basic', 'Advanced trading signals', 'Copy trading access', 'Priority support', 'Live webinars'],
-    popular: true,
-  },
-  {
-    key: 'premium',
-    name: 'Premium',
-    amount: 99,
-    period: 'month',
-    features: ['Everything in Pro', '1-on-1 mentorship', 'Custom trading strategies', 'API access', 'VIP support', 'Early feature access'],
-  },
-];
-
 const STATUS_MAP = {
   active: 'success',
   cancelled: 'danger',
@@ -63,22 +38,37 @@ const STATUS_MAP = {
 
 export default function Subscription() {
   const [subscription, setSubscription] = useState(null);
+  const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [subscribing, setSubscribing] = useState(null);
-  const [cancelling, setCancelling] = useState(false);
   const [wallet, setWallet] = useState(null);
   const [confirmPlan, setConfirmPlan] = useState(null);
   const [showConfirm, setShowConfirm] = useState(false);
 
-  const fetchSubscription = useCallback(async () => {
+  const fetchPlans = useCallback(async () => {
     try {
-      const res = await studentService.getSubscription();
-      const data = res?.data?.data || res?.data || res;
-      setSubscription(data);
+      const res = await api.get('/settings');
+      const arr = res?.data?.data || res?.data?.settings || res?.data || [];
+      const settings = Array.isArray(arr) ? arr.reduce((acc, s) => { acc[s.key] = s.value; return acc; }, {}) : {};
+      const price = Number(settings.membership_price) || 100;
+      setPlans([
+        {
+          key: 'yearly',
+          name: 'Yearly',
+          amount: price,
+          period: 'year',
+          features: ['Full platform access', 'All trading signals', 'Copy trading access', 'Community forum', 'Priority support', 'Live webinars'],
+          popular: true,
+        },
+      ]);
     } catch {
-      toast.error('Failed to load subscription data');
+      setPlans([
+        { key: 'yearly', name: 'Yearly', amount: 100, period: 'year', features: ['Full platform access'], popular: true },
+      ]);
     }
   }, []);
+
+  const fetchSubscription = useCallback(async () => {
 
   const fetchWallet = useCallback(async () => {
     try {
@@ -92,12 +82,12 @@ export default function Subscription() {
     let cancelled = false;
     async function init() {
       setLoading(true);
-      await Promise.all([fetchSubscription(), fetchWallet()]);
+      await Promise.all([fetchSubscription(), fetchPlans(), fetchWallet()]);
       if (!cancelled) setLoading(false);
     }
     init();
     return () => { cancelled = true; };
-  }, [fetchSubscription, fetchWallet]);
+  }, [fetchSubscription, fetchPlans, fetchWallet]);
 
   const handleRefresh = () => {
     setLoading(true);
@@ -127,21 +117,6 @@ export default function Subscription() {
     } finally {
       setSubscribing(null);
       setConfirmPlan(null);
-    }
-  };
-
-  const handleCancel = async () => {
-    const confirmed = window.confirm('Are you sure you want to cancel your subscription? You will lose access to premium features at the end of the billing period.');
-    if (!confirmed) return;
-    setCancelling(true);
-    try {
-      await studentService.cancelSubscription();
-      toast.success('Subscription cancelled successfully');
-      await fetchSubscription();
-    } catch (err) {
-      toast.error(err?.response?.data?.message || 'Failed to cancel subscription');
-    } finally {
-      setCancelling(false);
     }
   };
 
@@ -246,7 +221,6 @@ export default function Subscription() {
       {hasSubscription && (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
           <Card className="p-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
                 <h2 className="text-lg font-semibold text-ink">Subscription Details</h2>
                 <div className="mt-3 space-y-2">
@@ -269,72 +243,65 @@ export default function Subscription() {
                   )}
                 </div>
               </div>
-              {isActive && (
-                <Button variant="danger" size="sm" onClick={handleCancel} loading={cancelling}>
-                  <FiX size={16} />
-                  Cancel Subscription
-                </Button>
-              )}
-            </div>
           </Card>
         </motion.div>
       )}
 
-      <div>
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: hasSubscription ? 0.4 : 0.1 }}>
-          <h2 className="text-lg font-semibold text-ink mb-4">
-            {hasSubscription ? 'Change Plan' : 'Choose a Plan'}
-          </h2>
-        </motion.div>
-        <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {PLANS.map((plan) => {
-            const isCurrent = subscription?.plan === plan.key;
-            return (
-              <motion.div key={plan.key} variants={item}>
-                <Card
-                  className={`p-6 h-full flex flex-col ${plan.popular ? 'border-primary-500 border-2 shadow-card-md' : ''}`}
-                >
-                  {plan.popular && (
-                    <div className="text-xs font-bold text-primary-500 uppercase tracking-wider mb-2">
-                      Most Popular
+      {!isActive && plans.length > 0 && (
+        <div>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+            <h2 className="text-lg font-semibold text-ink mb-4">Choose a Plan</h2>
+          </motion.div>
+          <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {plans.map((plan) => {
+              const isCurrent = subscription?.plan === plan.key;
+              return (
+                <motion.div key={plan.key} variants={item}>
+                  <Card
+                    className={`p-6 h-full flex flex-col ${plan.popular ? 'border-primary-500 border-2 shadow-card-md' : ''}`}
+                  >
+                    {plan.popular && (
+                      <div className="text-xs font-bold text-primary-500 uppercase tracking-wider mb-2">
+                        Most Popular
+                      </div>
+                    )}
+                    <h3 className="text-xl font-bold text-ink">{plan.name}</h3>
+                    <div className="mt-3 mb-5">
+                      <span className="text-4xl font-bold text-ink">{formatCurrency(plan.amount)}</span>
+                      <span className="text-sm text-dark-500 ml-1">/ {plan.period}</span>
                     </div>
-                  )}
-                  <h3 className="text-xl font-bold text-ink">{plan.name}</h3>
-                  <div className="mt-3 mb-5">
-                    <span className="text-4xl font-bold text-ink">{formatCurrency(plan.amount)}</span>
-                    <span className="text-sm text-dark-500 ml-1">/ {plan.period}</span>
-                  </div>
-                  <ul className="space-y-3 mb-6 flex-1">
-                    {plan.features.map((feature) => (
-                      <li key={feature} className="flex items-start gap-2">
-                        <FiCheck size={16} className="text-emerald-500 mt-0.5 shrink-0" />
-                        <span className="text-sm text-dark-600">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  {isCurrent ? (
-                    <Button variant="outline" size="md" disabled className="w-full">
-                      <FiCheck size={16} />
-                      Current Plan
-                    </Button>
-                  ) : (
-                    <Button
-                      variant={plan.popular ? 'primary' : 'outline'}
-                      size="md"
-                      onClick={() => handleSubscribeClick(plan)}
-                      loading={subscribing === plan.key}
-                      className="w-full"
-                    >
-                      <FiShield size={16} />
-                      {hasSubscription ? 'Switch Plan' : 'Subscribe'}
-                    </Button>
-                  )}
-                </Card>
-              </motion.div>
-            );
-          })}
-        </motion.div>
-      </div>
+                    <ul className="space-y-3 mb-6 flex-1">
+                      {plan.features.map((feature) => (
+                        <li key={feature} className="flex items-start gap-2">
+                          <FiCheck size={16} className="text-emerald-500 mt-0.5 shrink-0" />
+                          <span className="text-sm text-dark-600">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    {isCurrent ? (
+                      <Button variant="outline" size="md" disabled className="w-full">
+                        <FiCheck size={16} />
+                        Current Plan
+                      </Button>
+                    ) : (
+                      <Button
+                        variant={plan.popular ? 'primary' : 'outline'}
+                        size="md"
+                        onClick={() => handleSubscribeClick(plan)}
+                        loading={subscribing === plan.key}
+                        className="w-full"
+                      >
+                        <FiShield size={16} />
+                        {hasSubscription ? 'Switch Plan' : 'Subscribe'}
+                      </Button>
+                    )}
+                  </Card>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        </div>
+      )}
 
       {wallet && (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>

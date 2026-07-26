@@ -5,11 +5,11 @@ import gsap from 'gsap';
 
 const defaultRanks = [
   { tier: 'V1', direct: 0, team: 0, commission: '$30', profitShare: '4%' },
-  { tier: 'V2', direct: 3, team: 20, commission: '$40', profitShare: '6%' },
-  { tier: 'V3', direct: 5, team: 100, commission: '$50', profitShare: '8%' },
-  { tier: 'V4', direct: 8, team: 300, commission: '$60', profitShare: '10%' },
-  { tier: 'V5', direct: 12, team: 800, commission: '$65', profitShare: '11%' },
-  { tier: 'V6', direct: 20, team: 1500, commission: '$70', profitShare: '12%' },
+  { tier: 'V2', direct: 2, team: 5, commission: '$40', profitShare: '6%' },
+  { tier: 'V3', direct: 5, team: 20, commission: '$50', profitShare: '8%' },
+  { tier: 'V4', direct: 10, team: 50, commission: '$60', profitShare: '10%' },
+  { tier: 'V5', direct: 20, team: 100, commission: '$65', profitShare: '11%' },
+  { tier: 'V6', direct: 50, team: 300, commission: '$70', profitShare: '12%' },
 ];
 
 const benefits = [
@@ -44,10 +44,11 @@ export default function ReferralProgram() {
     websiteService.getRanks().then(({ data }) => {
       if (data?.data?.length) {
         const m = data.data.map((r, i) => ({
-          tier: r.name, direct: r.minReferrals || defaultRanks[i]?.direct || 0,
-          team: r.minRevenue || defaultRanks[i]?.team || 0,
-          commission: `$${r.commissionPercent * 6 || defaultRanks[i]?.commission?.replace('$', '')}`,
-          profitShare: `${r.profitSharePercent || defaultRanks[i]?.profitShare?.replace('%', '')}%`,
+          tier: r.name,
+          direct: r.minDirectReferrals || defaultRanks[i]?.direct || 0,
+          team: r.minTeamSize || defaultRanks[i]?.team || 0,
+          commission: `$${r.activationGain || defaultRanks[i]?.commission?.replace('$', '')}`,
+          profitShare: `${r.quantification || defaultRanks[i]?.profitShare?.replace('%', '')}%`,
         }));
         setRanks(m);
       }

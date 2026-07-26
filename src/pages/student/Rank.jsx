@@ -98,31 +98,36 @@ export default function Rank() {
   const displayRanks = ranks.length > 0
     ? ranks.map((r) => ({
         name: r.name || r.rank || r.label,
-        requiredReferrals: r.requiredReferrals ?? r.required_referrals ?? r.referralsRequired ?? 0,
-        requiredRevenue: r.requiredRevenue ?? r.required_revenue ?? r.revenueRequired ?? 0,
-        commission: r.commission ?? r.commissionPercent ?? r.commissionRate ?? 0,
+        minDirectReferrals: r.minDirectReferrals ?? 0,
+        minTeamSize: r.minTeamSize ?? r.team ?? r.minTeamMembers ?? 0,
+        minAtLeast: r.minAtLeast ?? r.minRequiredRankCount ?? 0,
+        minAtLeastRank: r.minAtLeastRank ?? r.minRequiredRank ?? null,
+        activationGain: r.activationGain ?? 0,
+        quantification: r.quantification ?? 0,
+        indirectIncome: r.indirectIncome ?? 0,
         perks: r.perks ?? r.benefits ?? r.features ?? [],
       }))
     : [];
 
   const RANK_ORDER = displayRanks.map((r) => r.name);
 
-  const rankName = currentRank?.name || currentRank?.rank || currentRank?.rankName || 'V1';
-  const directCount = currentRank?.directReferrals ?? currentRank?.direct_count ?? currentRank?.totalDirectReferrals ?? 0;
+  const rankName = currentRank?.userRank?.currentRankId?.name || currentRank?.name || currentRank?.rank || currentRank?.rankName || 'V1';
+  const directCount = currentRank?.directCount ?? currentRank?.directReferrals ?? currentRank?.direct_count ?? 0;
+  const totalTeam = currentRank?.totalTeam ?? currentRank?.teamSize ?? currentRank?.team ?? 0;
   const totalRevenue = currentRank?.totalRevenue ?? currentRank?.revenue ?? currentRank?.total_revenue ?? 0;
-  const promotionDate = currentRank?.promotedAt || currentRank?.rankUpdatedAt || currentRank?.updatedAt;
+  const promotionDate = currentRank?.userRank?.rankHistory?.[0]?.achievedAt || currentRank?.promotedAt || currentRank?.rankUpdatedAt || currentRank?.updatedAt;
 
   const currentIndex = RANK_ORDER.indexOf(rankName);
   const nextRankName = currentIndex < RANK_ORDER.length - 1 ? RANK_ORDER[currentIndex + 1] : null;
   const nextRankData = nextRankName ? displayRanks.find((r) => r.name === nextRankName) : null;
 
-  const referralsNeeded = nextRankData ? Math.max(0, nextRankData.requiredReferrals - directCount) : 0;
-  const revenueNeeded = nextRankData ? Math.max(0, nextRankData.requiredRevenue - totalRevenue) : 0;
-  const referralPct = nextRankData && nextRankData.requiredReferrals > 0
-    ? Math.min(100, (directCount / nextRankData.requiredReferrals) * 100)
+  const directNeeded = nextRankData ? Math.max(0, nextRankData.minDirectReferrals - directCount) : 0;
+  const teamNeeded = nextRankData ? Math.max(0, nextRankData.minTeamSize - totalTeam) : 0;
+  const directPct = nextRankData && nextRankData.minDirectReferrals > 0
+    ? Math.min(100, (directCount / nextRankData.minDirectReferrals) * 100)
     : 100;
-  const revenuePct = nextRankData && nextRankData.requiredRevenue > 0
-    ? Math.min(100, (totalRevenue / nextRankData.requiredRevenue) * 100)
+  const teamPct = nextRankData && nextRankData.minTeamSize > 0
+    ? Math.min(100, (totalTeam / nextRankData.minTeamSize) * 100)
     : 100;
 
   return (
@@ -163,7 +168,7 @@ export default function Rank() {
               </div>
               <div className="mt-4">
                 <Badge color="info" className="text-sm px-3 py-1">
-                  {displayRanks.find((r) => r.name === rankName)?.commission ?? 0}% Commission
+                  ${nextRankData?.activationGain ?? '?'}/referral · {nextRankData?.quantification ?? '?'}% quant · ${nextRankData?.indirectIncome ?? '?'} indirect
                 </Badge>
               </div>
               <p className="mt-3 text-sm text-dark-500">
@@ -179,7 +184,7 @@ export default function Rank() {
                   {nextRankData ? `Progress to ${nextRankName}` : 'Maximum Rank Achieved!'}
                 </h2>
                 {nextRankData && (
-                  <Badge color="success">{nextRankData.commission}% commission at {nextRankName}</Badge>
+                  <Badge color="success">${nextRankData.activationGain} activation · ${nextRankData.indirectIncome} indirect</Badge>
                 )}
               </div>
 
@@ -189,45 +194,45 @@ export default function Rank() {
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm text-dark-600 flex items-center gap-1.5">
                         <FiUsers size={14} />
-                        Referrals
+                        Direct Referrals
                       </span>
                       <span className="text-sm font-semibold text-ink">
-                        {directCount} / {nextRankData.requiredReferrals}
+                        {directCount} / {nextRankData.minDirectReferrals}
                       </span>
                     </div>
                     <div className="h-1.5 rounded bg-dark-100 overflow-hidden">
                       <motion.div
                         initial={{ width: 0 }}
-                        animate={{ width: `${referralPct}%` }}
+                        animate={{ width: `${directPct}%` }}
                         transition={{ duration: 1, delay: 0.3 }}
                         className="h-full rounded bg-gradient-to-r from-primary-500 to-emerald-500"
                       />
                     </div>
-                    {referralsNeeded > 0 && (
-                      <p className="mt-1.5 text-xs text-dark-500">{referralsNeeded} more referral{referralsNeeded !== 1 ? 's' : ''} needed</p>
+                    {directNeeded > 0 && (
+                      <p className="mt-1.5 text-xs text-dark-500">{directNeeded} more direct referral{directNeeded !== 1 ? 's' : ''} needed</p>
                     )}
                   </div>
 
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm text-dark-600 flex items-center gap-1.5">
-                        <FiDollarSign size={14} />
-                        Revenue
+                        <FiUsers size={14} />
+                        Team Size
                       </span>
                       <span className="text-sm font-semibold text-ink">
-                        {formatCurrency(totalRevenue)} / {formatCurrency(nextRankData.requiredRevenue)}
+                        {totalTeam} / {nextRankData.minTeamSize}
                       </span>
                     </div>
                     <div className="h-1.5 rounded bg-dark-100 overflow-hidden">
                       <motion.div
                         initial={{ width: 0 }}
-                        animate={{ width: `${revenuePct}%` }}
+                        animate={{ width: `${teamPct}%` }}
                         transition={{ duration: 1, delay: 0.5 }}
                         className="h-full rounded bg-gradient-to-r from-primary-500 to-emerald-500"
                       />
                     </div>
-                    {revenueNeeded > 0 && (
-                      <p className="mt-1.5 text-xs text-dark-500">{formatCurrency(revenueNeeded)} more revenue needed</p>
+                    {teamNeeded > 0 && (
+                      <p className="mt-1.5 text-xs text-dark-500">{teamNeeded} more team member{teamNeeded !== 1 ? 's' : ''} needed</p>
                     )}
                   </div>
 
@@ -319,12 +324,33 @@ export default function Rank() {
 
                     <div className="space-y-2 mb-3">
                       <div className="flex items-center justify-between text-xs">
-                        <span className="text-dark-500 flex items-center gap-1"><FiUsers size={12} /> Referrals</span>
-                        <span className="font-medium text-dark-700">{rank.requiredReferrals}+</span>
+                        <span className="text-dark-500 flex items-center gap-1"><FiUsers size={12} /> Direct</span>
+                        <span className="font-medium text-dark-700">{rank.minDirectReferrals}+</span>
                       </div>
                       <div className="flex items-center justify-between text-xs">
-                        <span className="text-dark-500 flex items-center gap-1"><FiDollarSign size={12} /> Revenue</span>
-                        <span className="font-medium text-dark-700">{formatCurrency(rank.requiredRevenue)}+</span>
+                        <span className="text-dark-500 flex items-center gap-1"><FiUsers size={12} /> Team</span>
+                        <span className="font-medium text-dark-700">{rank.minTeamSize}+</span>
+                      </div>
+                      {rank.minAtLeast > 0 && (
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-dark-500 flex items-center gap-1"><FiAward size={12} /> At Least</span>
+                        <span className="font-medium text-dark-700">{rank.minAtLeast}x {rank.minAtLeastRank}</span>
+                      </div>
+                      )}
+                    </div>
+
+                    <div className="border-t border-dark-100 pt-3 space-y-1">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-emerald-600 font-medium">Activation</span>
+                        <span className="font-semibold text-emerald-600">${rank.activationGain}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-dark-500">Quantification</span>
+                        <span className="font-medium text-dark-700">{rank.quantification}%</span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-blue-600 font-medium">Indirect</span>
+                        <span className="font-semibold text-blue-600">${rank.indirectIncome}</span>
                       </div>
                     </div>
 

@@ -426,11 +426,12 @@ export default function Referrals() {
                   />
                 ) : (
                   <div className="space-y-3">
-                    {activeList.map((ref, idx) => {
+{activeList.map((ref, idx) => {
                       const u = ref.referredUserId || ref;
                       const name = (u.firstName ? `${u.firstName} ${u.lastName}` : null) || u.name || u.userName || `${u.firstName || ''} ${u.lastName || ''}`.trim() || 'Unknown';
                       const joinedDate = u.joinedAt || u.createdAt || u.date || ref.createdAt;
                       const status = ref.status || 'active';
+                      const commission = ref.commission || ref.amount || 0;
                       const initials = name.split(' ').map((n) => n[0]).join('').toUpperCase().substring(0, 2);
 
                       return (
@@ -452,8 +453,12 @@ export default function Referrals() {
                               </p>
                             </div>
                           </div>
-                          <Badge
-                            color={
+                          <div className="flex items-center gap-2">
+                            {commission > 0 && (
+                              <span className="text-xs font-semibold text-emerald-600">+{formatCurrency(commission)}</span>
+                            )}
+                            <Badge
+                              color={
                               status === 'active' || status === 'verified'
                                 ? 'success'
                                 : status === 'pending'

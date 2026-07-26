@@ -58,6 +58,9 @@ const SETTING_FIELDS = {
   subscription: [
     { key: 'membership_price', label: 'Membership Price ($)', icon: FiDollarSign, type: 'number', placeholder: '49.99' },
     { key: 'membership_duration', label: 'Duration (days)', type: 'number', placeholder: '30' },
+    { key: 'plan_days_monthly', label: 'Plan Days — Monthly', type: 'number', placeholder: '30' },
+    { key: 'plan_days_yearly', label: 'Plan Days — Yearly', type: 'number', placeholder: '365' },
+    { key: 'plan_days_lifetime', label: 'Plan Days — Lifetime', type: 'number', placeholder: '36500' },
   ],
   referral: [
     { key: 'referral_signup_bonus', label: 'Referral Signup Bonus ($)', icon: FiDollarSign, type: 'number', placeholder: '10', description: 'Bonus given to referrer when their referral signs up' },
@@ -83,7 +86,8 @@ const SETTING_FIELDS = {
     { key: 'max_withdrawal', label: 'Maximum Withdrawal ($)', icon: FiDollarSign, type: 'number', placeholder: '5000' },
   ],
   funding: [
-    { key: 'free_registration_bonus_enabled', label: 'Free Registration $1 Bonus', type: 'toggle', description: 'When enabled, new users get $1 free in funding wallet on registration' },
+    { key: 'free_registration_bonus_enabled', label: 'Free Registration $1 Bonus', type: 'toggle', description: 'When enabled, new users get free registration bonus on registration' },
+    { key: 'free_registration_bonus_amount', label: 'Free Registration Bonus Amount ($)', type: 'number', icon: FiDollarSign, placeholder: '1', description: 'Amount awarded as free registration bonus' },
     { key: 'funding_wallet_usage_percent', label: 'Funding Wallet Usage %', type: 'number', icon: FiDollarSign, placeholder: '20', description: 'Max percentage of membership amount that can be paid from funding wallet' },
   ],
   trading: [

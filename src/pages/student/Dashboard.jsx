@@ -708,7 +708,7 @@ export default function Dashboard() {
 
       <Modal isOpen={showUplineModal} onClose={() => { setShowUplineModal(false); setUplineError(''); }} title="Activate Downline Member" size="sm">
         <div className="space-y-4">
-          <p className="text-sm text-dark-500">Enter your direct downline member's email or username to activate their account. The activation fee will be deducted from your main wallet.</p>
+          <p className="text-sm text-dark-500">Enter your direct downline member's email or username to activate their account. The fee will be deducted from your funding wallet first, then the remaining from your main wallet.</p>
           <Input
             label="Email or Username"
             placeholder="Enter member's email or username"

@@ -87,12 +87,12 @@ const columns = [
     render: (_, row) => (
       <img
         src={
-          row.user?.avatar ||
+          row.userId?.avatar ||
           `https://ui-avatars.com/api/?name=${encodeURIComponent(
-            (row.user?.firstName || '') + ' ' + (row.user?.lastName || '')
+            (row.userId?.firstName || '') + ' ' + (row.userId?.lastName || '')
           )}&background=2563EB&color=fff&size=40`
         }
-        alt={row.user?.firstName}
+        alt={row.userId?.firstName}
         className="h-9 w-9 rounded-xl object-cover ring-2 ring-dark-100"
       />
     ),
@@ -103,9 +103,9 @@ const columns = [
     render: (_, row) => (
       <div>
         <p className="font-semibold text-ink text-sm">
-          {row.user?.firstName} {row.user?.lastName}
+          {row.userId?.firstName} {row.userId?.lastName}
         </p>
-        <p className="text-xs text-dark-400 mt-0.5">{row.user?.email}</p>
+        <p className="text-xs text-dark-400 mt-0.5">{row.userId?.email}</p>
       </div>
     ),
   },
@@ -214,14 +214,9 @@ export default function Wallets() {
   const handleDelete = async (wallet) => {
     if (!window.confirm('Delete this wallet? This will also delete all transactions. Cannot be undone.')) return;
     const walletId = wallet._id || wallet.id;
-    const walletUserId = wallet.user?.id || wallet.userId;
     try {
       setDeletingId(walletId);
-      if (walletUserId) {
-        await adminService.deleteWallet(walletId);
-      } else {
-        await adminService.deleteWallet(walletId);
-      }
+      await adminService.deleteWallet(walletId);
       toast.success('Wallet deleted');
       setWallets((prev) => prev.filter((w) => (w._id || w.id) !== walletId));
       pagination.setTotalItems((prev) => Math.max(0, prev - 1));
@@ -264,7 +259,8 @@ export default function Wallets() {
     if (!validate()) return;
     try {
       setSubmitting(true);
-      await adminService.creditWallet(selectedWallet.user?.id || selectedWallet.userId, {
+      const userId = selectedWallet.userId?._id || selectedWallet.userId;
+      await adminService.creditWallet(userId, {
         amount: Number(form.amount),
         category: form.category,
         description: form.description,
@@ -427,20 +423,20 @@ export default function Wallets() {
             <div className="flex items-center gap-4">
               <img
                 src={
-                  selectedWallet.user?.avatar ||
+                  selectedWallet.userId?.avatar ||
                   `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                    (selectedWallet.user?.firstName || '') + ' ' + (selectedWallet.user?.lastName || '')
+                    (selectedWallet.userId?.firstName || '') + ' ' + (selectedWallet.userId?.lastName || '')
                   )}&background=2563EB&color=fff&size=64`
                 }
-                alt={selectedWallet.user?.firstName}
+                alt={selectedWallet.userId?.firstName}
                 className="h-14 w-14 rounded-2xl object-cover ring-4 ring-primary-50"
               />
               <div>
                 <h3 className="text-base font-bold text-ink">
-                  {selectedWallet.user?.firstName} {selectedWallet.user?.lastName}
+                  {selectedWallet.userId?.firstName} {selectedWallet.userId?.lastName}
                 </h3>
                 <p className="text-sm text-dark-400 mt-0.5">
-                  {selectedWallet.user?.email}
+                  {selectedWallet.userId?.email}
                 </p>
                 <p className="text-xs text-dark-400 mt-1">
                   Current Balance: <span className="font-semibold text-ink">{formatCurrency(selectedWallet.balance)}</span>
