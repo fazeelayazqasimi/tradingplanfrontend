@@ -21,6 +21,7 @@ const BAR_COLORS = ['bg-dark-400', 'bg-primary-500', 'bg-blue-500', 'bg-purple-5
 
 const emptyRank = {
   name: '',
+  order: '',
   minDirectReferrals: '',
   minRequiredRank: '',
   minRequiredRankCount: '',
@@ -91,6 +92,7 @@ export default function Ranks() {
     setEditingRankId(rank.id || rank._id || null);
     setEditData({
       name: rank.name || '',
+      order: rank.order ?? '',
       minDirectReferrals: rank.minDirectReferrals ?? '',
       minRequiredRank: rank.minRequiredRank || '',
       minRequiredRankCount: rank.minRequiredRankCount ?? '',
@@ -109,7 +111,7 @@ export default function Ranks() {
 
   const openCreate = () => {
     setEditingRankId(null);
-    setEditData(emptyRank);
+    setEditData({ ...emptyRank, order: ranks.length + 1 });
     setEditModal(true);
   };
 
@@ -119,10 +121,16 @@ export default function Ranks() {
       toast.error('Rank name is required');
       return;
     }
+    if (!editData.order && editData.order !== 0) {
+      toast.error('Rank order is required');
+      return;
+    }
     setSaving(true);
     try {
       const payload = {
         name: editData.name.trim(),
+        order: Number(editData.order),
+        slug: editData.name.trim().toLowerCase().replace(/\s+/g, '-'),
         minDirectReferrals: Number(editData.minDirectReferrals) || 0,
         minRequiredRank: editData.minRequiredRank.trim() || null,
         minRequiredRankCount: Number(editData.minRequiredRankCount) || 0,
@@ -308,6 +316,17 @@ export default function Ranks() {
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[12px] font-semibold uppercase tracking-wider text-dark-500 mb-1.5">Order *</label>
+              <Input
+                type="number"
+                min="0"
+                value={editData.order}
+                onChange={(e) => setEditData((p) => ({ ...p, order: e.target.value }))}
+                placeholder="1"
+                required
+              />
+            </div>
             <div>
               <label className="block text-[12px] font-semibold uppercase tracking-wider text-dark-500 mb-1.5">Directly Refer</label>
               <Input
