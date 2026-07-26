@@ -323,7 +323,7 @@ export default function Ranks() {
               <Input
                 value={editData.minRequiredRank}
                 onChange={(e) => setEditData((p) => ({ ...p, minRequiredRank: e.target.value }))}
-                placeholder="e.g. V1"
+                placeholder="e.g. D2"
               />
             </div>
             <div>
