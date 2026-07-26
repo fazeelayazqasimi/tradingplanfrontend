@@ -69,6 +69,12 @@ export default function Subscription() {
   }, []);
 
   const fetchSubscription = useCallback(async () => {
+    try {
+      const res = await studentService.getSubscription();
+      const data = res?.data?.data || res?.data || res;
+      setSubscription(data);
+    } catch { /* silent */ }
+  }, []);
 
   const fetchWallet = useCallback(async () => {
     try {

@@ -56,6 +56,53 @@ export default function Referrals() {
   const [copiedCode, setCopiedCode] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
 
+  const renderReferralItem = (ref, idx) => {
+    const u = ref.referredUserId || ref;
+    const name = (u.firstName ? `${u.firstName} ${u.lastName}` : null) || u.name || u.userName || `${u.firstName || ''} ${u.lastName || ''}`.trim() || 'Unknown';
+    const joinedDate = u.joinedAt || u.createdAt || u.date || ref.createdAt;
+    const status = ref.status || 'active';
+    const commission = ref.commission || ref.amount || 0;
+    const initials = name.split(' ').map((n) => n[0]).join('').toUpperCase().substring(0, 2);
+
+    return (
+      <motion.div
+        key={ref._id || ref.id || idx}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: idx * 0.03 }}
+        className="flex items-center justify-between p-4 rounded-[11px] bg-dark-50/50 hover:bg-dark-100/50 transition-colors"
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-primary-500 flex items-center justify-center text-white text-sm font-bold shrink-0">
+            {initials}
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-ink truncate">{name}</p>
+            <p className="text-xs text-dark-500">
+              Joined {formatDate(joinedDate)}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          {commission > 0 && (
+            <span className="text-xs font-semibold text-emerald-600">+{formatCurrency(commission)}</span>
+          )}
+          <Badge
+            color={
+              status === 'active' || status === 'verified'
+                ? 'success'
+                : status === 'pending'
+                ? 'warning'
+                : 'neutral'
+            }
+          >
+            {status}
+          </Badge>
+        </div>
+      </motion.div>
+    );
+  };
+
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
@@ -424,53 +471,9 @@ export default function Referrals() {
                         : 'Your indirect referrals will appear when your direct referrals invite others.'
                     }
                   />
-                ) : (
+) : (
                   <div className="space-y-3">
-{activeList.map((ref, idx) => {
-                      const u = ref.referredUserId || ref;
-                      const name = (u.firstName ? `${u.firstName} ${u.lastName}` : null) || u.name || u.userName || `${u.firstName || ''} ${u.lastName || ''}`.trim() || 'Unknown';
-                      const joinedDate = u.joinedAt || u.createdAt || u.date || ref.createdAt;
-                      const status = ref.status || 'active';
-                      const commission = ref.commission || ref.amount || 0;
-                      const initials = name.split(' ').map((n) => n[0]).join('').toUpperCase().substring(0, 2);
-
-                      return (
-                        <motion.div
-                          key={ref._id || ref.id || idx}
-                          initial={{ opacity: 0, y: 8 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: idx * 0.03 }}
-                          className="flex items-center justify-between p-4 rounded-[11px] bg-dark-50/50 hover:bg-dark-100/50 transition-colors"
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-primary-500 flex items-center justify-center text-white text-sm font-bold shrink-0">
-                              {initials}
-                            </div>
-                            <div className="min-w-0">
-                              <p className="text-sm font-semibold text-ink truncate">{name}</p>
-                              <p className="text-xs text-dark-500">
-                                Joined {formatDate(joinedDate)}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {commission > 0 && (
-                              <span className="text-xs font-semibold text-emerald-600">+{formatCurrency(commission)}</span>
-                            )}
-                            <Badge
-                              color={
-                              status === 'active' || status === 'verified'
-                                ? 'success'
-                                : status === 'pending'
-                                ? 'warning'
-                                : 'neutral'
-                            }
-                          >
-                            {status}
-                          </Badge>
-                        </motion.div>
-                      );
-                    })}
+{activeList.map(renderReferralItem)}
                   </div>
                 )}
               </motion.div>
