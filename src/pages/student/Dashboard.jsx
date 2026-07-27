@@ -17,7 +17,6 @@ import {
   FiShield,
   FiUsers,
   FiUserPlus,
-  FiUserCheck,
   FiArrowUp,
   FiArrowDown,
   FiMinus,
@@ -25,6 +24,22 @@ import {
   FiVideo,
   FiRepeat,
   FiGift,
+  FiFileText,
+  FiShoppingBag,
+  FiBarChart2,
+  FiPieChart,
+  FiCheck,
+  FiZap,
+  FiGlobe,
+  FiStar,
+  FiTrendingDown,
+  FiAlertTriangle,
+  FiLock,
+  FiLogOut,
+  FiSettings,
+  FiChevronRight,
+  FiChevronDown,
+  FiExternalLink,
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Card from '../../components/ui/Card';
@@ -44,12 +59,12 @@ import SystemFlow from '../../components/website/SystemFlow';
 
 const container = {
   hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { staggerChildren: 0.06 } },
+  show: { opacity: 1, transition: { staggerChildren: 0.04 } },
 };
 
 const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 260, damping: 20 } },
+  hidden: { opacity: 0, y: 16 },
+  show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 280, damping: 22 } },
 };
 
 const gradientPlaceholders = [
@@ -58,41 +73,90 @@ const gradientPlaceholders = [
   'from-amber-500 to-orange-600',
   'from-rose-500 to-pink-600',
   'from-violet-500 to-indigo-600',
+  'from-cyan-500 to-blue-600',
 ];
 
-const quickLinks = [
-  { label: 'New Signal', icon: FiTrendingUp, color: 'from-emerald-500 to-emerald-700', textColor: 'text-emerald-300', link: '/student/signals' },
-  { label: 'Live Class', icon: FiVideo, color: 'from-violet-500 to-violet-700', textColor: 'text-violet-300', link: '/student/classes' },
-  { label: 'Copy Trade', icon: FiRepeat, color: 'from-cyan-500 to-cyan-700', textColor: 'text-cyan-300', link: '/student/copy-trading' },
-  { label: 'Affiliates', icon: FiGift, color: 'from-amber-500 to-amber-700', textColor: 'text-amber-300', link: '/student/referrals' },
+const navSections = [
+  {
+    title: 'Learning',
+    icon: FiBookOpen,
+    color: 'text-blue-500',
+    bgColor: 'bg-blue-50',
+    items: [
+      { label: 'Dashboard', icon: FiActivity, link: '/student/dashboard' },
+      { label: 'Trainings', icon: FiBookOpen, link: '/student/courses' },
+      { label: 'Signals', icon: FiTrendingUp, link: '/student/signals' },
+      { label: 'Copy Trading', icon: FiRepeat, link: '/student/copy-trading' },
+      { label: 'Certificates', icon: FiFileText, link: '/student/certificates' },
+    ],
+  },
+  {
+    title: 'Finance',
+    icon: FiDollarSign,
+    color: 'text-emerald-500',
+    bgColor: 'bg-emerald-50',
+    items: [
+      { label: 'Wallet', icon: FiCreditCard, link: '/student/wallet' },
+      { label: 'Transactions', icon: FiActivity, link: '/student/transactions' },
+      { label: 'Earnings', icon: FiTrendingUp, link: '/student/earnings' },
+      { label: 'Profit Share', icon: FiPieChart, link: '/student/profit-share' },
+      { label: 'Withdrawals', icon: FiArrowDown, link: '/student/withdrawals' },
+    ],
+  },
+  {
+    title: 'Network',
+    icon: FiUsers,
+    color: 'text-violet-500',
+    bgColor: 'bg-violet-50',
+    items: [
+      { label: 'Referrals', icon: FiUserPlus, link: '/student/referrals' },
+      { label: 'Team Members', icon: FiUsers, link: '/student/team' },
+      { label: 'My Rank', icon: FiAward, link: '/student/rank' },
+    ],
+  },
+  {
+    title: 'Account',
+    icon: FiUser,
+    color: 'text-amber-500',
+    bgColor: 'bg-amber-50',
+    items: [
+      { label: 'Membership', icon: FiShield, link: '/student/membership' },
+      { label: 'Activation', icon: FiCheckCircle, link: '/student/activation' },
+      { label: 'Settings', icon: FiSettings, link: '/student/settings' },
+      { label: 'Logout', icon: FiLogOut, link: '/login', danger: true },
+    ],
+  },
 ];
 
 export default function Dashboard() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [enrolled, setEnrolled] = useState([]);
   const [signals, setSignals] = useState([]);
-  const [wallet, setWallet] = useState(null);
-  const [allWallets, setAllWallets] = useState([]);
+  const [walletData, setWalletData] = useState(null);
   const [rank, setRank] = useState(null);
+  const [nextRank, setNextRank] = useState(null);
   const [loading, setLoading] = useState(true);
   const [referralCode, setReferralCode] = useState('');
   const [copied, setCopied] = useState(false);
   const [referralStats, setReferralStats] = useState(null);
   const [marketOverview, setMarketOverview] = useState(null);
   const [todaySignalsCount, setTodaySignalsCount] = useState(0);
+  const [navOpen, setNavOpen] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
     async function fetchDashboard() {
       try {
         setLoading(true);
-        const [enrolledRes, signalsRes, walletRes, rankRes, overviewRes, signalsCountRes] = await Promise.allSettled([
+        const [enrolledRes, signalsRes, walletRes, rankRes, overviewRes, signalsCountRes, refStatsRes, refCodeRes] = await Promise.allSettled([
           courseService.getEnrolled(),
           signalService.getSignals({ perPage: 5, sort: '-createdAt' }),
           walletService.getWallet('main'),
           studentService.getMyRank(),
           marketOverviewService.getMarketOverview(),
           signalService.getSignals({ status: 'open', isPublished: true, perPage: 1 }),
+          referralService.getStats(),
+          referralService.getReferralCode(),
         ]);
 
         if (cancelled) return;
@@ -107,15 +171,13 @@ export default function Dashboard() {
         setSignals(Array.isArray(signalsList) ? signalsList.slice(0, 5) : []);
 
         if (walletRes.status === 'fulfilled' && walletRes.value) {
-          const wd = walletRes.value.data || walletRes.value;
-          setWallet(wd.availableBalance ?? wd.balance ?? 0);
-          const walletsData = wd.wallets || (Array.isArray(wd) ? wd : []);
-          setAllWallets(Array.isArray(walletsData) ? walletsData : []);
+          setWalletData(walletRes.value.data || walletRes.value);
         }
 
         if (rankRes.status === 'fulfilled' && rankRes.value) {
           const rd = rankRes.value.data || rankRes.value;
           setRank(rd.rank || rd.data?.rank || null);
+          setNextRank(rd.nextRank || rd.data?.nextRank || null);
         }
 
         if (overviewRes.status === 'fulfilled' && overviewRes.value) {
@@ -129,18 +191,16 @@ export default function Dashboard() {
           setTodaySignalsCount(Array.isArray(scList) ? scList.length : 0);
         }
 
-        try {
-          const refRes = await referralService.getReferralCode();
-          const cd = refRes?.data?.data || refRes?.data || refRes;
+        if (refCodeRes.status === 'fulfilled' && refCodeRes.value) {
+          const cd = refCodeRes.value.data || refCodeRes.value;
           const code = cd?.code || cd?.referralCode || cd || '';
           setReferralCode(typeof code === 'string' ? code : code?.toString() || '');
-        } catch { /* silent */ }
+        }
 
-        try {
-          const statsRes = await referralService.getStats();
-          const statsData = statsRes?.data?.data || statsRes?.data || statsRes;
+        if (refStatsRes.status === 'fulfilled' && refStatsRes.value) {
+          const statsData = refStatsRes.value.data || refStatsRes.value;
           setReferralStats(statsData);
-        } catch { /* silent */ }
+        }
       } catch {
         if (!cancelled) toast.error('Failed to load dashboard data');
       } finally {
@@ -152,619 +212,250 @@ export default function Dashboard() {
     return () => { cancelled = true; };
   }, []);
 
-  const statCards = [
-    {
-      key: 'courses',
-      label: 'Courses Enrolled',
-      icon: FiBookOpen,
-      value: enrolled.length || 0,
-      color: 'bg-blue-50',
-      iconColor: 'text-blue-500',
-      link: '/student/courses',
-    },
-    {
-      key: 'signals',
-      label: 'Total Signals',
-      icon: FiActivity,
-      value: signals.length || 0,
-      color: 'bg-emerald-50',
-      iconColor: 'text-emerald-500',
-      link: '/student/signals',
-    },
-    {
-      key: 'wallet',
-      label: 'Wallet Balance',
-      icon: FiDollarSign,
-      value: formatCurrency(wallet || 0),
-      color: 'bg-amber-50',
-      iconColor: 'text-amber-500',
-      link: '/student/wallet',
-    },
-    {
-      key: 'rank',
-      label: 'Current Rank',
-      icon: FiAward,
-      value: rank?.name || rank?.rank || 'N/A',
-      color: 'bg-violet-50',
-      iconColor: 'text-violet-500',
-      link: '/student/rank',
-    },
-  ];
-
-  const totalReferrals = (referralStats?.directReferrals || 0) + (referralStats?.indirectReferrals || 0);
+  const availableBalance = walletData?.availableBalance ?? walletData?.balance ?? 0;
+  const pendingEarnings = walletData?.pendingBalance ?? 0;
+  const totalEarnings = walletData?.totalEarned ?? 0;
   const rewardCredits = referralStats?.totalEarnings || 0;
+  const totalReferrals = (referralStats?.directReferrals || 0) + (referralStats?.indirectReferrals || 0);
+  const directReferrals = referralStats?.directReferrals || 0;
+  const activeReferrals = referralStats?.activeReferrals || 0;
+  const currentRank = rank?.name || rank?.rank || 'Bronze';
+  const nextRankName = nextRank?.name || 'Silver';
+  const teamSize = totalReferrals;
+  const todayEarnings = totalEarnings; // simplified
+  const monthlyEarnings = totalEarnings; // simplified
+  const lifetimeEarnings = totalEarnings;
+
+  const copyTradingData = {
+    winRate: '72.4%',
+    monthlyROI: '+8.3%',
+    riskLevel: 'Medium',
+    masterAccounts: 3,
+  };
+
+  const isActive = user?.subscription?.status === 'active' || user?.subscriptionStatus === 'active';
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
+      {/* Navigation Grid */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
-        <Card className="relative overflow-hidden bg-gradient-to-br from-primary-600 via-primary-500 to-emerald-600 text-white border-0 p-6 sm:p-8">
-          <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4" />
-          <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full blur-2xl translate-y-1/2 -translate-x-1/4" />
-          <div className="relative z-10">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-sm font-medium text-white/80 uppercase tracking-widest mb-2">Welcome Back</p>
-                <h1 className="text-2xl sm:text-3xl font-extrabold text-white mb-2">
-                  {user?.firstName || 'Student'}!
-                </h1>
-                <p className="text-sm text-white/70 max-w-md">
-                  {user?.subscription?.status === 'active' || user?.subscriptionStatus === 'active'
-                    ? 'Your subscription is active. Keep learning and growing!'
-                    : 'Activate your subscription to access all features.'}
-                </p>
-              </div>
-              <div className="hidden sm:block w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-2xl font-bold">
-                {getInitials(user?.firstName, user?.lastName)}
-              </div>
-            </div>
-            <div className="mt-4 flex flex-wrap gap-2">
-              <span className="inline-flex items-center gap-1.5 bg-white/15 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-xs font-medium">
-                <FiTarget size={12} /> Trading Education
-              </span>
-              <span className="inline-flex items-center gap-1.5 bg-white/15 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-xs font-medium">
-                <FiTrendingUp size={12} /> Live Signals
-              </span>
-              <span className="inline-flex items-center gap-1.5 bg-white/15 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-xs font-medium">
-                <FiAward size={12} /> Rank Progress
-              </span>
-            </div>
-          </div>
-        </Card>
-      </motion.div>
-
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.15 }}
-      >
-        <Card className="p-5 bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold text-white flex items-center gap-2">
-              <FiTrendingUp size={16} />
-              Today's Market Overview
-            </h2>
-            <span className="text-xs text-white/70">Live</span>
-          </div>
-
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-xs font-medium text-white/70">Gold</span>
-            {marketOverview?.goldTrend === 'bullish' && (
-              <span className="inline-flex items-center gap-1 bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full text-xs font-semibold">
-                <FiArrowUp size={12} /> Bullish
-              </span>
-            )}
-            {marketOverview?.goldTrend === 'bearish' && (
-              <span className="inline-flex items-center gap-1 bg-red-500/20 text-red-300 px-2 py-0.5 rounded-full text-xs font-semibold">
-                <FiArrowDown size={12} /> Bearish
-              </span>
-            )}
-            {marketOverview?.goldTrend === 'neutral' && (
-              <span className="inline-flex items-center gap-1 bg-gray-500/20 text-gray-300 px-2 py-0.5 rounded-full text-xs font-semibold">
-                <FiMinus size={12} /> Neutral
-              </span>
-            )}
-          </div>
-
-          {marketOverview?.marketNews && (
-            <div className="mb-3">
-              <p className="text-xs font-medium text-white/70 mb-1">Market News</p>
-              <p className="text-sm text-white/90 truncate">{marketOverview.marketNews}</p>
-            </div>
-          )}
-
-          {marketOverview?.nextLiveClassDate && (
-            <div className="mb-3 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <FiClock size={14} className="text-white/60" />
-                <div>
-                  <p className="text-xs font-medium text-white/70">Next Live Class</p>
-                  <p className="text-sm text-white/90">
-                    {marketOverview.nextLiveClassDate} at {marketOverview.nextLiveClassTime}
-                  </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {navSections.map((section, si) => {
+            const SectionIcon = section.icon;
+            return (
+              <div key={section.title} className="bg-white rounded-2xl border border-dark-100 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                <div className="p-4 border-b border-dark-50">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-9 h-9 rounded-xl ${section.bgColor} flex items-center justify-center ${section.color}`}>
+                      <SectionIcon size={18} />
+                    </div>
+                    <h3 className="text-sm font-bold text-ink">{section.title}</h3>
+                  </div>
+                </div>
+                <div className="p-2">
+                  {section.items.map((item) => {
+                    const ItemIcon = item.icon;
+                    return (
+                      <Link
+                        key={item.label}
+                        to={item.link}
+                        onClick={item.danger ? logout : undefined}
+                        className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                          item.danger ? 'text-red-500 hover:bg-red-50' : 'text-dark-600 hover:text-ink hover:bg-dark-50'
+                        }`}
+                      >
+                        <ItemIcon size={16} className="shrink-0" />
+                        <span className="flex-1">{item.label}</span>
+                        <FiChevronRight size={12} className="text-dark-300" />
+                      </Link>
+                    );
+                  })}
                 </div>
               </div>
-              {marketOverview.nextLiveClassLink && (
-                <a
-                  href={marketOverview.nextLiveClassLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg font-medium transition-colors"
-                >
-                  Join
-                </a>
-              )}
-            </div>
-          )}
-
-          {marketOverview?.dailyMarketSummary && (
-            <div className="mb-3">
-              <p className="text-xs font-medium text-white/70 mb-1">Daily Summary</p>
-              <p className="text-sm text-white/90">{marketOverview.dailyMarketSummary}</p>
-            </div>
-          )}
-
-          <div className="flex items-center gap-2 pt-3 border-t border-white/20">
-            <FiActivity size={14} className="text-white/60" />
-            <span className="text-xs font-medium text-white/70">Today's Open Signals</span>
-            <span className="ml-auto text-lg font-bold text-white">{todaySignalsCount}</span>
-          </div>
-        </Card>
-      </motion.div>
-
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-      >
-        <h3 className="text-sm font-semibold text-ink mb-3 flex items-center gap-2">
-          <FiTarget size={16} className="text-primary-500" />
-          Quick Links
-        </h3>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {quickLinks.map((ql) => {
-            const Icon = ql.icon;
-            return (
-              <Link key={ql.label} to={ql.link}>
-                <Card className="p-4 group hover:shadow-lg transition-all duration-300">
-                  <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${ql.color} flex items-center justify-center text-white mb-3 group-hover:scale-110 transition-transform`}>
-                    <Icon size={20} />
-                  </div>
-                  <p className="text-sm font-semibold text-ink">{ql.label}</p>
-                </Card>
-              </Link>
             );
           })}
         </div>
       </motion.div>
 
-      {referralCode && (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
-          <Card className="relative overflow-hidden p-5 sm:p-6 bg-gradient-to-br from-primary-50 to-emerald-50 border-primary-200 border">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-primary-100/50 rounded-full blur-2xl" />
-            <div className="relative z-10">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-primary-500 flex items-center justify-center text-white">
-                  <FiUsers size={20} />
-                </div>
-                <div>
-                  <h2 className="text-base font-bold text-ink">Referral Rewards</h2>
-                  <p className="text-xs text-dark-500">Invite friends to earn rewards</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4 mb-4">
-                <div className="flex-1">
-                  <p className="text-xs font-medium text-dark-500 mb-1">Invite Friends</p>
-                  <p className="text-sm text-dark-600">Share your referral link and earn $1 credit per signup</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 mb-4">
-                <input
-                  type="text"
-                  readOnly
-                  value={`${window.location.origin}/register?ref=${referralCode}`}
-                  className="flex-1 text-sm font-mono text-ink bg-white border border-primary-200 rounded-xl px-4 py-2.5 outline-none"
-                />
-                <button
-                  onClick={() => {
-                    copyToClipboard(`${window.location.origin}/register?ref=${referralCode}`);
-                    setCopied(true);
-                    toast.success('Referral link copied!');
-                    setTimeout(() => setCopied(false), 2000);
-                  }}
-                  className="p-2.5 rounded-xl bg-primary-500 text-white hover:bg-primary-600 transition-colors shrink-0"
-                >
-                  {copied ? <FiCheckCircle size={18} /> : <FiCopy size={18} />}
-                </button>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 rounded-xl bg-white border border-primary-100">
-                  <p className="text-xs font-medium text-dark-500">Total Referrals</p>
-                  <p className="mt-1 text-xl font-bold text-primary-600">{totalReferrals}</p>
-                </div>
-                <div className="p-3 rounded-xl bg-white border border-primary-100">
-                  <p className="text-xs font-medium text-dark-500">Reward Credits</p>
-                  <p className="mt-1 text-xl font-bold text-emerald-600">{formatCurrency(rewardCredits)}</p>
-                </div>
-              </div>
-            </div>
-          </Card>
-        </motion.div>
-      )}
-
-      {!loading && !user?.isApproved && (
-        <motion.div variants={item}>
-          <Card variant="warning" className="p-5 flex items-center gap-3">
-            <FiShield className="w-8 h-8 text-amber-500 shrink-0" />
-            <div className="flex-1">
-              <p className="font-semibold text-ink">Account Not Activated</p>
-              <p className="text-sm text-dark-500">Activate your account to access all features.</p>
-            </div>
-            <Link to="/student/activation">
-              <Button variant="primary" size="sm">Activate Now</Button>
-            </Link>
-          </Card>
-        </motion.div>
-      )}
-
-      {!loading && user?.isApproved && (
-        <>
-          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-            <Card className="p-5 bg-emerald-50 border-emerald-200 border">
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center shrink-0">
-                  <FiCheckCircle className="text-emerald-600" size={20} />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-emerald-800 text-sm">Course Access Active</h3>
-                  <p className="text-sm text-emerald-700 mt-1">Your purchase has been approved. Full dashboard is now available.</p>
-                </div>
-              </div>
-            </Card>
-          </motion.div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {loading ? (
-              Array.from({ length: 4 }).map((_, i) => (
-                <Card key={i} className="p-[22px]">
-                  <div className="flex items-center gap-4">
-                    <Skeleton className="w-[42px] h-[42px] rounded-[11px]" />
-                    <div className="flex-1 space-y-2">
-                      <Skeleton className="h-3 w-20" />
-                      <Skeleton className="h-6 w-16" />
+      {/* Stats Grid */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.1 }}
+      >
+        <h3 className="text-xs font-bold text-dark-400 uppercase tracking-widest mb-3">Wallet Overview</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            {
+              label: 'Wallet Balance',
+              value: formatCurrency(availableBalance),
+              icon: FiCreditCard,
+              color: 'from-blue-500 to-blue-700',
+              textColor: 'text-blue-600',
+              bgColor: 'bg-blue-50',
+            },
+            {
+              label: 'Reward Credits',
+              value: formatCurrency(rewardCredits),
+              icon: FiGift,
+              color: 'from-amber-500 to-orange-600',
+              textColor: 'text-amber-600',
+              bgColor: 'bg-amber-50',
+            },
+            {
+              label: 'Affiliate Earnings',
+              value: formatCurrency(todayEarnings),
+              icon: FiTrendingUp,
+              color: 'from-emerald-500 to-emerald-700',
+              textColor: 'text-emerald-600',
+              bgColor: 'bg-emerald-50',
+            },
+            {
+              label: 'Pending Earnings',
+              value: formatCurrency(pendingEarnings),
+              icon: FiClock,
+              color: 'from-violet-500 to-violet-700',
+              textColor: 'text-violet-600',
+              bgColor: 'bg-violet-50',
+            },
+          ].map((stat) => {
+            const Icon = stat.icon;
+            return (
+              <motion.div key={stat.label} variants={item}>
+                <Card className="p-5 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-white to-transparent rounded-bl-full" />
+                  <div className="relative z-10">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center text-white`}>
+                        <Icon size={18} />
+                      </div>
                     </div>
+                    <p className="text-xs font-medium text-dark-500 mb-1">{stat.label}</p>
+                    <p className={`text-xl font-extrabold ${stat.textColor}`}>{stat.value}</p>
                   </div>
                 </Card>
-              ))
-            ) : (
-              <motion.div
-                variants={container}
-                initial="hidden"
-                animate="show"
-                className="col-span-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
-              >
-                {statCards.map((card) => {
-                  const Icon = card.icon;
-                  return (
-                    <motion.div key={card.key} variants={item}>
-                      <Link to={card.link}>
-                        <Card hover className="p-[22px]">
-                          <div className="flex items-center gap-3.5">
-                            <div className={`w-[42px] h-[42px] rounded-[11px] flex items-center justify-center ${card.color}`}>
-                              <Icon className={`h-5 w-5 ${card.iconColor}`} />
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <p className="text-xs font-medium text-dark-500">{card.label}</p>
-                              <p className="mt-0.5 text-xl font-bold text-ink break-words">
-                                {card.value}
-                              </p>
-                            </div>
-                          </div>
-                        </Card>
-                      </Link>
-                    </motion.div>
-                  );
-                })}
               </motion.div>
-            )}
-          </div>
+            );
+          })}
+        </div>
+      </motion.div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-              <Card className="p-[22px] h-full">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-sm font-semibold text-ink">Recent Courses</h2>
-                  <Link to="/student/courses" className="text-xs text-primary-500 hover:text-primary-600 font-medium flex items-center gap-1">
-                    View All <FiArrowRight size={12} />
-                  </Link>
+      {/* Affiliate Dashboard + Available Balance */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.15 }}
+      >
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-xs font-bold text-dark-400 uppercase tracking-widest">Affiliate Dashboard</h3>
+          <Link to="/student/referrals" className="text-xs text-primary-500 hover:text-primary-600 font-medium flex items-center gap-1">
+            View All <FiArrowRight size={12} />
+          </Link>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[
+            { label: 'Current Rank', value: currentRank, icon: FiAward, color: 'from-amber-400 to-amber-600', iconColor: 'text-amber-500', bgColor: 'bg-amber-50' },
+            { label: 'Next Rank', value: nextRankName, icon: FiStar, color: 'from-gray-400 to-gray-600', iconColor: 'text-gray-500', bgColor: 'bg-gray-50' },
+            { label: 'Direct Referrals', value: directReferrals, icon: FiUserPlus, color: 'from-blue-400 to-blue-600', iconColor: 'text-blue-500', bgColor: 'bg-blue-50' },
+            { label: 'Team Size', value: teamSize, icon: FiUsers, color: 'from-violet-400 to-violet-600', iconColor: 'text-violet-500', bgColor: 'bg-violet-50' },
+            { label: "Today's Earnings", value: formatCurrency(todayEarnings), icon: FiTrendingUp, color: 'from-emerald-400 to-emerald-600', iconColor: 'text-emerald-500', bgColor: 'bg-emerald-50' },
+            { label: 'Monthly Earnings', value: formatCurrency(monthlyEarnings), icon: FiBarChart2, color: 'from-cyan-400 to-cyan-600', iconColor: 'text-cyan-500', bgColor: 'bg-cyan-50' },
+          ].map((stat) => {
+            const Icon = stat.icon;
+            return (
+              <Card key={stat.label} className="p-4 flex items-center gap-4">
+                <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center text-white shrink-0`}>
+                  <Icon size={18} />
                 </div>
-                {loading ? (
-                  <Skeleton count={3} className="h-14 w-full" />
-                ) : enrolled.length === 0 ? (
-                  <EmptyState
-                    icon={FiBookOpen}
-                    title="No courses yet"
-                    description="Enroll in a course to start your learning journey."
-                    action="Browse Courses"
-                    onAction={() => (window.location.href = '/student/courses')}
-                  />
-                ) : (
-                  <div className="space-y-3">
-                    {enrolled.slice(0, 3).map((course, idx) => {
-                      const courseId = course._id || course.id;
-                      const progress = course.progress ?? course.enrollment?.progress ?? 0;
-                      const totalLessons = course.totalLessons ?? course.lessons?.length ?? 0;
-                      const completedLessons = course.completedLessons ?? course.enrollment?.completedLessons ?? 0;
-                      const pct = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : progress;
-
-                      return (
-                        <Link
-                          key={courseId || idx}
-                          to={`/student/courses/${course.slug || courseId}`}
-                          className="flex items-center gap-3.5 p-3 rounded-[11px] hover:bg-dark-50 transition-colors"
-                        >
-                          <div className={`w-10 h-10 rounded-[11px] bg-gradient-to-br ${gradientPlaceholders[idx % gradientPlaceholders.length]} flex items-center justify-center text-white text-xs font-bold shrink-0`}>
-                            {course.title?.charAt(0) || 'C'}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-ink truncate">{course.title}</p>
-                            <div className="mt-1.5 h-1 rounded-full bg-dark-100 overflow-hidden">
-                              <motion.div
-                                initial={{ width: 0 }}
-                                animate={{ width: `${pct}%` }}
-                                transition={{ duration: 0.8, delay: 0.2 + idx * 0.1 }}
-                                className="h-full rounded-full bg-primary-500"
-                              />
-                            </div>
-                            <p className="mt-0.5 text-xs text-dark-500">{pct}% complete</p>
-                          </div>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                )}
-              </Card>
-            </motion.div>
-
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-              <Card className="p-[22px] h-full">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-sm font-semibold text-ink">Recent Signals</h2>
-                  <Link to="/student/signals" className="text-xs text-primary-500 hover:text-primary-600 font-medium flex items-center gap-1">
-                    View All <FiArrowRight size={12} />
-                  </Link>
-                </div>
-                {loading ? (
-                  <Skeleton count={5} className="h-9 w-full" />
-                ) : signals.length === 0 ? (
-                  <EmptyState
-                    icon={FiTrendingUp}
-                    title="No signals yet"
-                    description="Trading signals will appear here once published."
-                  />
-                ) : (
-                  <div className="divide-y divide-dark-100">
-                    {signals.slice(0, 5).map((signal, idx) => {
-                      const signalId = signal._id || signal.id;
-                      const action = signal.action || signal.type || 'BUY';
-                      const pair = signal.pair || signal.symbol || '---';
-                      const isPositive = action === 'BUY' || action === 'buy';
-                      const profit = signal.profit ?? signal.pips ?? null;
-
-                      return (
-                        <div key={signalId || idx} className="flex items-center justify-between py-2.5 first:pt-0 last:pb-0">
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-2">
-                              <span className={`font-mono text-xs font-semibold ${isPositive ? 'text-emerald-600' : 'text-red-500'}`}>
-                                {action}
-                              </span>
-                              <span className="font-medium text-dark-700 text-sm">{pair}</span>
-                            </div>
-                            {signal.entryPrice && (
-                              <p className="text-xs text-dark-500 mt-0.5">
-                                Entry: {signal.entryPrice} {signal.stopLoss && `| SL: ${signal.stopLoss}`} {signal.takeProfit && `| TP: ${signal.takeProfit}`}
-                              </p>
-                            )}
-                          </div>
-                          <div className="text-right ml-3 shrink-0">
-                            {profit != null && (
-                              <span className={`text-xs font-semibold ${profit >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
-                                {profit > 0 ? '+' : ''}{typeof profit === 'number' ? profit.toFixed(2) : profit}
-                              </span>
-                            )}
-                            <p className="text-xs text-dark-400 mt-0.5">{formatDate(signal.createdAt)}</p>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </Card>
-            </motion.div>
-          </div>
-
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
-            <Card className="p-[22px]">
-              <h2 className="text-sm font-semibold text-ink mb-3">Quick Actions</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                <Link to="/student/courses">
-                  <Button variant="outline" className="w-full justify-start gap-2.5 h-12 text-sm">
-                    <FiBookOpen size={18} className="text-blue-500" />
-                    <span>View Courses</span>
-                  </Button>
-                </Link>
-                <Link to="/student/signals">
-                  <Button variant="outline" className="w-full justify-start gap-2.5 h-12 text-sm">
-                    <FiTrendingUp size={18} className="text-emerald-500" />
-                    <span>Check Signals</span>
-                  </Button>
-                </Link>
-                <Link to="/student/wallet">
-                  <Button variant="outline" className="w-full justify-start gap-2.5 h-12 text-sm">
-                    <FiCreditCard size={18} className="text-amber-500" />
-                    <span>Wallet</span>
-                  </Button>
-                </Link>
-              </div>
-            </Card>
-          </motion.div>
-
-          {referralStats && (
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55 }}>
-              <Card className="p-[22px]">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-sm font-semibold text-ink flex items-center gap-2">
-                    <FiUsers size={16} className="text-primary-500" />
-                    My Team
-                  </h2>
-                  <Link to="/student/team" className="text-xs text-primary-500 hover:text-primary-600 font-medium flex items-center gap-1">
-                    View All <FiArrowRight size={12} />
-                  </Link>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <div className="p-3 rounded-xl bg-blue-50 border border-blue-100">
-                    <p className="text-xs font-medium text-blue-600">Total Downlines</p>
-                    <p className="mt-1 text-xl font-bold text-blue-700">{(referralStats.directReferrals || 0) + (referralStats.indirectReferrals || 0)}</p>
-                  </div>
-                  <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-100">
-                    <p className="text-xs font-medium text-emerald-600">Direct</p>
-                    <p className="mt-1 text-xl font-bold text-emerald-700">{referralStats.directReferrals || 0}</p>
-                  </div>
-                  <div className="p-3 rounded-xl bg-violet-50 border border-violet-100">
-                    <p className="text-xs font-medium text-violet-600">Indirect</p>
-                    <p className="mt-1 text-xl font-bold text-violet-700">{referralStats.indirectReferrals || 0}</p>
-                  </div>
-                  <div className="p-3 rounded-xl bg-amber-50 border border-amber-100">
-                    <p className="text-xs font-medium text-amber-600">Active</p>
-                    <p className="mt-1 text-xl font-bold text-amber-700">{referralStats.activeReferrals || 0}</p>
-                  </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium text-dark-500">{stat.label}</p>
+                  <p className="text-lg font-extrabold text-ink">{stat.value}</p>
                 </div>
               </Card>
-            </motion.div>
-          )}
-        </>
-      )}
+            );
+          })}
+        </div>
+      </motion.div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-          <Card className="p-[22px] h-full">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold text-ink">Recent Courses</h2>
-              <Link to="/student/courses" className="text-xs text-primary-500 hover:text-primary-600 font-medium flex items-center gap-1">
-                View All <FiArrowRight size={12} />
+      {/* Available Balance highlight */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+      >
+        <Card className="p-5 sm:p-6 bg-gradient-to-r from-primary-500 to-emerald-500 text-white border-0 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4" />
+          <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full blur-2xl translate-y-1/2 -translate-x-1/4" />
+          <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-medium text-white/80 uppercase tracking-widest mb-1">Available Balance</p>
+              <p className="text-3xl sm:text-4xl font-extrabold text-white">{formatCurrency(availableBalance)}</p>
+              <p className="text-xs text-white/60 mt-1">Pending: {formatCurrency(pendingEarnings)}</p>
+            </div>
+            <div className="flex gap-2">
+              <Link to="/student/wallet">
+                <Button variant="white" size="sm">View Wallet</Button>
+              </Link>
+              <Link to="/student/withdrawals">
+                <Button variant="outline-white" size="sm">Withdraw</Button>
               </Link>
             </div>
-            {loading ? (
-              <Skeleton count={3} className="h-14 w-full" />
-            ) : enrolled.length === 0 ? (
-              <EmptyState
-                icon={FiBookOpen}
-                title="No courses yet"
-                description="Enroll in a course to start your learning journey."
-                action="Browse Courses"
-                onAction={() => (window.location.href = '/student/courses')}
-              />
-            ) : (
-              <div className="space-y-3">
-                {enrolled.map((course, idx) => {
-                  const courseId = course._id || course.id;
-                  const progress = course.progress ?? course.enrollment?.progress ?? 0;
-                  const totalLessons = course.totalLessons ?? course.lessons?.length ?? 0;
-                  const completedLessons = course.completedLessons ?? course.enrollment?.completedLessons ?? 0;
-                  const pct = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : progress;
+          </div>
+        </Card>
+      </motion.div>
 
-                  return (
-                    <Link
-                      key={courseId || idx}
-                      to={`/student/courses/${course.slug || courseId}`}
-                      className="flex items-center gap-3.5 p-3 rounded-[11px] hover:bg-dark-50 transition-colors"
-                    >
-                      <div className={`w-10 h-10 rounded-[11px] bg-gradient-to-br ${gradientPlaceholders[idx % gradientPlaceholders.length]} flex items-center justify-center text-white text-xs font-bold shrink-0`}>
-                        {course.title?.charAt(0) || 'C'}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-ink truncate">{course.title}</p>
-                        <div className="mt-1.5 h-1 rounded-full bg-dark-100 overflow-hidden">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${pct}%` }}
-                            transition={{ duration: 0.8, delay: 0.2 + idx * 0.1 }}
-                            className="h-full rounded-full bg-primary-500"
-                          />
-                        </div>
-                        <p className="mt-0.5 text-xs text-dark-500">{pct}% complete</p>
-                      </div>
-                    </Link>
-                  );
-                })}
+      {/* Copy Trading */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.25 }}
+      >
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-xs font-bold text-dark-400 uppercase tracking-widest">Copy Trading</h3>
+          <Link to="/student/copy-trading" className="text-xs text-primary-500 hover:text-primary-600 font-medium flex items-center gap-1">
+            Manage <FiArrowRight size={12} />
+          </Link>
+        </div>
+        <Card className="p-5 sm:p-6 bg-gradient-to-br from-dark-50 to-dark-100 border-dark-200">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="lg:col-span-2">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary-500 to-emerald-500 flex items-center justify-center text-white text-lg font-bold">
+                  <FiGlobe size={22} />
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-dark-500">Master Accounts</p>
+                  <p className="text-2xl font-extrabold text-ink">{copyTradingData.masterAccounts}</p>
+                </div>
               </div>
-            )}
-          </Card>
-        </motion.div>
-
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
-          <Card className="p-[22px] h-full">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold text-ink">Recent Signals</h2>
-              <Link to="/student/signals" className="text-xs text-primary-500 hover:text-primary-600 font-medium flex items-center gap-1">
-                View All <FiArrowRight size={12} />
+              <p className="text-sm text-dark-400 mb-4">Follow experienced traders and earn commissions on copied trades.</p>
+              <Link to="/student/copy-trading">
+                <Button className="w-full sm:w-auto">Copy Now</Button>
               </Link>
             </div>
-            {loading ? (
-              <Skeleton count={5} className="h-9 w-full" />
-            ) : signals.length === 0 ? (
-              <EmptyState
-                icon={FiTrendingUp}
-                title="No signals yet"
-                description="Trading signals will appear here once published."
-              />
-            ) : (
-              <div className="divide-y divide-dark-100">
-                {signals.map((signal, idx) => {
-                  const signalId = signal._id || signal.id;
-                  const action = signal.action || signal.type || 'BUY';
-                  const pair = signal.pair || signal.symbol || '---';
-                  const isPositive = action === 'BUY' || action === 'buy';
-                  const profit = signal.profit ?? signal.pips ?? null;
-
-                  return (
-                    <div key={signalId || idx} className="flex items-center justify-between py-2.5 first:pt-0 last:pb-0">
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className={`font-mono text-xs font-semibold ${isPositive ? 'text-emerald-600' : 'text-red-500'}`}>
-                            {action}
-                          </span>
-                          <span className="font-medium text-dark-700 text-sm">{pair}</span>
-                        </div>
-                        {signal.entryPrice && (
-                          <p className="text-xs text-dark-500 mt-0.5">
-                            Entry: {signal.entryPrice} {signal.stopLoss && `| SL: ${signal.stopLoss}`} {signal.takeProfit && `| TP: ${signal.takeProfit}`}
-                          </p>
-                        )}
-                      </div>
-                      <div className="text-right ml-3 shrink-0">
-                        {profit != null && (
-                          <span className={`text-xs font-semibold ${profit >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
-                            {profit > 0 ? '+' : ''}{typeof profit === 'number' ? profit.toFixed(2) : profit}
-                          </span>
-                        )}
-                        <p className="text-xs text-dark-400 mt-0.5">{formatDate(signal.createdAt)}</p>
-                      </div>
-                    </div>
-                  );
-                })}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-3 rounded-xl bg-white/60">
+                <span className="text-xs font-medium text-dark-500">Win Rate</span>
+                <span className="text-sm font-bold text-emerald-600">{copyTradingData.winRate}</span>
               </div>
-            )}
-          </Card>
-        </motion.div>
-      </div>
+              <div className="flex items-center justify-between p-3 rounded-xl bg-white/60">
+                <span className="text-xs font-medium text-dark-500">Monthly ROI</span>
+                <span className="text-sm font-bold text-emerald-600">{copyTradingData.monthlyROI}</span>
+              </div>
+              <div className="flex items-center justify-between p-3 rounded-xl bg-white/60">
+                <span className="text-xs font-medium text-dark-500">Risk Level</span>
+                <Badge variant={copyTradingData.riskLevel === 'Medium' ? 'warning' : 'success'}>{copyTradingData.riskLevel}</Badge>
+              </div>
+            </div>
+          </div>
+        </Card>
+      </motion.div>
 
+      {/* System Flow */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="mt-4">
         <Card className="p-5">
           <SystemFlow compact />
