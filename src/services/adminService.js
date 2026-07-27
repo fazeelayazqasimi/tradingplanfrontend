@@ -101,5 +101,8 @@ const adminService = {
   createAccount: (brokerId, data) => unwrap(api.post(`/brokers/${brokerId}/accounts`, data)),
   updateAccount: (brokerId, accountId, data) => unwrap(api.put(`/brokers/${brokerId}/accounts/${accountId}`, data)),
   deleteAccount: (brokerId, accountId) => unwrap(api.delete(`/brokers/${brokerId}/accounts/${accountId}`)),
+
+  getMarketOverview: () => unwrap(api.get('/market-overview')),
+  updateMarketOverview: (data) => unwrap(api.put('/market-overview', data)),
 };
 export default adminService;

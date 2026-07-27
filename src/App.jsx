@@ -53,6 +53,7 @@ import AdminBrokers from './pages/admin/Brokers';
 import AdminCRM from './pages/admin/CRM';
 import AdminMedia from './pages/admin/Media';
 import AdminClasses from './pages/admin/Classes';
+import AdminMarketOverview from './pages/admin/MarketOverview';
 
 import StudentDashboard from './pages/student/Dashboard';
 import StudentCourses from './pages/student/Courses';
@@ -156,6 +157,7 @@ export const router = createBrowserRouter([
       { path: 'coupons', element: <AdminCoupons /> },
       { path: 'brokers', element: <AdminBrokers /> },
       { path: 'reports', element: <AdminReports /> },
+      { path: 'market-overview', element: <AdminMarketOverview /> },
     ],
   },
   {

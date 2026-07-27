@@ -18,6 +18,9 @@ import {
   FiUsers,
   FiUserPlus,
   FiUserCheck,
+  FiArrowUp,
+  FiArrowDown,
+  FiMinus,
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Card from '../../components/ui/Card';
@@ -30,6 +33,7 @@ import walletService from '../../services/walletService';
 import referralService from '../../services/referralService';
 import courseService from '../../services/courseService';
 import signalService from '../../services/signalService';
+import marketOverviewService from '../../services/marketOverviewService';
 import { useAuth } from '../../context/AuthContext';
 import { formatCurrency, formatDate, getInitials, copyToClipboard } from '../../utils/helpers';
 import SystemFlow from '../../components/website/SystemFlow';
@@ -63,17 +67,21 @@ export default function Dashboard() {
   const [referralCode, setReferralCode] = useState('');
   const [copied, setCopied] = useState(false);
   const [referralStats, setReferralStats] = useState(null);
+  const [marketOverview, setMarketOverview] = useState(null);
+  const [todaySignalsCount, setTodaySignalsCount] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
     async function fetchDashboard() {
       try {
         setLoading(true);
-        const [enrolledRes, signalsRes, walletRes, rankRes] = await Promise.allSettled([
+        const [enrolledRes, signalsRes, walletRes, rankRes, overviewRes, signalsCountRes] = await Promise.allSettled([
           courseService.getEnrolled(),
           signalService.getSignals({ perPage: 5, sort: '-createdAt' }),
           walletService.getWallet('main'),
           studentService.getMyRank(),
+          marketOverviewService.getMarketOverview(),
+          signalService.getSignals({ status: 'open', isPublished: true, perPage: 1 }),
         ]);
 
         if (cancelled) return;
@@ -97,6 +105,17 @@ export default function Dashboard() {
         if (rankRes.status === 'fulfilled' && rankRes.value) {
           const rd = rankRes.value.data || rankRes.value;
           setRank(rd.rank || rd.data?.rank || null);
+        }
+
+        if (overviewRes.status === 'fulfilled' && overviewRes.value) {
+          const od = overviewRes.value.data || overviewRes.value;
+          setMarketOverview(od.data || od || {});
+        }
+
+        if (signalsCountRes.status === 'fulfilled' && signalsCountRes.value) {
+          const sc = signalsCountRes.value.data || signalsCountRes.value;
+          const scList = sc?.data || sc?.signals || sc || [];
+          setTodaySignalsCount(Array.isArray(scList) ? scList.length : 0);
         }
 
         // Fetch referral code
@@ -188,6 +207,81 @@ export default function Dashboard() {
             <FiUser size={16} />
             <span className="text-sm">{user?.email}</span>
 </div>
+          </Card>
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
+          <Card className="p-5 bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+                <FiTrendingUp size={16} />
+                Today's Market Overview
+              </h2>
+              <span className="text-xs text-white/70">Live</span>
+            </div>
+
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-xs font-medium text-white/70">Gold Trend</span>
+              {marketOverview?.goldTrend === 'bullish' && (
+                <span className="inline-flex items-center gap-1 bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full text-xs font-semibold">
+                  <FiArrowUp size={12} /> Bullish
+                </span>
+              )}
+              {marketOverview?.goldTrend === 'bearish' && (
+                <span className="inline-flex items-center gap-1 bg-red-500/20 text-red-300 px-2 py-0.5 rounded-full text-xs font-semibold">
+                  <FiArrowDown size={12} /> Bearish
+                </span>
+              )}
+              {marketOverview?.goldTrend === 'neutral' && (
+                <span className="inline-flex items-center gap-1 bg-gray-500/20 text-gray-300 px-2 py-0.5 rounded-full text-xs font-semibold">
+                  <FiMinus size={12} /> Neutral
+                </span>
+              )}
+            </div>
+
+            {marketOverview?.marketNews && (
+              <div className="mb-3">
+                <p className="text-xs font-medium text-white/70 mb-1">Market News</p>
+                <p className="text-sm text-white/90 truncate">{marketOverview.marketNews}</p>
+              </div>
+            )}
+
+            {marketOverview?.nextLiveClass && (
+              <div className="mb-3 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <FiClock size={14} className="text-white/60" />
+                  <div>
+                    <p className="text-xs font-medium text-white/70">Next Live Class</p>
+                    <p className="text-sm text-white/90">
+                      {marketOverview.nextLiveClass.date} at {marketOverview.nextLiveClass.time}
+                    </p>
+                  </div>
+                </div>
+                {marketOverview.nextLiveClass.url && (
+                  <a
+                    href={marketOverview.nextLiveClass.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg font-medium transition-colors"
+                  >
+                    Join
+                  </a>
+                )}
+              </div>
+            )}
+
+            {marketOverview?.dailyMarketSummary && (
+              <div className="mb-3">
+                <p className="text-xs font-medium text-white/70 mb-1">Daily Summary</p>
+                <p className="text-sm text-white/90">{marketOverview.dailyMarketSummary}</p>
+              </div>
+            )}
+
+            <div className="flex items-center gap-2 pt-3 border-t border-white/20">
+              <FiActivity size={14} className="text-white/60" />
+              <span className="text-xs font-medium text-white/70">Today's Open Signals</span>
+              <span className="ml-auto text-lg font-bold text-white">{todaySignalsCount}</span>
+            </div>
           </Card>
         </motion.div>
 

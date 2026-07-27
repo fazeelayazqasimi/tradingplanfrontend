@@ -5,6 +5,7 @@ import { useName } from '../../context/NameContext';
 import { useSettings } from '../../context/SettingsContext';
 import ThemeToggle from '../ui/ThemeToggle';
 import NewsletterPopup from '../website/NewsletterPopup';
+import NotificationBell from '../NotificationBell';
 
 function MarqueeTicker() {
   const tickerRef = useRef(null);
@@ -150,7 +151,10 @@ export default function WebsiteLayout() {
             </nav>
             <div className="hidden lg:flex items-center gap-2">
               {user ? (
-                <Link to={dashboardLink} className="btn-primary btn-sm text-[12px] px-3 py-1.5">Dashboard</Link>
+                <>
+                  <NotificationBell />
+                  <Link to={dashboardLink} className="btn-primary btn-sm text-[12px] px-3 py-1.5">Dashboard</Link>
+                </>
               ) : (
                 <>
                   <Link to="/login" className="text-[13px] font-medium text-dark-500 hover:text-ink px-2 py-1.5 transition-colors">Login</Link>
@@ -187,7 +191,10 @@ export default function WebsiteLayout() {
             ))}
             <div className="mt-5 flex flex-col gap-2.5">
               {user ? (
-                <Link to={dashboardLink} onClick={() => setMobileOpen(false)} className="btn-primary justify-center text-sm">Dashboard</Link>
+                <>
+                  <NotificationBell />
+                  <Link to={dashboardLink} onClick={() => setMobileOpen(false)} className="btn-primary justify-center text-sm">Dashboard</Link>
+                </>
               ) : (
                 <>
                   <Link to="/login" onClick={() => setMobileOpen(false)} className="btn-outline justify-center text-sm">Login</Link>

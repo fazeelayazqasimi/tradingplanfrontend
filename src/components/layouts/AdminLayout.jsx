@@ -34,6 +34,7 @@ const sidebarLinks = [
   { path: '/admin/support', label: 'Support', icon: FiMessageSquare },
   { path: '/admin/reports', label: 'Reports', icon: FiBarChart2 },
   { path: '/admin/content', label: 'Website Content', icon: FiLayout },
+  { path: '/admin/market-overview', label: 'Market Overview', icon: FiTrendingUp },
   { path: '/admin/settings', label: 'Settings', icon: FiSettings },
 ];
 
