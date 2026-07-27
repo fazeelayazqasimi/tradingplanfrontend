@@ -40,6 +40,7 @@ export const NAVIGATION = {
     { path: '/pricing', label: 'Membership' },
     { path: '/faq', label: 'FAQ' },
     { path: '/contact', label: 'Contact' },
+    { path: '/gallery', label: 'Gallery' },
   ],
   student: [
     { path: '/student/dashboard', label: 'Dashboard', icon: 'dashboard' },

@@ -60,6 +60,7 @@ const initialForm = {
   takeProfit: '',
   openTime: '',
   description: '',
+  isPublished: true,
 };
 
 export default function Signals() {
@@ -122,6 +123,7 @@ export default function Signals() {
       takeProfit: signal.takeProfit?.toString() || '',
       openTime: signal.openTime ? new Date(signal.openTime).toISOString().slice(0, 16) : '',
       description: signal.description || '',
+      isPublished: signal.isPublished ?? true,
     });
     setModalOpen(true);
   };
@@ -140,6 +142,7 @@ export default function Signals() {
         takeProfit: parseFloat(form.takeProfit) || 0,
         openTime: form.openTime ? new Date(form.openTime).toISOString() : new Date().toISOString(),
         description: form.description,
+        isPublished: form.isPublished,
       };
       if (editingSignal) {
         await signalService.updateSignal(editingSignal._id || editingSignal.id, payload);
@@ -379,6 +382,19 @@ export default function Signals() {
               value={form.openTime}
               onChange={(e) => handleChange('openTime', e.target.value)}
             />
+          </div>
+
+          <div className="flex items-center gap-3">
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                className="sr-only peer"
+                checked={form.isPublished}
+                onChange={(e) => handleChange('isPublished', e.target.checked)}
+              />
+              <div className="w-9 h-5 bg-dark-200 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary-500" />
+            </label>
+            <span className="text-sm font-medium text-dark-500">Publish immediately</span>
           </div>
 
           <div>
