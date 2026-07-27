@@ -112,6 +112,7 @@ export default function WebsiteLayout() {
   const { getSetting } = useSettings();
   const instituteName = getSetting('institute_name', '');
   const instituteLogo = getSetting('institute_logo', '');
+  const footerLogo = getSetting('footer_logo', '');
   const dashboardLink = user?.role === 'admin' ? '/admin/dashboard' : user?.role === 'student' ? '/student/dashboard' : null;
   useEffect(() => { setMobileOpen(false); setOpenSubMenu(null); }, [pathname]);
 
@@ -204,7 +205,9 @@ export default function WebsiteLayout() {
           <div className="grid grid-cols-2 md:grid-cols-5 gap-8 sm:gap-10 pb-10 sm:pb-14">
             <div className="col-span-2 md:col-span-1">
               <Link to="/" className="flex items-center gap-2.5 mb-3">
-                {instituteLogo ? (
+                {footerLogo ? (
+                  <img src={footerLogo} alt={instituteName} className="h-[28px] w-auto" />
+                ) : instituteLogo ? (
                   <img src={instituteLogo} alt={instituteName} className="h-[28px] w-auto" />
                 ) : (
                   <div className="w-[28px] h-[28px] rounded-lg bg-gradient-to-br from-primary-500 to-emerald-500 relative flex-shrink-0">

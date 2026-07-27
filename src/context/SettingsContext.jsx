@@ -11,6 +11,8 @@ const DEFAULTS = {
   site_tagline: 'Master the Markets',
   site_description: '',
   institute_logo: '',
+  institute_favicon: '',
+  footer_logo: '',
   social_instagram: '#',
   social_twitter: '#',
   social_youtube: '#',
@@ -39,6 +41,19 @@ export const SettingsProvider = ({ children }) => {
   useEffect(() => {
     fetchSettings();
   }, [fetchSettings]);
+
+  useEffect(() => {
+    const favicon = settings.institute_favicon;
+    if (favicon) {
+      let link = document.querySelector('link[rel="icon"]');
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.head.appendChild(link);
+      }
+      link.href = favicon;
+    }
+  }, [settings.institute_favicon]);
 
   const getSetting = (key, fallback = '') => {
     return settings[key] !== undefined && settings[key] !== '' ? settings[key] : fallback;

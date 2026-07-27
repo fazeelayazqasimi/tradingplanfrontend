@@ -48,6 +48,8 @@ const SETTING_FIELDS = {
   general: [
     { key: 'institute_name', label: 'Institute Name', icon: FiUser, placeholder: 'e.g. Trading Academy Pro' },
     { key: 'institute_logo', label: 'Institute Logo', type: 'logo', placeholder: 'Upload your institute logo' },
+    { key: 'institute_favicon', label: 'Favicon', type: 'logo', placeholder: 'Upload favicon (ico, png, svg)' },
+    { key: 'footer_logo', label: 'Footer Logo', type: 'logo', placeholder: 'Upload footer logo' },
     { key: 'institute_email', label: 'Institute Email', icon: FiMail, type: 'email', placeholder: 'admin@academy.com' },
     { key: 'institute_phone', label: 'Phone Number', icon: FiPhone, type: 'tel', placeholder: '+1 (555) 000-0000' },
     { key: 'institute_address', label: 'Address', icon: FiMapPin, placeholder: '123 Trading St, New York, NY' },
@@ -247,24 +249,26 @@ export default function Settings() {
     }
   };
 
-  const handleLogoUpload = async (e) => {
+  const handleLogoUpload = async (e, type, key) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setUploadingLogo(true);
+    const label = { logo: 'Logo', favicon: 'Favicon', footer_logo: 'Footer Logo' }[type] || 'Image';
+    setUploadingLogo(key);
     try {
       const formData = new FormData();
       formData.append('logo', file);
+      formData.append('type', type);
       const res = await api.post('/settings/upload-logo', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      const logoUrl = res.data?.data?.url || res.data?.url;
-      if (logoUrl) {
-        setEditedSettings((prev) => ({ ...prev, institute_logo: logoUrl }));
-        setSettings((prev) => ({ ...prev, institute_logo: logoUrl }));
-        toast.success('Logo uploaded successfully');
+      const fileUrl = res.data?.data?.url || res.data?.url;
+      if (fileUrl) {
+        setEditedSettings((prev) => ({ ...prev, [key]: fileUrl }));
+        setSettings((prev) => ({ ...prev, [key]: fileUrl }));
+        toast.success(`${label} uploaded successfully`);
       }
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to upload logo');
+      toast.error(err.response?.data?.message || `Failed to upload ${label}`);
     } finally {
       setUploadingLogo(false);
     }
@@ -307,14 +311,18 @@ export default function Settings() {
     }
 
     if (field.type === 'logo') {
-      const logoUrl = editedSettings.institute_logo || settings.institute_logo || '';
+      const urlKey = field.key;
+      const logoUrl = editedSettings[urlKey] || settings[urlKey] || '';
+      const label = field.label || 'Logo';
+      const type = urlKey === 'institute_logo' ? 'logo' : urlKey === 'institute_favicon' ? 'favicon' : 'footer_logo';
+      const isUploading = uploadingLogo === urlKey;
       return (
         <div key={field.key} className="space-y-1.5">
-          <label className="block text-sm font-medium text-dark-600 mb-1.5">Institute Logo</label>
+          <label className="block text-sm font-medium text-dark-600 mb-1.5">{label}</label>
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 rounded-xl border border-dark-200 bg-dark-50 flex items-center justify-center overflow-hidden flex-shrink-0">
               {logoUrl ? (
-                <img src={logoUrl} alt="Logo" className="w-full h-full object-contain" />
+                <img src={logoUrl} alt={label} className="w-full h-full object-contain" />
               ) : (
                 <FiUpload className="text-dark-300" size={20} />
               )}
@@ -322,19 +330,19 @@ export default function Settings() {
             <div className="flex-1">
               <label className="btn-outline text-sm cursor-pointer inline-flex items-center gap-2">
                 <FiUpload size={14} />
-                {uploadingLogo ? 'Uploading...' : 'Choose Image'}
-                <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} disabled={uploadingLogo} />
+                {isUploading ? 'Uploading...' : 'Choose Image'}
+                <input type="file" accept="image/*,.ico" className="hidden" onChange={(e) => handleLogoUpload(e, type, urlKey)} disabled={!!uploadingLogo} />
               </label>
-              <p className="text-xs text-dark-400 mt-1">Recommended: 200x200px, PNG or SVG</p>
+              <p className="text-xs text-dark-400 mt-1">PNG, SVG, or ICO</p>
             </div>
             {logoUrl && (
               <button
                 onClick={() => {
-                  setEditedSettings((prev) => ({ ...prev, institute_logo: '' }));
-                  setDirtyFields((prev) => { const n = new Set(prev); n.add('institute_logo'); return n; });
+                  setEditedSettings((prev) => ({ ...prev, [urlKey]: '' }));
+                  setDirtyFields((prev) => { const n = new Set(prev); n.add(urlKey); return n; });
                 }}
                 className="p-2 text-red-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                title="Remove logo"
+                title={`Remove ${label}`}
               >
                 <FiTrash2 size={16} />
               </button>
