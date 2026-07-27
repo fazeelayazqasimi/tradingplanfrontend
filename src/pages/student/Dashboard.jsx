@@ -228,6 +228,7 @@ export default function Dashboard() {
   const currentRank = rank?.name || rank?.rank || 'Bronze';
   const nextRankName = nextRank?.name || 'Silver';
   const teamSize = totalReferrals;
+   const todayEarnings = walletStats?.totalEarned ?? totalEarnings;
   const monthlyEarnings = walletStats?.totalEarned ?? totalEarnings;
   const lifetimeEarnings = walletStats?.totalEarned ?? totalEarnings;
 
