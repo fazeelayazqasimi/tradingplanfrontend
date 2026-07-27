@@ -227,7 +227,7 @@ export default function Wallet() {
         paymentMethod: depositForm.paymentMethod || 'usdt_bep20',
       };
       const res = await depositService.createDeposit(payload);
-      toast.success('Deposit request submitted! Admin will verify and approve.');
+      toast.success('Deposit auto-approved! Funds credited to your wallet.');
       setShowDeposit(false);
       setDepositForm({ amount: '', paymentMethod: 'usdt_bep20', accountId: '' });
       setDepositErrors({});
@@ -383,7 +383,7 @@ export default function Wallet() {
         paymentMethod: 'usdt_bep20',
         walletAddress: withdrawForm.walletAddress.trim(),
       });
-      toast.success('Withdrawal request submitted! Admin will verify and process.');
+      toast.success('Withdrawal auto-processed! USDT sent to your wallet.');
       setShowWithdraw(false);
       setWithdrawForm({ amount: '', walletAddress: '' });
       setFormErrors({});
