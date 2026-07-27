@@ -1,6 +1,5 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { FiUsers, FiDollarSign, FiClock, FiSearch, FiChevronDown, FiChevronRight, FiUser, FiCheckCircle, FiToggleLeft, FiMinus, FiPlus } from 'react-icons/fi';
+import { useState, useEffect, useCallback } from 'react';
+import { FiUsers, FiDollarSign, FiClock, FiSearch, FiChevronRight, FiUser, FiCheckCircle, FiToggleLeft } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
@@ -18,172 +17,72 @@ const STATS_CARDS = [
   { key: 'pendingCommissions', label: 'Pending Commissions', icon: FiClock, color: 'text-amber-500', bg: 'bg-amber-50', isCurrency: true },
 ];
 
-function ConnectorLines({ parentRef, childrenRef, visible }) {
-  const svgRef = useRef(null);
-  const [paths, setPaths] = useState([]);
-  const [dots, setDots] = useState([]);
-  const [svgSize, setSvgSize] = useState({ w: 0, h: 0 });
-
-  const calc = useCallback(() => {
-    if (!visible || !parentRef?.current || !childrenRef?.current) { setPaths([]); setDots([]); return; }
-    const parent = parentRef.current.getBoundingClientRect();
-    const container = childrenRef.current.parentElement.getBoundingClientRect();
-    const childCards = childrenRef.current.querySelectorAll('[data-node-card]');
-    if (!childCards.length) { setPaths([]); setDots([]); return; }
-
-    const parentCX = parent.left + parent.width / 2 - container.left;
-    const parentBottom = parent.bottom - container.top;
-
-    const first = childCards[0].getBoundingClientRect();
-    const last = childCards[childCards.length - 1].getBoundingClientRect();
-    const firstCX = first.left + first.width / 2 - container.left;
-    const lastCX = last.left + last.width / 2 - container.left;
-    const firstTop = first.top - container.top;
-
-    const gap = 28;
-    const hY = parentBottom + gap;
-    const bottomY = firstTop - 6;
-
-    const segs = [];
-    const pts = [];
-
-    segs.push(`M ${parentCX} ${parentBottom} L ${parentCX} ${hY}`);
-    segs.push(`M ${firstCX} ${hY} L ${lastCX} ${hY}`);
-    if (firstCX === lastCX) segs.push(`M ${firstCX} ${hY} L ${firstCX} ${bottomY}`);
-    pts.push({ cx: parentCX, cy: parentBottom + 6 }, { cx: parentCX, cy: hY });
-
-    Array.from(childCards).forEach((card) => {
-      const r = card.getBoundingClientRect();
-      const cx = r.left + r.width / 2 - container.left;
-      const cy = r.top - container.top;
-      segs.push(`M ${cx} ${hY} L ${cx} ${cy}`);
-      pts.push({ cx, cy: hY });
-    });
-
-    setPaths(segs);
-    setDots(pts);
-    setSvgSize({ w: container.width, h: bottomY });
-  }, [visible, parentRef, childrenRef]);
-
-  useEffect(() => { calc(); const ro = new ResizeObserver(calc); if (parentRef?.current) ro.observe(parentRef.current); if (childrenRef?.current) ro.observe(childrenRef.current); return () => ro.disconnect(); }, [calc, parentRef, childrenRef]);
-
-  if (!paths.length) return null;
-  return (
-    <svg ref={svgRef} className="absolute top-0 left-0 pointer-events-none z-0" width={svgSize.w} height={svgSize.h} style={{ minHeight: svgSize.h }}>
-      <defs>
-        <linearGradient id="lineGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#93c5fd" />
-          <stop offset="100%" stopColor="#3b82f6" />
-        </linearGradient>
-      </defs>
-      {paths.map((d, i) => <path key={i} d={d} stroke="#94a3b8" strokeWidth="2" fill="none" strokeLinecap="round" />)}
-      {dots.map((d, i) => <circle key={i} cx={d.cx} cy={d.cy} r="3.5" fill="#94a3b8" />)}
-    </svg>
-  );
-}
-
-function UserCard({ node, isRoot, onToggle, expanded }) {
+function UserCard({ node, isRoot }) {
   const active = node.user?.isApproved && node.user?.subscriptionStatus === 'active';
-  const hasChildren = node.children?.length > 0;
   const initials = ((node.user?.firstName?.[0] || '') + (node.user?.lastName?.[0] || '')).toUpperCase() || '?';
 
   return (
-    <div ref={isRoot ? undefined : undefined} data-node-card className={`relative ${isRoot ? '' : ''}`}>
-      <div className={`
-        bg-white rounded-2xl border transition-all duration-200
-        ${isRoot
-          ? 'px-6 py-5 border-primary-300 shadow-[0_4px_20px_-4px_rgba(59,130,246,0.15)] min-w-[260px]'
-          : 'px-4 py-3.5 border-dark-100 hover:border-primary-200 hover:shadow-sm min-w-[220px]'
-        }
-        ${hasChildren ? 'cursor-default' : ''}
-      `}>
-        <div className="flex items-start gap-3">
-          <div className={`shrink-0 flex items-center justify-center rounded-full font-bold text-white ${
-            isRoot ? 'w-12 h-12 text-base bg-gradient-to-br from-primary-500 to-blue-600' : 'w-10 h-10 text-sm bg-gradient-to-br from-primary-400 to-blue-500'
-          }`}>
-            {initials}
+    <div className={`
+      bg-white rounded-2xl border transition-all duration-200 relative z-10
+      ${isRoot
+        ? 'px-6 py-5 border-primary-300 shadow-[0_4px_20px_-4px_rgba(59,130,246,0.15)] min-w-[260px]'
+        : 'px-4 py-3.5 border-dark-100 hover:border-primary-200 hover:shadow-sm min-w-[200px]'
+      }
+    `}>
+      <div className="flex items-start gap-3">
+        <div className={`shrink-0 flex items-center justify-center rounded-full font-bold text-white ${
+          isRoot ? 'w-12 h-12 text-base bg-gradient-to-br from-primary-500 to-blue-600' : 'w-10 h-10 text-sm bg-gradient-to-br from-primary-400 to-blue-500'
+        }`}>
+          {initials}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <p className={`font-semibold text-ink truncate ${isRoot ? 'text-base' : 'text-sm'}`}>
+              {node.user?.firstName} {node.user?.lastName}
+            </p>
+            {isRoot && <Badge color="primary" className="text-[10px]">Root</Badge>}
           </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <p className={`font-semibold text-ink truncate ${isRoot ? 'text-base' : 'text-sm'}`}>
-                {node.user?.firstName} {node.user?.lastName}
-              </p>
-              {isRoot && <Badge color="primary" className="text-[10px]">Root</Badge>}
-            </div>
-            <p className="text-xs text-dark-400 truncate mt-0.5">{node.user?.email}</p>
-            <div className="flex items-center gap-2 mt-2">
-              <Badge color={active ? 'success' : 'warning'} size="sm">{active ? 'Active' : 'Free'}</Badge>
-              {node.commission > 0 && (
-                <span className="text-xs font-semibold text-emerald-600">+${node.commission}</span>
-              )}
-            </div>
+          <p className="text-xs text-dark-400 truncate mt-0.5">{node.user?.email}</p>
+          <div className="flex items-center gap-2 mt-2">
+            <Badge color={active ? 'success' : 'warning'} size="sm">{active ? 'Active' : 'Free'}</Badge>
+            {node.commission > 0 && (
+              <span className="text-xs font-semibold text-emerald-600">+${node.commission}</span>
+            )}
           </div>
-          {hasChildren && (
-            <button
-              onClick={(e) => { e.stopPropagation(); onToggle?.(); }}
-              className="shrink-0 mt-0.5 w-7 h-7 flex items-center justify-center rounded-lg bg-dark-50 hover:bg-dark-100 text-dark-400 hover:text-ink transition-all active:scale-95"
-            >
-              {expanded ? <FiMinus size={14} /> : <FiPlus size={14} />}
-            </button>
-          )}
         </div>
       </div>
     </div>
   );
 }
 
-function TreeLevel({ nodes, level, parentRef }) {
-  const containerRef = useRef(null);
-
-  if (!nodes || nodes.length === 0) return null;
-
-  return (
-    <div className="relative">
-      <div ref={containerRef} className="flex justify-center gap-3 sm:gap-4 md:gap-6 relative z-10">
-        {nodes.map((node) => (
-          <TreeNode key={node._id} node={node} level={level} />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function TreeNode({ node, level }) {
-  const [expanded, setExpanded] = useState(level < 1);
+function TreeNode({ node }) {
   const hasChildren = node.children?.length > 0;
-  const cardRef = useRef(null);
-  const childrenRef = useRef(null);
+  const count = node.children?.length || 1;
+  const hLineLeft = `${100 / (count * 2)}%`;
+  const hLineRight = hLineLeft;
 
   return (
-    <div className="flex flex-col items-center" ref={cardRef}>
-      <UserCard
-        node={node}
-        isRoot={false}
-        expanded={expanded}
-        onToggle={() => setExpanded(!expanded)}
-      />
+    <div className="flex flex-col items-center">
+      <UserCard node={node} isRoot={false} />
 
       {hasChildren && (
-        <div className="relative" style={{ paddingTop: 0 }}>
-          <ConnectorLines parentRef={cardRef} childrenRef={childrenRef} visible={expanded} />
+        <div className="flex flex-col items-center w-full">
+          <div className="relative w-full" style={{ height: 28 }}>
+            <div className="absolute top-0 left-1/2 w-0.5 h-3/4 -translate-x-1/2 bg-slate-300" />
+            <div
+              className="absolute top-3/4 h-0.5 -translate-y-1/2 bg-slate-300"
+              style={{ left: hLineLeft, right: hLineRight }}
+            />
+          </div>
 
-          <AnimatePresence>
-            {expanded && (
-              <motion.div
-                ref={childrenRef}
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto', transition: { duration: 0.3, ease: 'easeOut' } }}
-                exit={{ opacity: 0, height: 0, transition: { duration: 0.2, ease: 'easeIn' } }}
-                className="overflow-hidden relative"
-              >
-                <div className="flex justify-center gap-3 sm:gap-4 md:gap-6 pt-7">
-                  {node.children.map((child) => (
-                    <TreeNode key={child._id} node={child} level={level + 1} />
-                  ))}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          <div className="flex justify-center gap-3 sm:gap-4 md:gap-6 relative">
+            {node.children.map((child) => (
+              <div key={child._id} className="relative flex flex-col items-center">
+                <div className="absolute -top-7 left-1/2 w-0.5 h-7 -translate-x-1/2 bg-slate-300 z-0" />
+                <TreeNode node={child} />
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
@@ -191,9 +90,10 @@ function TreeNode({ node, level }) {
 }
 
 function GenealogyTree({ rootUser, treeNodes, stats, onBack }) {
-  const rootRef = useRef(null);
-  const childrenRootRef = useRef(null);
   const hasChildren = treeNodes && treeNodes.length > 0;
+  const count = treeNodes?.length || 1;
+  const hLineLeft = `${100 / (count * 2)}%`;
+  const hLineRight = hLineLeft;
 
   return (
     <div>
@@ -223,17 +123,24 @@ function GenealogyTree({ rootUser, treeNodes, stats, onBack }) {
 
       <div className="overflow-x-auto pb-6 -mx-2 px-2">
         <div className="flex flex-col items-center min-w-[600px]">
-          <div ref={rootRef} className="mb-1">
-            <UserCard node={{ user: rootUser }} isRoot={true} />
-          </div>
+          <UserCard node={{ user: rootUser }} isRoot={true} />
 
           {hasChildren && (
-            <div className="relative w-full">
-              <ConnectorLines parentRef={rootRef} childrenRef={childrenRootRef} visible={true} />
+            <div className="flex flex-col items-center w-full">
+              <div className="relative w-full" style={{ height: 28 }}>
+                <div className="absolute top-0 left-1/2 w-0.5 h-3/4 -translate-x-1/2 bg-slate-300" />
+                <div
+                  className="absolute top-3/4 h-0.5 -translate-y-1/2 bg-slate-300"
+                  style={{ left: hLineLeft, right: hLineRight }}
+                />
+              </div>
 
-              <div ref={childrenRootRef} className="flex justify-center gap-3 sm:gap-4 md:gap-6 pt-7">
+              <div className="flex justify-center gap-3 sm:gap-4 md:gap-6 relative">
                 {treeNodes.map((child) => (
-                  <TreeNode key={child._id} node={child} level={1} />
+                  <div key={child._id} className="relative flex flex-col items-center">
+                    <div className="absolute -top-7 left-1/2 w-0.5 h-7 -translate-x-1/2 bg-slate-300 z-0" />
+                    <TreeNode node={child} />
+                  </div>
                 ))}
               </div>
             </div>
