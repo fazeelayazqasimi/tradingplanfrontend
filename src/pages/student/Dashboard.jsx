@@ -133,6 +133,7 @@ export default function Dashboard() {
   const [enrolled, setEnrolled] = useState([]);
   const [signals, setSignals] = useState([]);
   const [walletData, setWalletData] = useState(null);
+  const [walletStats, setWalletStats] = useState(null);
   const [rank, setRank] = useState(null);
   const [nextRank, setNextRank] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -148,10 +149,11 @@ export default function Dashboard() {
     async function fetchDashboard() {
       try {
         setLoading(true);
-        const [enrolledRes, signalsRes, walletRes, rankRes, overviewRes, signalsCountRes, refStatsRes, refCodeRes] = await Promise.allSettled([
+        const [enrolledRes, signalsRes, walletRes, walletStatsRes, rankRes, overviewRes, signalsCountRes, refStatsRes, refCodeRes] = await Promise.allSettled([
           courseService.getEnrolled(),
           signalService.getSignals({ perPage: 5, sort: '-createdAt' }),
           walletService.getWallet('main'),
+          walletService.getStats(),
           studentService.getMyRank(),
           marketOverviewService.getMarketOverview(),
           signalService.getSignals({ status: 'open', isPublished: true, perPage: 1 }),
@@ -170,8 +172,12 @@ export default function Dashboard() {
         const signalsList = signalsBody?.data || signalsBody?.signals || [];
         setSignals(Array.isArray(signalsList) ? signalsList.slice(0, 5) : []);
 
-        if (walletRes.status === 'fulfilled' && walletRes.value) {
-          setWalletData(walletRes.value.data || walletRes.value);
+         if (walletRes.status === 'fulfilled' && walletRes.value) {
+           setWalletData(walletRes.value.data || walletRes.value);
+         }
+
+        if (walletStatsRes.status === 'fulfilled' && walletStatsRes.value) {
+          setWalletStats(walletStatsRes.value.data || walletStatsRes.value);
         }
 
         if (rankRes.status === 'fulfilled' && rankRes.value) {
@@ -212,9 +218,9 @@ export default function Dashboard() {
     return () => { cancelled = true; };
   }, []);
 
-  const availableBalance = walletData?.availableBalance ?? walletData?.balance ?? 0;
-  const pendingEarnings = walletData?.pendingBalance ?? 0;
-  const totalEarnings = walletData?.totalEarned ?? 0;
+   const availableBalance = walletStats?.available ?? walletData?.availableBalance ?? walletData?.balance ?? 0;
+  const pendingEarnings = walletStats?.pending ?? walletData?.pendingBalance ?? 0;
+  const totalEarnings = walletStats?.totalEarned ?? walletData?.totalEarned ?? 0;
   const rewardCredits = referralStats?.totalEarnings || 0;
   const totalReferrals = (referralStats?.directReferrals || 0) + (referralStats?.indirectReferrals || 0);
   const directReferrals = referralStats?.directReferrals || 0;
@@ -222,9 +228,8 @@ export default function Dashboard() {
   const currentRank = rank?.name || rank?.rank || 'Bronze';
   const nextRankName = nextRank?.name || 'Silver';
   const teamSize = totalReferrals;
-  const todayEarnings = totalEarnings; // simplified
-  const monthlyEarnings = totalEarnings; // simplified
-  const lifetimeEarnings = totalEarnings;
+  const monthlyEarnings = walletStats?.totalEarned ?? totalEarnings;
+  const lifetimeEarnings = walletStats?.totalEarned ?? totalEarnings;
 
   const copyTradingData = {
     winRate: '72.4%',
