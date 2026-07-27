@@ -103,7 +103,7 @@ export default function Transactions() {
   const columns = [
     {
       header: 'Type',
-      render: (row) => (
+      render: (_, row) => (
         <Badge color={row.type === 'credit' ? 'success' : 'danger'}>
           <span className="flex items-center gap-1">
             {row.type === 'credit' ? <FiArrowDown size={12} /> : <FiArrowUp size={12} />}
@@ -114,7 +114,7 @@ export default function Transactions() {
     },
     {
       header: 'Category',
-      render: (row) => (
+      render: (_, row) => (
         <span className="text-dark-600 capitalize">
           {INCOME_LABELS[row.category] || row.category?.replace(/_/g, ' ') || '—'}
         </span>
@@ -122,7 +122,7 @@ export default function Transactions() {
     },
     {
       header: 'Amount',
-      render: (row) => (
+      render: (_, row) => (
         <span className={`font-semibold ${row.type === 'credit' ? 'text-emerald-600' : 'text-red-500'}`}>
           {row.type === 'credit' ? '+' : '-'}{formatCurrency(row.amount)}
         </span>
@@ -130,13 +130,13 @@ export default function Transactions() {
     },
     {
       header: 'Description',
-      render: (row) => (
+      render: (_, row) => (
         <span className="text-dark-500 max-w-[200px] truncate block">{row.description || '—'}</span>
       ),
     },
     {
       header: 'Date',
-      render: (row) => (
+      render: (_, row) => (
         <span className="text-dark-500 text-xs">{formatDate(row.createdAt || row.date)}</span>
       ),
     },

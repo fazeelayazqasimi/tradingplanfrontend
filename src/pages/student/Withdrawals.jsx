@@ -145,32 +145,32 @@ export default function Withdrawals() {
   const columns = [
     {
       header: 'Amount',
-      render: (row) => (
+      render: (_, row) => (
         <span className="font-semibold text-ink">{formatCurrency(row.amount)}</span>
       ),
     },
     {
       header: 'Payment Method',
-      render: (row) => (
+      render: (_, row) => (
         <span className="text-dark-600 capitalize">{(row.paymentMethod || row.payment_method || '').replace(/_/g, ' ')}</span>
       ),
     },
     {
       header: 'Status',
-      render: (row) => {
+      render: (_, row) => {
         const cfg = STATUS_CONFIG[row.status] || STATUS_CONFIG.pending;
         return <Badge color={cfg.color}>{cfg.label}</Badge>;
       },
     },
     {
       header: 'Requested Date',
-      render: (row) => (
+      render: (_, row) => (
         <span className="text-dark-500 text-xs">{formatDate(row.createdAt || row.created_at || row.requestedDate)}</span>
       ),
     },
     {
       header: 'Processed Date',
-      render: (row) => (
+      render: (_, row) => (
         <span className="text-dark-500 text-xs">{row.processedAt || row.processed_at ? formatDate(row.processedAt || row.processed_at) : '\u2014'}</span>
       ),
     },

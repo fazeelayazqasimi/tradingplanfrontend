@@ -59,7 +59,7 @@ export default function Referrals() {
   const [copiedLink, setCopiedLink] = useState(false);
 
   const renderReferralItem = (ref, idx) => {
-    const u = ref.referredUserId || ref;
+    const u = ref.referredUserId || ref.user || ref;
     const name = (u.firstName ? `${u.firstName} ${u.lastName}` : null) || u.name || u.userName || `${u.firstName || ''} ${u.lastName || ''}`.trim() || 'Unknown';
     const joinedDate = u.joinedAt || u.createdAt || u.date || ref.createdAt;
     const status = ref.status || 'active';

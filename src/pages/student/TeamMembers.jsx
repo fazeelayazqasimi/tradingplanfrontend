@@ -35,7 +35,7 @@ const statusColor = (status) => {
   return 'neutral';
 };
 
-const getUserObj = (ref) => ref.referredUserId || ref;
+const getUserObj = (ref) => ref.referredUserId || ref.user || ref;
 
 const getMemberName = (ref) => {
   const u = getUserObj(ref);
