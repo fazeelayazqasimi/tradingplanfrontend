@@ -21,6 +21,7 @@ import {
   FiLock,
   FiEye,
   FiEyeOff,
+  FiPercent,
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Button from '../../components/ui/Button';
@@ -92,6 +93,12 @@ const SETTING_FIELDS = {
   withdrawal: [
     { key: 'min_withdrawal', label: 'Minimum Withdrawal ($)', icon: FiDollarSign, type: 'number', placeholder: '10' },
     { key: 'max_withdrawal', label: 'Maximum Withdrawal ($)', icon: FiDollarSign, type: 'number', placeholder: '5000' },
+    { key: 'withdrawal_fee_type', label: 'Withdrawal Fee Type', type: 'select', options: [
+      { value: 'percent', label: 'Percentage (%)' },
+      { value: 'fixed', label: 'Fixed Amount ($)' },
+    ]},
+    { key: 'withdrawal_fee_percent', label: 'Withdrawal Fee (%)', icon: FiPercent, type: 'number', placeholder: '5', description: 'Percentage fee on each withdrawal' },
+    { key: 'withdrawal_fee_fixed', label: 'Fixed Withdrawal Fee ($)', icon: FiDollarSign, type: 'number', placeholder: '0', description: 'Fixed fee per withdrawal (used when type is Fixed)' },
   ],
   funding: [
     { key: 'free_registration_bonus_enabled', label: 'Free Registration $1 Bonus', type: 'toggle', description: 'When enabled, new users get free registration bonus on registration' },
@@ -427,7 +434,62 @@ export default function Settings() {
                 const sectionDirty = (SETTING_FIELDS[section.id] || []).some(
                   (f) => !f.readOnly && dirtyFields.has(f.key)
                 );
-                return (
+if (field.type === 'select') {
+      const value = editedSettings[field.key] ?? settings[field.key] ?? '';
+      const isDirty = dirtyFields.has(field.key);
+      return (
+        <div key={field.key} className="space-y-1.5">
+          <label className="block text-sm font-medium text-dark-600 mb-1.5">{field.label}</label>
+          <div className="flex items-center gap-3">
+            <select
+              value={value}
+              onChange={(e) => handleChange(field.key, e.target.value)}
+              className="flex-1 text-sm border border-dark-200 rounded-xl px-4 py-2.5 bg-white text-ink outline-none focus:border-primary-500 transition-colors"
+            >
+              {(field.options || []).map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+            {!isReadonly && isDirty && (
+              <button onClick={() => handleSaveField(field.key)} disabled={saving}
+                className="ml-2 rounded-lg p-2.5 text-primary-500 hover:bg-primary-50 transition-colors disabled:opacity-50">
+                <FiSave size={16} />
+              </button>
+            )}
+          </div>
+          {field.description && <p className="text-xs text-dark-400 mt-1">{field.description}</p>}
+        </div>
+      );
+    }
+
+    if (field.type === 'number') {
+      return (
+        <div key={field.key} className="space-y-1.5">
+          <label className="block text-sm font-medium text-dark-600 mb-1.5">{field.label}</label>
+          <div className="flex items-center gap-3">
+            <Input
+              label={field.label}
+              icon={field.icon}
+              type="number"
+              value={editedSettings[field.key] ?? settings[field.key] ?? ''}
+              onChange={(e) => handleChange(field.key, e.target.value)}
+              placeholder={field.placeholder}
+              readOnly={isReadonly}
+              className={`${dirtyFields.has(field.key) ? 'border-amber-400' : ''}`}
+            />
+            {!isReadonly && dirtyFields.has(field.key) && (
+              <button onClick={() => handleSaveField(field.key)} disabled={saving}
+                className="ml-2 rounded-lg p-2.5 text-primary-500 hover:bg-primary-50 transition-colors disabled:opacity-50">
+                <FiSave size={16} />
+              </button>
+            )}
+          </div>
+          {field.description && <p className="text-xs text-dark-400 mt-1">{field.description}</p>}
+        </div>
+      );
+    }
+
+    return (
                   <button
                     key={section.id}
                     onClick={() => setActiveSection(section.id)}
