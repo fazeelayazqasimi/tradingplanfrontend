@@ -218,23 +218,32 @@ export default function Wallet() {
     return Object.keys(errors).length === 0;
   };
 
+  const [depositResponse, setDepositResponse] = useState(null);
+
   const handleDeposit = async () => {
     if (!validateDeposit()) return;
     setSubmitting(true);
+    setDepositResponse(null);
     try {
       const payload = {
         amount: parseFloat(depositForm.amount),
         paymentMethod: depositForm.paymentMethod || 'usdt_bep20',
       };
       const res = await depositService.createDeposit(payload);
-      toast.success('Deposit auto-approved! Funds credited to your wallet.');
-      setShowDeposit(false);
-      setDepositForm({ amount: '', paymentMethod: 'usdt_bep20', accountId: '' });
-      setDepositErrors({});
-      fetchWallet();
-      fetchStats();
-      fetchAllWallets();
-      fetchDepositHistory();
+      const data = res.data?.data || res.data;
+      if (data?.depositAddress) {
+        setDepositResponse(data);
+        toast.success('Crypto deposit created! Send USDT to the address below.');
+      } else {
+        toast.success('Deposit auto-approved! Funds credited to your wallet.');
+        setShowDeposit(false);
+        setDepositForm({ amount: '', paymentMethod: 'usdt_bep20', accountId: '' });
+        setDepositErrors({});
+        fetchWallet();
+        fetchStats();
+        fetchAllWallets();
+        fetchDepositHistory();
+      }
     } catch (err) {
       toast.error(err?.response?.data?.message || 'Failed to submit deposit request');
     } finally {
@@ -686,39 +695,70 @@ export default function Wallet() {
         </Card>
       </motion.div>
 
-      <Modal isOpen={showDeposit} onClose={() => { setShowDeposit(false); setDepositErrors({}); setCoinPayment(null); }} title={`Deposit to ${WALLET_TABS.find(t => t.key === walletTab)?.label || 'Wallet'}`} size="sm">
-          <div className="space-y-4">
-            <div className="p-4 rounded-xl bg-blue-50 border border-blue-200">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
-                  <FiDollarSign className="text-blue-600" size={20} />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-blue-800">USDT (BEP20)</p>
-                  <p className="text-xs text-blue-600">Auto-approved & credited instantly</p>
+      <Modal isOpen={showDeposit} onClose={() => { setShowDeposit(false); setDepositErrors({}); setCoinPayment(null); setDepositResponse(null); }} title={depositResponse ? `Crypto Deposit - USDT BEP20` : `Deposit to ${WALLET_TABS.find(t => t.key === walletTab)?.label || 'Wallet'}`} size="sm">
+          {depositResponse ? (
+            <div className="space-y-4">
+              <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center shrink-0">
+                    <FiCheckCircle className="text-emerald-600" size={20} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-emerald-800">Deposit Address Generated</p>
+                    <p className="text-xs text-emerald-600">Send USDT to the address below</p>
+                  </div>
                 </div>
               </div>
+              <div className="p-4 rounded-xl bg-dark-50 border border-dark-200">
+                <p className="text-xs font-medium text-dark-500 mb-2">Deposit Address</p>
+                <p className="text-sm font-mono text-ink break-all">{depositResponse.depositAddress}</p>
+                <p className="text-xs text-dark-400 mt-1">Send exactly <span className="font-semibold text-ink">{depositResponse.amount || depositForm.amount}</span> USDT (BEP20)</p>
+              </div>
+              {depositResponse.paymentUrl && (
+                <div className="flex justify-center">
+                  <img src={depositResponse.paymentUrl} alt="QR Code" className="w-48 h-48 border border-dark-200 rounded-xl" />
+                </div>
+              )}
+              <div className="p-3 rounded-xl bg-amber-50 border border-amber-200">
+                <p className="text-xs text-amber-700">Your deposit will be credited to your wallet once the blockchain transaction is confirmed.</p>
+              </div>
+              <p className="text-xs text-dark-400 text-center">Expires in {depositResponse.expiresAt ? new Date(depositResponse.expiresAt).toLocaleString() : '24 hours'}</p>
+              <Button variant="outline" className="w-full" onClick={() => { setShowDeposit(false); setDepositResponse(null); setDepositForm({ amount: '', paymentMethod: 'usdt_bep20', accountId: '' }); }}>Close</Button>
             </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="p-4 rounded-xl bg-blue-50 border border-blue-200">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
+                    <FiDollarSign className="text-blue-600" size={20} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-blue-800">USDT (BEP20)</p>
+                    <p className="text-xs text-blue-600">Auto-approved & credited instantly</p>
+                  </div>
+                </div>
+              </div>
 
-            <Input
-              label="Amount ($)"
-              type="number"
-              placeholder="Enter amount to deposit"
-              icon={FiDollarSign}
-              value={depositForm.amount}
-              onChange={(e) => setDepositForm((p) => ({ ...p, amount: e.target.value }))}
-              error={depositErrors.amount}
-              min="1"
-              step="0.01"
-            />
+              <Input
+                label="Amount ($)"
+                type="number"
+                placeholder="Enter amount to deposit"
+                icon={FiDollarSign}
+                value={depositForm.amount}
+                onChange={(e) => setDepositForm((p) => ({ ...p, amount: e.target.value }))}
+                error={depositErrors.amount}
+                min="1"
+                step="0.01"
+              />
 
-            <div className="flex justify-end gap-3 pt-2">
-              <Button variant="outline" onClick={() => { setShowDeposit(false); setDepositErrors({}); }}>Cancel</Button>
-              <Button onClick={handleDeposit} loading={submitting}>
-                Deposit & Credit Instantly
-              </Button>
+              <div className="flex justify-end gap-3 pt-2">
+                <Button variant="outline" onClick={() => { setShowDeposit(false); setDepositErrors({}); }}>Cancel</Button>
+                <Button onClick={handleDeposit} loading={submitting}>
+                  Deposit & Credit Instantly
+                </Button>
+              </div>
             </div>
-          </div>
+          )}
         </Modal>
 
       <Modal isOpen={showCoupon} onClose={() => { setShowCoupon(false); setCouponResult(null); }} title="Apply Coupon / PIN" size="sm">
