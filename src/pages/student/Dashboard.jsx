@@ -233,7 +233,7 @@ export default function Dashboard() {
         </motion.div>
       )}
 
-      {!loading && approvalStatus?.isApproved && (<>
+      {!loading && user?.isApproved && (<>
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
           <Card className="p-5 bg-emerald-50 border-emerald-200 border">
             <div className="flex items-start gap-3">
