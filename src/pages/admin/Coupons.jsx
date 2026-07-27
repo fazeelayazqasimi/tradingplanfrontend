@@ -12,6 +12,7 @@ import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
 import couponService from '../../services/couponService';
 import { formatCurrency, formatDate } from '../../utils/helpers';
+import Pagination from '../../components/ui/Pagination';
 import usePagination from '../../hooks/usePagination';
 
 const typeColors = { percentage: 'primary', fixed: 'success', pin: 'warning' };

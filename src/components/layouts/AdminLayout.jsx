@@ -1,6 +1,6 @@
 import { Link, useLocation, Outlet } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
-import { FiMenu, FiX, FiLayout, FiUsers, FiCreditCard, FiBookOpen, FiTrendingUp, FiBell, FiLink2, FiAward, FiDollarSign, FiSettings, FiLogOut, FiMessageSquare, FiHelpCircle, FiFileText, FiEdit, FiBarChart2, FiHome, FiLayers, FiDownload, FiTag, FiServer, FiImage } from 'react-icons/fi';
+import { FiMenu, FiX, FiLayout, FiUsers, FiCreditCard, FiBookOpen, FiTrendingUp, FiBell, FiLink2, FiAward, FiDollarSign, FiSettings, FiLogOut, FiMessageSquare, FiHelpCircle, FiFileText, FiEdit, FiBarChart2, FiHome, FiLayers, FiDownload, FiTag, FiServer, FiImage, FiVideo } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
 import { getInitials } from '../../utils/helpers';
@@ -15,6 +15,7 @@ const sidebarLinks = [
   { path: '/admin/students', label: 'Students', icon: FiUsers },
   { path: '/admin/subscriptions', label: 'Subscriptions', icon: FiCreditCard },
   { path: '/admin/courses', label: 'Courses', icon: FiBookOpen },
+  { path: '/admin/classes', label: 'Classes', icon: FiVideo },
   { path: '/admin/assignments', label: 'Assignments', icon: FiEdit },
   { path: '/admin/quizzes', label: 'Quizzes', icon: FiHelpCircle },
   { path: '/admin/signals', label: 'Signals', icon: FiTrendingUp },

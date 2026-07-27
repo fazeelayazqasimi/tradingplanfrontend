@@ -1,6 +1,6 @@
 import { Link, useLocation, Outlet } from 'react-router-dom';
 import { useState } from 'react';
-import { FiMenu, FiLayout, FiBookOpen, FiTrendingUp, FiCopy, FiPieChart, FiDollarSign, FiLink2, FiAward, FiFileText, FiImage, FiBell, FiMessageSquare, FiSettings, FiLogOut, FiX, FiCreditCard, FiClock, FiUsers, FiPercent, FiHome, FiBarChart2, FiUnlock, FiTrendingDown } from 'react-icons/fi';
+import { FiMenu, FiLayout, FiBookOpen, FiTrendingUp, FiCopy, FiPieChart, FiDollarSign, FiLink2, FiAward, FiFileText, FiImage, FiBell, FiMessageSquare, FiSettings, FiLogOut, FiX, FiCreditCard, FiClock, FiUsers, FiPercent, FiHome, FiBarChart2, FiUnlock, FiTrendingDown, FiVideo } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
 import { getInitials } from '../../utils/helpers';
@@ -9,6 +9,7 @@ import ThemeToggle from '../ui/ThemeToggle';
 const sidebarLinks = [
   { path: '/student/dashboard', label: 'Dashboard', icon: FiLayout },
   { path: '/student/courses', label: 'Courses', icon: FiBookOpen },
+  { path: '/student/classes', label: 'Classes', icon: FiVideo },
   { path: '/student/signals', label: 'Signals', icon: FiTrendingUp },
   { path: '/student/copy-trading', label: 'Copy Trading', icon: FiCopy },
   { path: '/student/portfolio', label: 'Portfolio', icon: FiPieChart },

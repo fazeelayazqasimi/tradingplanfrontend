@@ -52,6 +52,7 @@ import AdminReports from './pages/admin/Reports';
 import AdminBrokers from './pages/admin/Brokers';
 import AdminCRM from './pages/admin/CRM';
 import AdminMedia from './pages/admin/Media';
+import AdminClasses from './pages/admin/Classes';
 
 import StudentDashboard from './pages/student/Dashboard';
 import StudentCourses from './pages/student/Courses';
@@ -75,6 +76,7 @@ import StudentTeamMembers from './pages/student/TeamMembers';
 import StudentProfitShare from './pages/student/ProfitShare';
 import StudentCharts from './pages/student/Charts';
 import StudentGallery from './pages/student/Gallery';
+import StudentClasses from './pages/student/Classes';
 
 function ProtectedRoute({ children, role }) {
   const { user, loading } = useAuth();
@@ -133,6 +135,7 @@ export const router = createBrowserRouter([
       { path: 'students', element: <AdminStudents /> },
       { path: 'subscriptions', element: <AdminSubscriptions /> },
       { path: 'courses', element: <AdminCourses /> },
+      { path: 'classes', element: <AdminClasses /> },
       { path: 'signals', element: <AdminSignals /> },
       { path: 'announcements', element: <AdminAnnouncements /> },
       { path: 'referrals', element: <AdminReferrals /> },
@@ -163,6 +166,7 @@ export const router = createBrowserRouter([
       { path: 'dashboard', element: <StudentDashboard /> },
       { path: 'courses', element: <StudentCourses /> },
       { path: 'courses/:slug', element: <StudentCourseDetail /> },
+      { path: 'classes', element: <StudentClasses /> },
       { path: 'signals', element: <StudentSignals /> },
       { path: 'copy-trading', element: <StudentCopyTrading /> },
       { path: 'portfolio', element: <StudentPortfolio /> },

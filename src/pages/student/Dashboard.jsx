@@ -15,6 +15,9 @@ import {
   FiCopy,
   FiLink,
   FiShield,
+  FiUsers,
+  FiUserPlus,
+  FiUserCheck,
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Card from '../../components/ui/Card';
@@ -59,6 +62,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [referralCode, setReferralCode] = useState('');
   const [copied, setCopied] = useState(false);
+  const [referralStats, setReferralStats] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -104,6 +108,13 @@ export default function Dashboard() {
           const cd = refRes?.data?.data || refRes?.data || refRes;
           const code = cd?.code || cd?.referralCode || cd || '';
           setReferralCode(typeof code === 'string' ? code : code?.toString() || '');
+        } catch { /* silent */ }
+
+        // Fetch referral stats
+        try {
+          const statsRes = await referralService.getStats();
+          const statsData = statsRes?.data?.data || statsRes?.data || statsRes;
+          setReferralStats(statsData);
         } catch { /* silent */ }
       } catch {
         if (!cancelled) toast.error('Failed to load dashboard data');
@@ -433,8 +444,41 @@ export default function Dashboard() {
             </div>
           </Card>
         </motion.div>
+        {referralStats && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.65 }}>
+            <Card className="p-[22px]">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-sm font-semibold text-ink flex items-center gap-2">
+                  <FiUsers size={16} className="text-primary-500" />
+                  My Team
+                </h2>
+                <Link to="/student/team" className="text-xs text-primary-500 hover:text-primary-600 font-medium flex items-center gap-1">
+                  View All <FiArrowRight size={12} />
+                </Link>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="p-3 rounded-xl bg-blue-50 border border-blue-100">
+                  <p className="text-xs font-medium text-blue-600">Total Downlines</p>
+                  <p className="mt-1 text-xl font-bold text-blue-700">{(referralStats.directReferrals || 0) + (referralStats.indirectReferrals || 0)}</p>
+                </div>
+                <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-100">
+                  <p className="text-xs font-medium text-emerald-600">Direct</p>
+                  <p className="mt-1 text-xl font-bold text-emerald-700">{referralStats.directReferrals || 0}</p>
+                </div>
+                <div className="p-3 rounded-xl bg-violet-50 border border-violet-100">
+                  <p className="text-xs font-medium text-violet-600">Indirect</p>
+                  <p className="mt-1 text-xl font-bold text-violet-700">{referralStats.indirectReferrals || 0}</p>
+                </div>
+                <div className="p-3 rounded-xl bg-amber-50 border border-amber-100">
+                  <p className="text-xs font-medium text-amber-600">Active</p>
+                  <p className="mt-1 text-xl font-bold text-amber-700">{referralStats.activeReferrals || 0}</p>
+                </div>
+              </div>
+            </Card>
+          </motion.div>
+        )}
       </>)}
-
+      
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
           <Card className="p-[22px] h-full">

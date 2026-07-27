@@ -17,6 +17,8 @@ import {
   FiXCircle,
   FiRefreshCw,
   FiPercent,
+  FiUserCheck,
+  FiUserX,
 } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
 import Card from '../../components/ui/Card';
@@ -114,10 +116,17 @@ export default function Dashboard() {
 
   const sections = [
     {
+      title: 'Student Overview',
+      cards: [
+        { key: 'totalStudents', label: 'Total Registered', icon: FiUsers, value: s.totalStudents ?? 0, color: 'bg-primary-50 text-primary-500' },
+        { key: 'approvedStudents', label: 'Activated', icon: FiUserCheck, value: s.approvedStudents ?? 0, color: 'bg-emerald-50 text-emerald-600' },
+        { key: 'unapprovedStudents', label: 'Not Activated', icon: FiUserX, value: s.unapprovedStudents ?? 0, color: 'bg-amber-50 text-amber-600' },
+        { key: 'activeSubscriptions', label: 'Active Subscriptions', icon: FiCreditCard, value: s.activeSubscriptions ?? 0, color: 'bg-emerald-50 text-emerald-600' },
+      ],
+    },
+    {
       title: 'Institute Overview',
       cards: [
-        { key: 'totalStudents', label: 'Total Students', icon: FiUsers, value: s.totalStudents ?? 0, color: 'bg-primary-50 text-primary-500' },
-        { key: 'activeSubscriptions', label: 'Active Subscriptions', icon: FiCreditCard, value: s.activeSubscriptions ?? 0, color: 'bg-emerald-50 text-emerald-600' },
         { key: 'totalCourses', label: 'Total Courses', icon: FiBookOpen, value: s.totalCourses ?? 0, color: 'bg-violet-50 text-violet-600' },
         { key: 'totalSignals', label: 'Total Signals', icon: FiTrendingUp, value: s.totalSignals ?? 0, color: 'bg-cyan-50 text-cyan-600' },
       ],
