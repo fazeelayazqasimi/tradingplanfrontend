@@ -66,6 +66,7 @@ const SETTING_FIELDS = {
     { key: 'plan_days_monthly', label: 'Plan Days — Monthly', type: 'number', placeholder: '30' },
     { key: 'plan_days_yearly', label: 'Plan Days — Yearly', type: 'number', placeholder: '365' },
     { key: 'plan_days_lifetime', label: 'Plan Days — Lifetime', type: 'number', placeholder: '36500' },
+    { key: 'upline_activation_discount', label: 'Upline Activation Discount (%)', type: 'number', icon: FiDollarSign, placeholder: '20', description: 'Discount % when upline activates a downline package using their wallet' },
   ],
   referral: [
     { key: 'referral_signup_bonus', label: 'Referral Signup Bonus ($)', icon: FiDollarSign, type: 'number', placeholder: '10', description: 'Bonus given to referrer when their referral signs up' },

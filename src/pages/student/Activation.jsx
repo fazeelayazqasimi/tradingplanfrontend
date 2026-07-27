@@ -9,6 +9,7 @@ import Modal from '../../components/ui/Modal';
 import { useAuth } from '../../context/AuthContext';
 import studentService from '../../services/studentService';
 import walletService from '../../services/walletService';
+import api from '../../services/api';
 
 const container = {
   hidden: { opacity: 0 },
@@ -38,7 +39,11 @@ export default function Activation() {
   const [downlineError, setDownlineError] = useState('');
   const [activatingDownline, setActivatingDownline] = useState(false);
 
+  const [activationInfo, setActivationInfo] = useState({ membershipPrice: 100, uplineActivationDiscount: 20 });
+
   const isActivated = user?.isApproved && user?.subscriptionStatus === 'active';
+
+  const discountedPrice = Math.round(activationInfo.membershipPrice * (100 - activationInfo.uplineActivationDiscount) / 100);
 
   useEffect(() => {
     const fetchWallets = async () => {
@@ -51,6 +56,14 @@ export default function Activation() {
       } catch {}
     };
     fetchWallets();
+    const fetchActivationInfo = async () => {
+      try {
+        const res = await api.get('/subscriptions/activation-info');
+        const data = res?.data?.data || res?.data || res;
+        if (data) setActivationInfo(data);
+      } catch {}
+    };
+    fetchActivationInfo();
   }, []);
 
   const handleActivateWithPin = async () => {
@@ -229,6 +242,23 @@ export default function Activation() {
             <p className="text-xs text-dark-500">
               Enter the email of your direct downline member to activate their package using your wallet balance.
             </p>
+            <div className="p-3 rounded-xl bg-primary-50 border border-primary-200 space-y-1">
+              <div className="flex justify-between text-sm">
+                <span className="text-dark-500">Package Price</span>
+                <span className="font-semibold text-ink">${activationInfo.membershipPrice}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-dark-500">Discount ({activationInfo.uplineActivationDiscount}%)</span>
+                <span className="font-semibold text-green-600">-${activationInfo.membershipPrice - discountedPrice}</span>
+              </div>
+              <div className="flex justify-between text-sm pt-1 border-t border-primary-200">
+                <span className="font-semibold text-ink">You Pay</span>
+                <span className="font-bold text-primary-700">${discountedPrice}</span>
+              </div>
+            </div>
+            <p className="text-xs text-dark-400">
+              Balance: ${walletBalances.funding.toFixed(2)} (funding) / ${walletBalances.main.toFixed(2)} (main)
+            </p>
             <Input
               value={downlineEmail}
               onChange={(e) => { setDownlineEmail(e.target.value); setDownlineError(''); }}
@@ -241,8 +271,9 @@ export default function Activation() {
               className="w-full"
               onClick={handleActivateDownline}
               loading={activatingDownline}
+              disabled={walletBalances.funding + walletBalances.main < discountedPrice}
             >
-              <FiArrowRight className="mr-1" /> Activate Downline
+              <FiArrowRight className="mr-1" /> Activate Downline — ${discountedPrice}
             </Button>
           </Card>
         </motion.div>
