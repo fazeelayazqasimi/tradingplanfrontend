@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
+import { FiEye, FiEyeOff } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
 
@@ -11,6 +12,7 @@ export default function Login() {
   const { getSetting } = useSettings();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const onSubmit = async (data) => {
     setLoading(true);
@@ -47,7 +49,12 @@ export default function Login() {
           </div>
           <div className="field">
             <label>Password</label>
-            <input type="password" placeholder="Enter your password" className={errors.password ? 'input-error' : ''} {...register('password', { required: 'Password is required' })} />
+            <div className="relative">
+              <input type={showPassword ? 'text' : 'password'} placeholder="Enter your password" className={`w-full pr-10 ${errors.password ? 'input-error' : ''}`} {...register('password', { required: 'Password is required' })} />
+              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-dark-400 hover:text-dark-600">
+                {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+              </button>
+            </div>
             {errors.password && <p className="mt-1 text-xs text-red-500">{errors.password.message}</p>}
           </div>
           <div className="flex items-center justify-between text-sm">

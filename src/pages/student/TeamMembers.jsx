@@ -7,6 +7,8 @@ import {
   FiRefreshCw,
   FiChevronDown,
   FiChevronRight,
+  FiUserCheck,
+  FiAward,
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Card from '../../components/ui/Card';
@@ -15,7 +17,7 @@ import Button from '../../components/ui/Button';
 import Skeleton from '../../components/ui/Skeleton';
 import EmptyState from '../../components/ui/EmptyState';
 import referralService from '../../services/referralService';
-import { formatDate } from '../../utils/helpers';
+import { formatDate, formatCurrency } from '../../utils/helpers';
 
 const container = {
   hidden: { opacity: 0 },
@@ -233,6 +235,16 @@ export default function TeamMembers() {
   const totalMembers = stats?.totalReferrals ?? totalDirect + totalIndirect;
   const totalCommission = stats?.totalCommission ?? stats?.total_earnings ?? stats?.totalEarnings ?? 0;
 
+  const allMembers = [...directReferrals, ...indirectReferrals];
+  const activeMembers = allMembers.filter(m => {
+    const u = m.referredUserId || m.user || {};
+    return u.isApproved || u.subscriptionStatus === 'active';
+  }).length;
+  const freeMembers = allMembers.filter(m => {
+    const u = m.referredUserId || m.user || {};
+    return !u.isApproved || u.subscriptionStatus !== 'active';
+  }).length;
+
   const summaryCards = [
     {
       key: 'total',
@@ -242,9 +254,23 @@ export default function TeamMembers() {
       color: 'bg-primary-50 text-primary-500',
     },
     {
+      key: 'active',
+      label: 'Active Members',
+      icon: FiUserCheck,
+      value: activeMembers,
+      color: 'bg-emerald-50 text-emerald-500',
+    },
+    {
+      key: 'free',
+      label: 'Free Members',
+      icon: FiUserPlus,
+      value: freeMembers,
+      color: 'bg-amber-50 text-amber-500',
+    },
+    {
       key: 'direct',
       label: 'Direct Members',
-      icon: FiUserPlus,
+      icon: FiLayers,
       value: totalDirect,
       color: 'bg-blue-50 text-blue-500',
     },
@@ -283,14 +309,14 @@ export default function TeamMembers() {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Card key={i} className="p-5">
-              <div className="flex items-center gap-4">
-                <Skeleton className="h-12 w-12 rounded-xl" />
-                <div className="flex-1 space-y-2">
-                  <Skeleton className="h-3 w-24" />
-                  <Skeleton className="h-7 w-16" />
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Card key={i} className="p-4">
+              <div className="flex items-center gap-3">
+                <Skeleton className="h-10 w-10 rounded-xl" />
+                <div className="flex-1 space-y-1.5">
+                  <Skeleton className="h-2.5 w-20" />
+                  <Skeleton className="h-6 w-14" />
                 </div>
               </div>
             </Card>
@@ -301,25 +327,25 @@ export default function TeamMembers() {
           variants={container}
           initial="hidden"
           animate="show"
-          className="grid grid-cols-2 lg:grid-cols-4 gap-4"
+          className="grid grid-cols-2 lg:grid-cols-3 gap-4"
         >
           {summaryCards.map((card) => {
             const Icon = card.icon;
             return (
               <motion.div key={card.key} variants={item}>
-                <Card className="p-5">
-                  <div className="flex items-center gap-4">
+                <Card className="p-4">
+                  <div className="flex items-center gap-3">
                     <div
-                      className={`flex h-12 w-12 items-center justify-center rounded-[11px] ${card.color}`}
+                      className={`flex h-10 w-10 items-center justify-center rounded-[11px] ${card.color}`}
                     >
-                      <Icon className="h-6 w-6" />
+                      <Icon className="h-5 w-5" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-dark-500">
-                        {card.label}
-                      </p>
-                      <p className="mt-1 text-2xl font-bold text-ink">
-                        {card.key === 'commission' ? card.value.toLocaleString('en-US', { style: 'currency', currency: 'USD' }) : card.value}
+                      <p className="truncate text-xs font-medium text-dark-500">{card.label}</p>
+                      <p className="mt-0.5 text-lg font-bold text-ink">
+                        {card.key === 'commission'
+                          ? formatCurrency(card.value)
+                          : card.value}
                       </p>
                     </div>
                   </div>

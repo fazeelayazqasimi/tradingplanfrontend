@@ -253,10 +253,11 @@ export default function Signals() {
       if (searchQuery.trim()) params.search = searchQuery.trim();
 
       const response = await signalService.getSignals(params);
-      const data = response?.data || response?.signals || response || [];
-      const total = response?.totalPages || response?.meta?.totalPages || 1;
+      const body = response?.data || response || {};
+      const signalsList = body?.data || body?.signals || [];
+      const total = body?.meta?.totalPages || body?.totalPages || 1;
 
-      setSignals(Array.isArray(data) ? data : []);
+      setSignals(Array.isArray(signalsList) ? signalsList : []);
       setTotalPages(total);
     } catch (err) {
       console.error("Failed to fetch signals:", err);

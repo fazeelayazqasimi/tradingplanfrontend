@@ -18,16 +18,21 @@ import {
   FiTrash2,
   FiUsers,
   FiServer,
+  FiLock,
+  FiEye,
+  FiEyeOff,
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Card from '../../components/ui/Card';
 import adminService from '../../services/adminService';
+import authService from '../../services/authService';
 import api from '../../services/api';
 import { formatDateTime } from '../../utils/helpers';
 
 const SECTIONS = [
+  { id: 'profile', label: 'My Profile', icon: FiUser },
   { id: 'general', label: 'General', icon: FiGlobe },
   { id: 'social', label: 'Social Links', icon: FiInstagram },
   { id: 'subscription', label: 'Subscription', icon: FiDollarSign },
@@ -111,6 +116,11 @@ export default function Settings() {
   const [saving, setSaving] = useState(false);
   const [dirtyFields, setDirtyFields] = useState(new Set());
   const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPasswords, setShowPasswords] = useState({ current: false, new: false, confirm: false });
+  const [changingPassword, setChangingPassword] = useState(false);
 
   const fetchSettings = useCallback(async () => {
     try {
@@ -207,6 +217,33 @@ export default function Settings() {
       return next;
     });
     toast('Changes reverted');
+  };
+
+  const handleChangePassword = async () => {
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      toast.error('Fill all password fields');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error('Passwords do not match');
+      return;
+    }
+    if (newPassword.length < 8) {
+      toast.error('Password must be at least 8 characters');
+      return;
+    }
+    setChangingPassword(true);
+    try {
+      await authService.changePassword({ currentPassword, newPassword });
+      toast.success('Password changed successfully');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Failed to change password');
+    } finally {
+      setChangingPassword(false);
+    }
   };
 
   const handleLogoUpload = async (e) => {
@@ -455,6 +492,43 @@ export default function Settings() {
             <div className="space-y-5">
               {(SETTING_FIELDS[activeSection] || []).map(renderField)}
             </div>
+
+            {activeSection === 'profile' && (
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold text-ink flex items-center gap-2">
+                  <FiLock className="text-primary-500" /> Change Password
+                </h3>
+                <div className="grid gap-3 max-w-md">
+                  <div className="relative">
+                    <input type={showPasswords.current ? 'text' : 'password'} placeholder="Current password" className="input w-full pr-10"
+                      value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
+                    <button type="button" onClick={() => setShowPasswords(p => ({ ...p, current: !p.current }))}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-dark-400">
+                      {showPasswords.current ? <FiEyeOff size={16} /> : <FiEye size={16} />}
+                    </button>
+                  </div>
+                  <div className="relative">
+                    <input type={showPasswords.new ? 'text' : 'password'} placeholder="New password (min 8 chars)" className="input w-full pr-10"
+                      value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+                    <button type="button" onClick={() => setShowPasswords(p => ({ ...p, new: !p.new }))}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-dark-400">
+                      {showPasswords.new ? <FiEyeOff size={16} /> : <FiEye size={16} />}
+                    </button>
+                  </div>
+                  <div className="relative">
+                    <input type={showPasswords.confirm ? 'text' : 'password'} placeholder="Confirm new password" className="input w-full pr-10"
+                      value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+                    <button type="button" onClick={() => setShowPasswords(p => ({ ...p, confirm: !p.confirm }))}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-dark-400">
+                      {showPasswords.confirm ? <FiEyeOff size={16} /> : <FiEye size={16} />}
+                    </button>
+                  </div>
+                  <Button variant="primary" size="sm" onClick={handleChangePassword} loading={changingPassword} className="w-fit">
+                    <FiLock size={14} /> Update Password
+                  </Button>
+                </div>
+              </div>
+            )}
 
             {activeSection === 'trading' && (
               <div className="mt-6 p-4 rounded-xl bg-primary-50 border border-primary-200">

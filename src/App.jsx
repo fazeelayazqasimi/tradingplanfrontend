@@ -49,6 +49,8 @@ import AdminPaymentAccounts from './pages/admin/PaymentAccounts';
 import AdminCoupons from './pages/admin/Coupons';
 import AdminReports from './pages/admin/Reports';
 import AdminBrokers from './pages/admin/Brokers';
+import AdminCRM from './pages/admin/CRM';
+import AdminMedia from './pages/admin/Media';
 
 import StudentDashboard from './pages/student/Dashboard';
 import StudentCourses from './pages/student/Courses';
@@ -64,6 +66,8 @@ import StudentAnnouncements from './pages/student/Announcements';
 import StudentSupport from './pages/student/Support';
 import StudentSettings from './pages/student/Settings';
 import StudentSubscription from './pages/student/Subscription';
+import StudentActivation from './pages/student/Activation';
+import StudentEarnings from './pages/student/Earnings';
 import StudentTransactions from './pages/student/Transactions';
 import StudentWithdrawals from './pages/student/Withdrawals';
 import StudentTeamMembers from './pages/student/TeamMembers';
@@ -75,6 +79,11 @@ function ProtectedRoute({ children, role }) {
   if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin h-8 w-8 border-4 border-primary-500 border-t-transparent rounded-full" /></div>;
   if (!user) return <Navigate to="/login" replace />;
   if (role && user.role !== role) return <Navigate to="/" replace />;
+  if (role === 'student' && user.subscriptionExpiry && new Date(user.subscriptionExpiry) < new Date()) {
+    if (window.location.pathname !== '/student/activation') {
+      return <Navigate to="/student/activation" replace />;
+    }
+  }
   return children;
 }
 
@@ -124,6 +133,8 @@ export const router = createBrowserRouter([
       { path: 'signals', element: <AdminSignals /> },
       { path: 'announcements', element: <AdminAnnouncements /> },
       { path: 'referrals', element: <AdminReferrals /> },
+      { path: 'crm', element: <AdminCRM /> },
+      { path: 'media', element: <AdminMedia /> },
       { path: 'ranks', element: <AdminRanks /> },
       { path: 'withdrawals', element: <AdminWithdrawals /> },
       { path: 'faqs', element: <AdminFAQs /> },
@@ -160,6 +171,8 @@ export const router = createBrowserRouter([
       { path: 'support', element: <StudentSupport /> },
       { path: 'settings', element: <StudentSettings /> },
       { path: 'subscription', element: <StudentSubscription /> },
+      { path: 'activation', element: <StudentActivation /> },
+      { path: 'earnings', element: <StudentEarnings /> },
       { path: 'transactions', element: <StudentTransactions /> },
       { path: 'withdrawals', element: <StudentWithdrawals /> },
       { path: 'team', element: <StudentTeamMembers /> },

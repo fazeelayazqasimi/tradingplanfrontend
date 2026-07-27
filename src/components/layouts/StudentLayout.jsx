@@ -1,6 +1,6 @@
 import { Link, useLocation, Outlet } from 'react-router-dom';
 import { useState } from 'react';
-import { FiMenu, FiLayout, FiBookOpen, FiTrendingUp, FiCopy, FiPieChart, FiDollarSign, FiLink2, FiAward, FiFileText, FiBell, FiMessageSquare, FiSettings, FiLogOut, FiX, FiCreditCard, FiClock, FiUsers, FiPercent, FiHome, FiBarChart2 } from 'react-icons/fi';
+import { FiMenu, FiLayout, FiBookOpen, FiTrendingUp, FiCopy, FiPieChart, FiDollarSign, FiLink2, FiAward, FiFileText, FiBell, FiMessageSquare, FiSettings, FiLogOut, FiX, FiCreditCard, FiClock, FiUsers, FiPercent, FiHome, FiBarChart2, FiUnlock, FiTrendingDown } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
 import { getInitials } from '../../utils/helpers';
@@ -16,8 +16,10 @@ const sidebarLinks = [
   { path: '/student/transactions', label: 'Transactions', icon: FiClock },
   { path: '/student/withdrawals', label: 'Withdrawals', icon: FiDollarSign },
   { path: '/student/subscription', label: 'Subscription', icon: FiCreditCard },
+  { path: '/student/activation', label: 'Activation', icon: FiUnlock },
   { path: '/student/referrals', label: 'Referrals', icon: FiLink2 },
   { path: '/student/team', label: 'Team Members', icon: FiUsers },
+  { path: '/student/earnings', label: 'Earnings', icon: FiTrendingDown },
   { path: '/student/profit-share', label: 'Profit Share', icon: FiPercent },
   { path: '/student/rank', label: 'My Rank', icon: FiAward },
   { path: '/student/certificates', label: 'Certificates', icon: FiFileText },

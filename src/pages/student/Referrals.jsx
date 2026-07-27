@@ -15,6 +15,8 @@ import {
   FiShare2,
   FiAward,
   FiTrendingUp,
+  FiGift,
+  FiUserCheck,
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Card from '../../components/ui/Card';
@@ -180,14 +182,14 @@ export default function Referrals() {
       key: 'direct',
       label: 'Direct Referrals',
       icon: FiUserPlus,
-      value: stats?.directCount ?? stats?.direct_count ?? stats?.directReferrals ?? 0,
+      value: stats?.directReferrals ?? stats?.directCount ?? stats?.direct_count ?? 0,
       color: 'bg-blue-50 text-blue-500',
     },
     {
       key: 'indirect',
       label: 'Indirect Referrals',
       icon: FiLayers,
-      value: stats?.indirectCount ?? stats?.indirect_count ?? stats?.indirectReferrals ?? 0,
+      value: stats?.indirectReferrals ?? stats?.indirectCount ?? stats?.indirect_count ?? 0,
       color: 'bg-purple-50 text-purple-500',
     },
     {
@@ -203,6 +205,20 @@ export default function Referrals() {
       icon: FiClock,
       value: stats?.pendingCommission ?? stats?.pending_commission ?? 0,
       color: 'bg-amber-50 text-amber-500',
+    },
+    {
+      key: 'freeReg',
+      label: 'Free Registration Earnings',
+      icon: FiGift,
+      value: stats?.freeRegistrationEarnings ?? 0,
+      color: 'bg-rose-50 text-rose-500',
+    },
+    {
+      key: 'pendingRefs',
+      label: 'Pending Referrals',
+      icon: FiUserCheck,
+      value: stats?.pendingReferrals ?? 0,
+      color: 'bg-sky-50 text-sky-500',
     },
   ];
 
@@ -366,34 +382,34 @@ export default function Referrals() {
       )}
 
       {loading ? (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Card key={i} className="p-5">
-              <div className="flex items-center gap-4">
-                <Skeleton className="h-12 w-12 rounded-xl" />
-                <div className="flex-1 space-y-2">
-                  <Skeleton className="h-3 w-24" />
-                  <Skeleton className="h-7 w-16" />
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Card key={i} className="p-4">
+              <div className="flex items-center gap-3">
+                <Skeleton className="h-10 w-10 rounded-xl" />
+                <div className="flex-1 space-y-1.5">
+                  <Skeleton className="h-2.5 w-20" />
+                  <Skeleton className="h-6 w-14" />
                 </div>
               </div>
             </Card>
           ))}
         </div>
       ) : (
-        <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-2 lg:grid-cols-3 gap-4">
           {statCards.map((card) => {
             const Icon = card.icon;
             return (
               <motion.div key={card.key} variants={item}>
-                <Card className="p-5">
-                  <div className="flex items-center gap-4">
-                    <div className={`flex h-12 w-12 items-center justify-center rounded-[11px] ${card.color}`}>
-                      <Icon className="h-6 w-6" />
+                <Card className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className={`flex h-10 w-10 items-center justify-center rounded-[11px] ${card.color}`}>
+                      <Icon className="h-5 w-5" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-dark-500">{card.label}</p>
-                      <p className="mt-1 text-2xl font-bold text-ink">
-                        {card.key === 'earned' || card.key === 'pending'
+                      <p className="truncate text-xs font-medium text-dark-500">{card.label}</p>
+                      <p className="mt-0.5 text-lg font-bold text-ink">
+                        {['earned', 'pending', 'freeReg'].includes(card.key)
                           ? formatCurrency(card.value)
                           : card.value}
                       </p>
@@ -403,6 +419,22 @@ export default function Referrals() {
               </motion.div>
             );
           })}
+        </motion.div>
+      )}
+
+      {stats?.freeRegistrationEarnings > 0 && (
+        <motion.div variants={item} className="mt-4">
+          <Card className="p-4 border border-rose-100 bg-rose-50/30">
+            <h3 className="text-sm font-semibold text-ink mb-2 flex items-center gap-2">
+              <FiGift className="text-rose-500" /> Free Registration Earnings
+            </h3>
+            <p className="text-xs text-dark-500 mb-2">
+              Total earned from free registrations: <span className="font-bold text-rose-600">{formatCurrency(stats.freeRegistrationEarnings)}</span>
+            </p>
+            <p className="text-xs text-dark-400">
+              Each free registration gives you $1 + $1 per prior pending registration. Amount is credited to your funding wallet instantly.
+            </p>
+          </Card>
         </motion.div>
       )}
 

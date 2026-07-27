@@ -2,21 +2,22 @@ import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
+import { FiEye, FiEyeOff } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
 
 const COUNTRY_CODES = [
-  { code: '+92', country: 'PK', label: 'Pakistan (+92)' },
-  { code: '+1', country: 'US', label: 'United States (+1)' },
-  { code: '+44', country: 'UK', label: 'United Kingdom (+44)' },
-  { code: '+1', country: 'CA', label: 'Canada (+1)' },
-  { code: '+61', country: 'AU', label: 'Australia (+61)' },
-  { code: '+49', country: 'DE', label: 'Germany (+49)' },
-  { code: '+33', country: 'FR', label: 'France (+33)' },
-  { code: '+81', country: 'JP', label: 'Japan (+81)' },
-  { code: '+65', country: 'SG', label: 'Singapore (+65)' },
-  { code: '+971', country: 'AE', label: 'UAE (+971)' },
-  { code: '+91', country: 'IN', label: 'India (+91)' },
+  { code: '+92', country: 'PK', label: '🇵🇰 Pakistan (+92)' },
+  { code: '+1', country: 'US', label: '🇺🇸 United States (+1)' },
+  { code: '+44', country: 'GB', label: '🇬🇧 United Kingdom (+44)' },
+  { code: '+1', country: 'CA', label: '🇨🇦 Canada (+1)' },
+  { code: '+61', country: 'AU', label: '🇦🇺 Australia (+61)' },
+  { code: '+49', country: 'DE', label: '🇩🇪 Germany (+49)' },
+  { code: '+33', country: 'FR', label: '🇫🇷 France (+33)' },
+  { code: '+81', country: 'JP', label: '🇯🇵 Japan (+81)' },
+  { code: '+65', country: 'SG', label: '🇸🇬 Singapore (+65)' },
+  { code: '+971', country: 'AE', label: '🇦🇪 UAE (+971)' },
+  { code: '+91', country: 'IN', label: '🇮🇳 India (+91)' },
 ];
 
 export default function Register() {
@@ -31,6 +32,8 @@ export default function Register() {
   const [otpCode, setOtpCode] = useState('');
   const [otpLoading, setOtpLoading] = useState(false);
   const [tempData, setTempData] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const password = watch('password');
 
   const sendOtp = async (data) => {
@@ -129,28 +132,38 @@ export default function Register() {
             <label>Country</label>
             <select {...register('country')} className="input">
               <option value="">Select Country</option>
-              <option value="PK">Pakistan</option>
-              <option value="US">United States</option>
-              <option value="UK">United Kingdom</option>
-              <option value="CA">Canada</option>
-              <option value="AU">Australia</option>
-              <option value="DE">Germany</option>
-              <option value="FR">France</option>
-              <option value="JP">Japan</option>
-              <option value="SG">Singapore</option>
-              <option value="AE">UAE</option>
-              <option value="IN">India</option>
+              <option value="PK">🇵🇰 Pakistan</option>
+              <option value="US">🇺🇸 United States</option>
+              <option value="GB">🇬🇧 United Kingdom</option>
+              <option value="CA">🇨🇦 Canada</option>
+              <option value="AU">🇦🇺 Australia</option>
+              <option value="DE">🇩🇪 Germany</option>
+              <option value="FR">🇫🇷 France</option>
+              <option value="JP">🇯🇵 Japan</option>
+              <option value="SG">🇸🇬 Singapore</option>
+              <option value="AE">🇦🇪 UAE</option>
+              <option value="IN">🇮🇳 India</option>
               <option value="Other">Other</option>
             </select>
           </div>
           <div className="field">
             <label>Password</label>
-            <input type="password" placeholder="Uppercase, lowercase, number, min 8" className={errors.password ? 'input-error' : ''} {...register('password', { required: 'Password is required', minLength: { value: 8, message: 'Min 8 characters' }, pattern: { value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/, message: 'Must include uppercase, lowercase, and a number' } })} />
+            <div className="relative">
+              <input type={showPassword ? 'text' : 'password'} placeholder="Uppercase, lowercase, number, min 8" className={`w-full pr-10 ${errors.password ? 'input-error' : ''}`} {...register('password', { required: 'Password is required', minLength: { value: 8, message: 'Min 8 characters' }, pattern: { value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/, message: 'Must include uppercase, lowercase, and a number' } })} />
+              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-dark-400 hover:text-dark-600">
+                {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+              </button>
+            </div>
             {errors.password && <p className="mt-1 text-xs text-red-500">{errors.password.message}</p>}
           </div>
           <div className="field">
             <label>Confirm Password</label>
-            <input type="password" placeholder="Repeat password" className={errors.confirmPassword ? 'input-error' : ''} {...register('confirmPassword', { required: 'Please confirm', validate: v => v === password || 'Passwords do not match' })} />
+            <div className="relative">
+              <input type={showConfirmPassword ? 'text' : 'password'} placeholder="Repeat password" className={`w-full pr-10 ${errors.confirmPassword ? 'input-error' : ''}`} {...register('confirmPassword', { required: 'Please confirm', validate: v => v === password || 'Passwords do not match' })} />
+              <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-dark-400 hover:text-dark-600">
+                {showConfirmPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+              </button>
+            </div>
             {errors.confirmPassword && <p className="mt-1 text-xs text-red-500">{errors.confirmPassword.message}</p>}
           </div>
           <div className="field">
