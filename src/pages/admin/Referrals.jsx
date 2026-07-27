@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FiUsers, FiDollarSign, FiClock, FiSearch, FiEye, FiX, FiTrash2 } from 'react-icons/fi';
+import { FiUsers, FiDollarSign, FiClock, FiSearch, FiEye, FiX, FiTrash2, FiCheckCircle, FiToggleLeft } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
@@ -29,6 +29,8 @@ const LEVEL_MAP = {
 
 const STATS_CARDS = [
   { key: 'totalReferrals', label: 'Total Referrals', icon: FiUsers, color: 'text-primary-500', bg: 'bg-primary-50' },
+  { key: 'activeReferrals', label: 'Active Referrals', icon: FiCheckCircle, color: 'text-green-500', bg: 'bg-green-50' },
+  { key: 'freeReferrals', label: 'Free (Pending)', icon: FiToggleLeft, color: 'text-amber-500', bg: 'bg-amber-50' },
   { key: 'totalCommissionsPaid', label: 'Commissions Paid', icon: FiDollarSign, color: 'text-green-500', bg: 'bg-green-50', isCurrency: true },
   { key: 'pendingCommissions', label: 'Pending Commissions', icon: FiClock, color: 'text-amber-500', bg: 'bg-amber-50', isCurrency: true },
 ];
@@ -126,6 +128,14 @@ export default function Referrals() {
       ),
     },
     {
+      key: 'activationStatus',
+      header: 'Activation',
+      render: (_, row) => {
+        const active = row.referredUser?.isApproved && row.referredUser?.subscriptionStatus === 'active';
+        return <Badge color={active ? 'success' : 'warning'}>{active ? 'Active' : 'Free'}</Badge>;
+      },
+    },
+    {
       key: 'referralCode',
       header: 'Referral Code',
       render: (_, row) => (
@@ -198,7 +208,7 @@ export default function Referrals() {
         <p className="text-sm text-dark-500 mt-1">Track referrals, commissions, and referral performance</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
         {STATS_CARDS.map(({ key, label, icon: Icon, color, bg, isCurrency }) => (
           <div key={key} className="bg-white border border-dark-100 rounded-[18px] p-[22px] shadow-card">
             <div className="flex items-center gap-4">
