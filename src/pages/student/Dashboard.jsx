@@ -72,7 +72,7 @@ export default function Dashboard() {
         const [enrolledRes, signalsRes, walletRes, rankRes] = await Promise.allSettled([
           courseService.getEnrolled(),
           signalService.getSignals({ perPage: 5, sort: '-createdAt' }),
-          studentService.getCopyStats().catch(() => null),
+          walletService.getWallet('main'),
           studentService.getMyRank(),
         ]);
 
@@ -89,13 +89,10 @@ export default function Dashboard() {
 
         if (walletRes.status === 'fulfilled' && walletRes.value) {
           const wd = walletRes.value.data || walletRes.value;
-          setWallet(wd.balance ?? wd.data?.balance ?? 0);
+          setWallet(wd.availableBalance ?? wd.balance ?? 0);
+          const walletsData = wd.wallets || (Array.isArray(wd) ? wd : []);
+          setAllWallets(Array.isArray(walletsData) ? walletsData : []);
         }
-        try {
-          const walletsRes = await walletService.getAllWallets();
-          const wData = walletsRes?.data?.data || walletsRes?.data || [];
-          setAllWallets(Array.isArray(wData) ? wData : []);
-        } catch { /* silent */ }
 
         if (rankRes.status === 'fulfilled' && rankRes.value) {
           const rd = rankRes.value.data || rankRes.value;
