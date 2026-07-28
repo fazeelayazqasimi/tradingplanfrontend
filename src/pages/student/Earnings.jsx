@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FiDollarSign, FiTrendingUp, FiAward, FiDownload, FiRefreshCw, FiGift } from 'react-icons/fi';
+import { FiDollarSign, FiTrendingUp, FiAward, FiDownload, FiRefreshCw, FiGift, FiRotateCcw } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import Card from '../../components/ui/Card';
@@ -109,6 +109,17 @@ export default function Earnings() {
                 </div>
                 <div className="min-w-0">
                   <p className="text-xs text-dark-500 truncate">Reward Credits Used</p>
+                  <p className="text-sm font-bold text-ink">{formatCurrency(stats?.rewardCreditsUsed || 0)}</p>
+                </div>
+              </div>
+            </Card>
+            <Card className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-cyan-50 flex items-center justify-center">
+                  <FiRotateCcw className="w-5 h-5 text-cyan-500" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs text-dark-500 truncate">Total Redeemed</p>
                   <p className="text-sm font-bold text-ink">{formatCurrency(stats?.totalRedeemed || 0)}</p>
                 </div>
               </div>

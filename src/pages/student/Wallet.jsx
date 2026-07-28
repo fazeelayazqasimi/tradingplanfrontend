@@ -306,7 +306,7 @@ export default function Wallet() {
       key: 'earned',
       label: 'Total Earned',
       icon: FiTrendingUp,
-      value: wallet?.totalEarned ?? wallet?.total_earned ?? 0,
+      value: stats?.totalEarned ?? wallet?.totalEarned ?? wallet?.total_earned ?? 0,
       color: 'bg-blue-50 text-blue-500',
     },
     {
