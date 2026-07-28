@@ -119,8 +119,7 @@ export default function Referrals() {
         const cd = codeRes.value?.data?.data || codeRes.value?.data || codeRes.value;
         const referralCode = cd?.code || cd?.referralCode || cd || '';
         setCode(typeof referralCode === 'string' ? referralCode : referralCode?.toString() || '');
-        const base = window.location.origin;
-        setReferralLink(`${base}/register?ref=${typeof referralCode === 'string' ? referralCode : referralCode?.code || ''}`);
+        setReferralLink(cd?.referralLink || `${window.location.origin}/register?ref=${typeof referralCode === 'string' ? referralCode : referralCode?.code || ''}`);
       }
 
       if (statsRes.status === 'fulfilled') {

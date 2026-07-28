@@ -198,7 +198,7 @@ export default function Dashboard() {
               </div>
               {isFreeUser && (
                 <Link to="/student/subscription">
-                  <Button className="bg-white text-primary-600 hover:bg-white/90 font-bold shadow-lg">
+                  <Button variant="white" className="font-bold shadow-lg">
                     <FiZap className="mr-2" /> Upgrade Now
                   </Button>
                 </Link>
@@ -218,7 +218,7 @@ export default function Dashboard() {
               <p className="text-white/80 text-sm mt-1">Ready to Learn, Trade & Grow Today</p>
             </div>
             <Link to={isFreeUser ? "/student/subscription" : "/student/classes"}>
-              <Button className="bg-white text-purple-700 hover:bg-white/90 font-bold shadow-lg shrink-0">
+              <Button variant="white" className="text-purple-700 font-bold shadow-lg shrink-0">
                 {isFreeUser ? "Get Started" : "Explore Classes"}
               </Button>
             </Link>
