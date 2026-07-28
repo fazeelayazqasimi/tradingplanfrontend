@@ -54,6 +54,9 @@ import AdminCRM from './pages/admin/CRM';
 import AdminMedia from './pages/admin/Media';
 import AdminClasses from './pages/admin/Classes';
 import AdminMarketOverview from './pages/admin/MarketOverview';
+import AdminWebinars from './pages/admin/Webinars';
+import AdminZoomSessions from './pages/admin/ZoomSessions';
+import AdminMarketUpdates from './pages/admin/MarketUpdates';
 
 import StudentDashboard from './pages/student/Dashboard';
 import StudentCourses from './pages/student/Courses';
@@ -78,6 +81,7 @@ import StudentProfitShare from './pages/student/ProfitShare';
 import StudentCharts from './pages/student/Charts';
 import StudentGallery from './pages/student/Gallery';
 import StudentClasses from './pages/student/Classes';
+import FreeLearning from './pages/student/FreeLearning';
 
 function ProtectedRoute({ children, role }) {
   const { user, loading } = useAuth();
@@ -158,6 +162,9 @@ export const router = createBrowserRouter([
       { path: 'brokers', element: <AdminBrokers /> },
       { path: 'reports', element: <AdminReports /> },
       { path: 'market-overview', element: <AdminMarketOverview /> },
+      { path: 'webinars', element: <AdminWebinars /> },
+      { path: 'zoom-sessions', element: <AdminZoomSessions /> },
+      { path: 'market-updates', element: <AdminMarketUpdates /> },
     ],
   },
   {
@@ -188,6 +195,8 @@ export const router = createBrowserRouter([
       { path: 'profit-share', element: <StudentProfitShare /> },
       { path: 'charts', element: <StudentCharts /> },
       { path: 'gallery', element: <StudentGallery /> },
+      { path: 'classes', element: <StudentClasses /> },
+      { path: 'free-learning', element: <FreeLearning /> },
     ],
   },
   { path: '*', element: <NotFound /> },

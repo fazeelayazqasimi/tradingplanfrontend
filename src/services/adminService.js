@@ -104,5 +104,26 @@ const adminService = {
 
   getMarketOverview: () => unwrap(api.get('/market-overview')),
   updateMarketOverview: (data) => unwrap(api.put('/market-overview', data)),
+  getWebinarStats: () => unwrap(api.get('/webinars/stats')),
+  getZoomSessionStats: () => unwrap(api.get('/zoom-sessions/stats')),
+  getMarketUpdateStats: () => unwrap(api.get('/market-updates/stats')),
+
+  getWebinars: (params) => unwrap(api.get('/webinars', { params })),
+  getWebinar: (id) => unwrap(api.get(`/webinars/${id}`)),
+  createWebinar: (data) => unwrap(api.post('/webinars', data)),
+  updateWebinar: (id, data) => unwrap(api.put(`/webinars/${id}`, data)),
+  deleteWebinar: (id) => unwrap(api.delete(`/webinars/${id}`)),
+
+  getZoomSessions: (params) => unwrap(api.get('/zoom-sessions', { params })),
+  getZoomSession: (id) => unwrap(api.get(`/zoom-sessions/${id}`)),
+  createZoomSession: (data) => unwrap(api.post('/zoom-sessions', data)),
+  updateZoomSession: (id, data) => unwrap(api.put(`/zoom-sessions/${id}`, data)),
+  deleteZoomSession: (id) => unwrap(api.delete(`/zoom-sessions/${id}`)),
+
+  getMarketUpdates: (params) => unwrap(api.get('/market-updates', { params })),
+  getMarketUpdate: (id) => unwrap(api.get(`/market-updates/${id}`)),
+  createMarketUpdate: (data) => unwrap(api.post('/market-updates', data)),
+  updateMarketUpdate: (id, data) => unwrap(api.put(`/market-updates/${id}`, data)),
+  deleteMarketUpdate: (id) => unwrap(api.delete(`/market-updates/${id}`)),
 };
 export default adminService;

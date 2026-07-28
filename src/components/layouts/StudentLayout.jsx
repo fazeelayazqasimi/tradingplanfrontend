@@ -1,39 +1,62 @@
-import { Link, useLocation, Outlet } from 'react-router-dom';
+﻿import { Link, useLocation, Outlet } from 'react-router-dom';
 import { useState } from 'react';
-import { FiMenu, FiLayout, FiBookOpen, FiTrendingUp, FiCopy, FiPieChart, FiDollarSign, FiLink2, FiAward, FiFileText, FiImage, FiBell, FiMessageSquare, FiSettings, FiLogOut, FiX, FiCreditCard, FiClock, FiUsers, FiPercent, FiHome, FiBarChart2, FiUnlock, FiTrendingDown, FiVideo } from 'react-icons/fi';
+import { FiMenu, FiLayout, FiBookOpen, FiTrendingUp, FiCopy, FiPieChart, FiDollarSign, FiLink2, FiAward, FiFileText, FiImage, FiBell, FiMessageSquare, FiSettings, FiLogOut, FiX, FiCreditCard, FiClock, FiUsers, FiPercent, FiHome, FiBarChart2, FiUnlock, FiTrendingDown, FiVideo, FiChevronDown, FiChevronRight, FiChevronUp, FiBook, FiTag } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
 import { getInitials } from '../../utils/helpers';
 import ThemeToggle from '../ui/ThemeToggle';
 
-const sidebarLinks = [
-  { path: '/student/dashboard', label: 'Dashboard', icon: FiLayout },
-  { path: '/student/courses', label: 'Courses', icon: FiBookOpen },
-  { path: '/student/classes', label: 'Classes', icon: FiVideo },
-  { path: '/student/signals', label: 'Signals', icon: FiTrendingUp },
-  { path: '/student/copy-trading', label: 'Copy Trading', icon: FiCopy },
-  { path: '/student/portfolio', label: 'Portfolio', icon: FiPieChart },
-  { path: '/student/wallet', label: 'Wallet', icon: FiDollarSign },
-  { path: '/student/transactions', label: 'Transactions', icon: FiClock },
-  { path: '/student/withdrawals', label: 'Withdrawals', icon: FiDollarSign },
-  { path: '/student/subscription', label: 'Subscription', icon: FiCreditCard },
-  { path: '/student/activation', label: 'Activation', icon: FiUnlock },
-  { path: '/student/referrals', label: 'Referrals', icon: FiLink2 },
-  { path: '/student/team', label: 'Team Members', icon: FiUsers },
-  { path: '/student/earnings', label: 'Earnings', icon: FiTrendingDown },
-  { path: '/student/profit-share', label: 'Profit Share', icon: FiPercent },
-  { path: '/student/rank', label: 'My Rank', icon: FiAward },
-  { path: '/student/certificates', label: 'Certificates', icon: FiFileText },
-  { path: '/student/charts', label: 'Charts', icon: FiBarChart2 },
-  { path: '/student/gallery', label: 'Gallery', icon: FiImage },
-  { path: '/student/announcements', label: 'Announcements', icon: FiBell },
-  { path: '/student/support', label: 'Support', icon: FiMessageSquare },
-  { path: '/student/settings', label: 'Settings', icon: FiSettings },
+const sidebarSections = [
+  {
+    id: 'learning',
+    title: 'Learning',
+    icon: FiBook,
+    items: [
+      { path: '/student/dashboard', label: 'Dashboard', icon: FiLayout },
+      { path: '/student/courses', label: 'Trainings', icon: FiBookOpen },
+      { path: '/student/signals', label: 'Signals', icon: FiTrendingUp },
+      { path: '/student/copy-trading', label: 'Copy Trading', icon: FiCopy },
+      { path: '/student/certificates', label: 'Certificates', icon: FiFileText },
+    ],
+  },
+  {
+    id: 'finance',
+    title: 'Finance',
+    icon: FiDollarSign,
+    items: [
+      { path: '/student/wallet', label: 'Wallet', icon: FiDollarSign },
+      { path: '/student/transactions', label: 'Transactions', icon: FiClock },
+      { path: '/student/earnings', label: 'Earnings', icon: FiTrendingDown },
+      { path: '/student/profit-share', label: 'Profit Share', icon: FiPercent },
+      { path: '/student/withdrawals', label: 'Withdrawals', icon: FiDollarSign },
+    ],
+  },
+  {
+    id: 'network',
+    title: 'Network',
+    icon: FiTag,
+    items: [
+      { path: '/student/referrals', label: 'Referrals', icon: FiLink2 },
+      { path: '/student/team', label: 'Team Members', icon: FiUsers },
+      { path: '/student/rank', label: 'My Rank', icon: FiAward },
+    ],
+  },
+  {
+    id: 'account',
+    title: 'Account',
+    icon: FiLayout,
+    items: [
+      { path: '/student/subscription', label: 'Membership', icon: FiCreditCard },
+      { path: '/student/activation', label: 'Activation', icon: FiUnlock },
+      { path: '/student/settings', label: 'Settings', icon: FiSettings },
+      { path: '/login', label: 'Logout', icon: FiLogOut, danger: true },
+    ],
+  },
 ];
 
 const bottomNavLinks = [
   { path: '/student/dashboard', label: 'Home', icon: FiHome },
-  { path: '/student/courses', label: 'Courses', icon: FiBookOpen },
+  { path: '/student/courses', label: 'Trainings', icon: FiBookOpen },
   { path: '/student/signals', label: 'Signals', icon: FiTrendingUp },
   { path: '/student/wallet', label: 'Wallet', icon: FiDollarSign },
   { path: '/student/settings', label: 'Settings', icon: FiSettings },
@@ -41,14 +64,26 @@ const bottomNavLinks = [
 
 export default function StudentLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [openSections, setOpenSections] = useState({ learning: true, finance: true, network: true, account: false });
   const { pathname } = useLocation();
   const { user, logout } = useAuth();
   const { getSetting } = useSettings();
 
   const getPageTitle = () => {
-    const current = sidebarLinks.find(l => pathname === l.path || pathname.startsWith(l.path + '/'));
-    return current?.label || 'Student';
+    for (const section of sidebarSections) {
+      const current = section.items.find(l => pathname === l.path || pathname.startsWith(l.path + '/'));
+      if (current) return current.label;
+    }
+    return 'Student';
   };
+
+  const toggleSection = (id) => {
+    setOpenSections((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const isSectionActive = (section) => section.items.some(l => pathname === l.path || pathname.startsWith(l.path + '/'));
+
+  const isItemActive = (path) => pathname === path || pathname.startsWith(path + '/');
 
   return (
     <div className="min-h-screen bg-dark-50 pb-20 lg:pb-0">
@@ -83,24 +118,54 @@ export default function StudentLayout() {
           </button>
         </div>
 
-        <nav className="p-3 space-y-0.5 overflow-y-auto h-[calc(100%-8rem)] scrollbar-thin">
-          {sidebarLinks.map((link) => {
-            const Icon = link.icon;
-            const active = pathname === link.path || pathname.startsWith(link.path + '/');
+        <nav className="p-3 space-y-1 overflow-y-auto h-[calc(100%-8rem)] scrollbar-thin">
+          {sidebarSections.map((section) => {
+            const SectionIcon = section.icon;
+            const open = openSections[section.id];
+            const active = isSectionActive(section);
             return (
-              <Link
-                key={link.path}
-                to={link.path}
-                onClick={() => setSidebarOpen(false)}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
-                  active
-                    ? 'bg-primary-50 text-primary-600'
-                    : 'text-dark-500 hover:bg-dark-50 hover:text-dark-700'
-                }`}
-              >
-                <Icon size={18} className="shrink-0" />
-                {link.label}
-              </Link>
+              <div key={section.id} className="space-y-0.5">
+                <button
+                  onClick={() => toggleSection(section.id)}
+                  className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                    active
+                      ? 'bg-primary-50 text-primary-600'
+                      : 'text-dark-500 hover:bg-dark-50 hover:text-dark-700'
+                  }`}
+                >
+                  <SectionIcon size={18} className="shrink-0" />
+                  <span className="flex-1 text-left">{section.title}</span>
+                  {open ? <FiChevronUp size={14} className="shrink-0" /> : <FiChevronDown size={14} className="shrink-0" />}
+                </button>
+                {open && (
+                  <div className="ml-6 space-y-0.5">
+                    {section.items.map((item) => {
+                      const ItemIcon = item.icon;
+                      const itemActive = isItemActive(item.path);
+                      return (
+                        <Link
+                          key={item.path}
+                          to={item.path}
+                          onClick={() => {
+                            if (item.danger) logout();
+                            setSidebarOpen(false);
+                          }}
+                          className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                            itemActive
+                              ? 'bg-primary-50 text-primary-600'
+                              : item.danger
+                              ? 'text-red-400 hover:bg-red-50 hover:text-red-600'
+                              : 'text-dark-400 hover:bg-dark-50 hover:text-dark-700'
+                          }`}
+                        >
+                          <ItemIcon size={15} className="shrink-0" />
+                          {item.label}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             );
           })}
         </nav>

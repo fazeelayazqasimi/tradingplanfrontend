@@ -1,6 +1,6 @@
 import { Link, useLocation, Outlet } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
-import { FiMenu, FiX, FiLayout, FiUsers, FiCreditCard, FiBookOpen, FiTrendingUp, FiBell, FiLink2, FiAward, FiDollarSign, FiSettings, FiLogOut, FiMessageSquare, FiHelpCircle, FiFileText, FiEdit, FiBarChart2, FiHome, FiLayers, FiDownload, FiTag, FiServer, FiImage, FiVideo } from 'react-icons/fi';
+import { FiMenu, FiX, FiLayout, FiUsers, FiCreditCard, FiBookOpen, FiTrendingUp, FiBell, FiLink2, FiAward, FiDollarSign, FiSettings, FiLogOut, FiMessageSquare, FiHelpCircle, FiFileText, FiEdit, FiBarChart2, FiHome, FiLayers, FiDownload, FiTag, FiServer, FiImage, FiVideo, FiRadio, FiCalendar } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
 import { getInitials } from '../../utils/helpers';
@@ -19,6 +19,9 @@ const sidebarLinks = [
   { path: '/admin/assignments', label: 'Assignments', icon: FiEdit },
   { path: '/admin/quizzes', label: 'Quizzes', icon: FiHelpCircle },
   { path: '/admin/signals', label: 'Signals', icon: FiTrendingUp },
+  { path: '/admin/webinars', label: 'Webinars', icon: FiVideo },
+  { path: '/admin/zoom-sessions', label: 'Zoom Sessions', icon: FiRadio },
+  { path: '/admin/market-updates', label: 'Market Updates', icon: FiCalendar },
   { path: '/admin/media', label: 'Media Library', icon: FiImage },
   { path: '/admin/announcements', label: 'Announcements', icon: FiBell },
   { path: '/admin/referrals', label: 'Referrals', icon: FiLink2 },
