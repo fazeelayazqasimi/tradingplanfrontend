@@ -351,7 +351,7 @@ export default function Wallet() {
       render: (_, row) => {
         const refName = row.metadata?.referredName;
         return (
-          <span className="text-dark-500 max-w-[220px] truncate block" title={row.description || ''}>
+          <span className="text-dark-500 break-words text-xs leading-relaxed min-w-[200px]">
             {row.description || '\u2014'}
             {refName && <span className="text-primary-500 font-medium"> ({refName})</span>}
           </span>
@@ -695,8 +695,18 @@ export default function Wallet() {
         </Card>
       </motion.div>
 
-      <Modal isOpen={showDeposit} onClose={() => { setShowDeposit(false); setDepositErrors({}); setCoinPayment(null); setDepositResponse(null); }} title={depositResponse ? `Crypto Deposit - USDT BEP20` : `Deposit to ${WALLET_TABS.find(t => t.key === walletTab)?.label || 'Wallet'}`} size="sm">
-          {depositResponse ? (
+      <Modal isOpen={showDeposit} onClose={() => { setShowDeposit(false); setDepositErrors({}); setCoinPayment(null); setDepositResponse(null); setSubmitting(false); }} title={submitting ? 'Processing Deposit...' : depositResponse ? 'Crypto Deposit - USDT BEP20' : `Deposit to ${WALLET_TABS.find(t => t.key === walletTab)?.label || 'Wallet'}`} size="sm">
+          {submitting && !depositResponse ? (
+            <div className="flex flex-col items-center justify-center py-10 space-y-4">
+              <div className="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center">
+                <div className="animate-spin h-8 w-8 border-4 border-primary-500 border-t-transparent rounded-full" />
+              </div>
+              <div className="text-center">
+                <p className="text-base font-semibold text-ink">Creating Deposit Address...</p>
+                <p className="text-sm text-dark-500 mt-1">Please wait while we generate a secure payment address via CoinPayments.</p>
+              </div>
+            </div>
+          ) : depositResponse ? (
             <div className="space-y-4">
               <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200">
                 <div className="flex items-center gap-3">
@@ -705,14 +715,23 @@ export default function Wallet() {
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-emerald-800">Deposit Address Generated</p>
-                    <p className="text-xs text-emerald-600">Send USDT to the address below</p>
+                    <p className="text-xs text-emerald-600">Send USDT (BEP20) to the address below</p>
                   </div>
                 </div>
               </div>
               <div className="p-4 rounded-xl bg-dark-50 border border-dark-200">
                 <p className="text-xs font-medium text-dark-500 mb-2">Deposit Address</p>
-                <p className="text-sm font-mono text-ink break-all">{depositResponse.depositAddress}</p>
-                <p className="text-xs text-dark-400 mt-1">Send exactly <span className="font-semibold text-ink">{depositResponse.amount || depositForm.amount}</span> USDT (BEP20)</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-mono text-ink break-all flex-1">{depositResponse.depositAddress}</p>
+                  <button
+                    onClick={() => { copyToClipboard(depositResponse.depositAddress); toast.success('Address copied!'); }}
+                    className="shrink-0 p-2 rounded-lg bg-white border border-dark-100 hover:bg-primary-50 transition-colors"
+                    title="Copy address"
+                  >
+                    <FiCopy size={16} className="text-dark-400" />
+                  </button>
+                </div>
+                <p className="text-xs text-dark-400 mt-2">Send exactly <span className="font-semibold text-ink">{depositResponse.amount || depositForm.amount}</span> USDT (BEP20)</p>
               </div>
               {depositResponse.paymentUrl && (
                 <div className="flex justify-center">
@@ -720,10 +739,10 @@ export default function Wallet() {
                 </div>
               )}
               <div className="p-3 rounded-xl bg-amber-50 border border-amber-200">
-                <p className="text-xs text-amber-700">Your deposit will be credited to your wallet once the blockchain transaction is confirmed.</p>
+                <p className="text-xs text-amber-700">Your deposit will be credited automatically via blockchain confirmation. This may take a few minutes.</p>
               </div>
-              <p className="text-xs text-dark-400 text-center">Expires in {depositResponse.expiresAt ? new Date(depositResponse.expiresAt).toLocaleString() : '24 hours'}</p>
-              <Button variant="outline" className="w-full" onClick={() => { setShowDeposit(false); setDepositResponse(null); setDepositForm({ amount: '', paymentMethod: 'usdt_bep20', accountId: '' }); }}>Close</Button>
+              <p className="text-xs text-dark-400 text-center">Expires: {depositResponse.expiresAt ? new Date(depositResponse.expiresAt).toLocaleString() : '24 hours'}</p>
+              <Button variant="outline" className="w-full" onClick={() => { setShowDeposit(false); setDepositResponse(null); setDepositForm({ amount: '', paymentMethod: 'usdt_bep20', accountId: '' }); setSubmitting(false); }}>Close</Button>
             </div>
           ) : (
             <div className="space-y-4">
@@ -734,7 +753,7 @@ export default function Wallet() {
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-blue-800">USDT (BEP20)</p>
-                    <p className="text-xs text-blue-600">Auto-approved & credited instantly</p>
+                    <p className="text-xs text-blue-600">Pay via CoinPayments — address generated instantly</p>
                   </div>
                 </div>
               </div>
@@ -754,7 +773,7 @@ export default function Wallet() {
               <div className="flex justify-end gap-3 pt-2">
                 <Button variant="outline" onClick={() => { setShowDeposit(false); setDepositErrors({}); }}>Cancel</Button>
                 <Button onClick={handleDeposit} loading={submitting}>
-                  Deposit & Credit Instantly
+                  Generate Deposit Address
                 </Button>
               </div>
             </div>

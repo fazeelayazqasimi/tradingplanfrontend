@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { FiSearch, FiEye, FiUserX, FiUserCheck, FiMail, FiPhone, FiCalendar, FiTrash2, FiAward } from 'react-icons/fi';
+import { FiSearch, FiEye, FiUserX, FiUserCheck, FiMail, FiPhone, FiCalendar, FiTrash2, FiAward, FiTrendingUp, FiDollarSign } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Button from '../../components/ui/Button';
 import DataTable from '../../components/ui/DataTable';
@@ -76,6 +76,24 @@ const columns = [
     render: (_, row) => (
       <span className="text-sm text-dark-500">
         {formatDate(row.createdAt)}
+      </span>
+    ),
+  },
+  {
+    key: 'rank',
+    header: 'Rank',
+    render: (_, row) => (
+      <Badge color="info" className="text-xs">
+        {row.rankName || row.currentRank?.name || row.userRank?.currentRankId?.name || 'N/A'}
+      </Badge>
+    ),
+  },
+  {
+    key: 'earnings',
+    header: 'Earnings',
+    render: (_, row) => (
+      <span className="text-sm font-semibold text-emerald-600">
+        ${(row.totalEarnings || row.wallet?.totalEarned || 0).toFixed(2)}
       </span>
     ),
   },
@@ -389,6 +407,28 @@ export default function Students() {
                   </div>
                 </div>
               )}
+              <div className="flex items-center gap-3 px-4 py-3.5">
+                <div className="w-[42px] h-[42px] rounded-[11px] bg-amber-50 text-amber-600 flex items-center justify-center">
+                  <FiAward className="h-4 w-4" />
+                </div>
+                <div>
+                  <p className="text-[11px] text-dark-400 uppercase tracking-wider font-medium">Rank</p>
+                  <p className="text-sm font-medium text-ink">
+                    {selectedStudent.rankName || selectedStudent.currentRank?.name || selectedStudent.userRank?.currentRankId?.name || 'N/A'}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 px-4 py-3.5">
+                <div className="w-[42px] h-[42px] rounded-[11px] bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                  <FiDollarSign className="h-4 w-4" />
+                </div>
+                <div>
+                  <p className="text-[11px] text-dark-400 uppercase tracking-wider font-medium">Total Earnings</p>
+                  <p className="text-sm font-bold text-emerald-600">
+                    ${(selectedStudent.totalEarnings || selectedStudent.wallet?.totalEarned || 0).toFixed(2)}
+                  </p>
+                </div>
+              </div>
             </div>
 
             <div className="rounded-xl border border-dark-100 p-4">

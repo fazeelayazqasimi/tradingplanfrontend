@@ -331,8 +331,9 @@ export default function Settings() {
                 label="Phone Number"
                 icon={FiPhone}
                 placeholder="+1 (555) 000-0000"
-                value={profileForm.phone}
-                onChange={(e) => setProfileForm((prev) => ({ ...prev, phone: e.target.value }))}
+                value={user?.phone || ''}
+                disabled
+                className="bg-dark-50"
               />
 
               <div className="flex justify-end">

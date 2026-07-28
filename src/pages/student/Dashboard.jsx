@@ -1,13 +1,12 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { FiBookOpen, FiTrendingUp, FiDollarSign, FiAward, FiArrowRight, FiCreditCard, FiClock, FiCheckCircle, FiCopy, FiLink, FiUsers, FiUserPlus, FiBarChart2, FiStar, FiZap, FiGlobe, FiTrendingDown, FiLock, FiGift, FiShare2, FiCheck, FiExternalLink } from "react-icons/fi";
+import { FiBookOpen, FiTrendingUp, FiDollarSign, FiAward, FiArrowRight, FiCreditCard, FiClock, FiCheckCircle, FiCopy, FiLink, FiUsers, FiUserPlus, FiBarChart2, FiStar, FiZap, FiGlobe, FiTrendingDown, FiLock, FiGift, FiShare2, FiCheck, FiExternalLink, FiCalendar, FiMessageSquare } from "react-icons/fi";
 import toast from "react-hot-toast";
 import Card from "../../components/ui/Card";
 import Badge from "../../components/ui/Badge";
 import Button from "../../components/ui/Button";
 import Skeleton from "../../components/ui/Skeleton";
-import EmptyState from "../../components/ui/EmptyState";
 import { useAuth } from "../../context/AuthContext";
 import { formatCurrency, copyToClipboard } from "../../utils/helpers";
 import SystemFlow from "../../components/website/SystemFlow";
@@ -50,9 +49,12 @@ export default function Dashboard() {
   const [marketUpdates, setMarketUpdates] = useState([]);
   const [announcements, setAnnouncements] = useState([]);
   const [freeCourses, setFreeCourses] = useState([]);
+  const [marketOverview, setMarketOverview] = useState(null);
+  const [openSignalsCount, setOpenSignalsCount] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
+    let mounted = true;
     async function fetchDashboard() {
       try {
         setLoading(true);
@@ -74,21 +76,27 @@ export default function Dashboard() {
           announcementService.getAnnouncements({ limit: 5, sort: "-createdAt" }),
           courseService.getCourses({ isFree: true, limit: 5, sort: "-order" }),
         ]);
-        if (cancelled) return;
-        const enrolledRes = results[0].status === "fulfilled" ? results[0].value : {};
-        const enrolledBody = enrolledRes.data || {};
-        const coursesList = enrolledBody.data?.courses || enrolledBody.data || [];
-        setEnrolled(Array.isArray(coursesList) ? coursesList.slice(0, 3) : []);
-        const signalsRes = results[1].status === "fulfilled" ? results[1].value : {};
-        const signalsBody = signalsRes.data || {};
-        const signalsList = signalsBody.data?.data || signalsBody.data?.signals || signalsBody.data || [];
-        setSignals(Array.isArray(signalsList) ? signalsList.slice(0, 5) : []);
+        if (!mounted || cancelled) return;
+        if (results[0].status === "fulfilled") {
+          const d = results[0].value.data || {};
+          setEnrolled(Array.isArray(d.data?.courses || d.data) ? (d.data?.courses || d.data).slice(0, 3) : []);
+        }
+        if (results[1].status === "fulfilled") {
+          const d = results[1].value.data || {};
+          setSignals(Array.isArray(d.data?.data || d.data?.signals || d.data) ? (d.data?.data || d.data?.signals || d.data).slice(0, 5) : []);
+        }
         if (results[2].status === "fulfilled" && results[2].value) setWalletData(results[2].value.data?.data || results[2].value.data);
         if (results[3].status === "fulfilled" && results[3].value) setWalletStats(results[3].value.data?.data || results[3].value.data);
         if (results[4].status === "fulfilled" && results[4].value) {
           const rd = results[4].value.data?.data || results[4].value.data;
           setRank(rd?.userRank?.currentRankId || null);
           setNextRank(rd?.nextRank || null);
+        }
+        if (results[5].status === "fulfilled" && results[5].value) setMarketOverview(results[5].value.data?.data || results[5].value.data);
+        if (results[6].status === "fulfilled" && results[6].value) {
+          const d = results[6].value.data || {};
+          const list = d.data?.data || d.data?.signals || d.data || [];
+          setOpenSignalsCount(Array.isArray(list) ? list.length : 0);
         }
         if (results[7].status === "fulfilled" && results[7].value) setReferralStats(results[7].value.data?.data || results[7].value.data);
         if (results[8].status === "fulfilled" && results[8].value) {
@@ -109,7 +117,7 @@ export default function Dashboard() {
       finally { if (!cancelled) setLoading(false); }
     }
     fetchDashboard();
-    return () => { cancelled = true; };
+    return () => { mounted = false; cancelled = true; };
   }, []);
 
   const availableBalance = walletStats?.available ?? walletData?.availableBalance ?? walletData?.balance ?? 0;
@@ -121,6 +129,22 @@ export default function Dashboard() {
   const teamSize = directReferrals + indirectReferrals;
   const currentRankName = rank?.name || "Bronze";
   const nextRankName = nextRank?.name || "Silver";
+
+  const goldTrend = marketOverview?.goldTrend || "neutral";
+  const marketNews = marketOverview?.marketNews || "";
+  const nextLiveClass = marketOverview?.nextLiveClassDate ? {
+    date: marketOverview.nextLiveClassDate,
+    time: marketOverview.nextLiveClassTime || "",
+    link: marketOverview.nextLiveClassLink || "#",
+  } : null;
+  const dailyMarketSummary = marketOverview?.dailyMarketSummary || "";
+
+  const trendConfig = {
+    bullish: { label: "Bullish", color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-200", icon: FiTrendingUp },
+    bearish: { label: "Bearish", color: "text-red-600", bg: "bg-red-50", border: "border-red-200", icon: FiTrendingDown },
+    neutral: { label: "Neutral", color: "text-amber-600", bg: "bg-amber-50", border: "border-amber-200", icon: FiBarChart2 },
+  };
+  const trend = trendConfig[goldTrend] || trendConfig.neutral;
 
   const freeLearningContent = [...freeWebinars, ...freeZoomSessions, ...marketUpdates, ...announcements, ...freeCourses].sort((a, b) => {
     const aDate = a.date || a.publishedAt || a.createdAt || "";
@@ -184,7 +208,25 @@ export default function Dashboard() {
         </Card>
       </motion.div>
 
-      {/* Referral Link - Share & Earn */}
+      {/* Banner: One Membership. Unlimited Opportunities. */}
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
+        <Card className="relative overflow-hidden border-0 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white p-5 sm:p-6">
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-30" />
+          <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="text-center sm:text-left">
+              <h2 className="text-xl sm:text-2xl font-extrabold">One Membership. Unlimited Opportunities.</h2>
+              <p className="text-white/80 text-sm mt-1">Ready to Learn, Trade & Grow Today</p>
+            </div>
+            <Link to={isFreeUser ? "/student/subscription" : "/student/classes"}>
+              <Button className="bg-white text-purple-700 hover:bg-white/90 font-bold shadow-lg shrink-0">
+                {isFreeUser ? "Get Started" : "Explore Classes"}
+              </Button>
+            </Link>
+          </div>
+        </Card>
+      </motion.div>
+
+      {/* Referral Rewards */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }}>
         <Card className="p-5 sm:p-6 relative overflow-hidden border-0 bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50">
           <div className="absolute top-0 right-0 w-40 h-40 bg-purple-200/20 rounded-full blur-3xl" />
@@ -193,7 +235,7 @@ export default function Dashboard() {
               <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white">
                 <FiShare2 size={15} />
               </div>
-              <h3 className="font-bold text-ink text-sm uppercase tracking-wider">Your Referral Link — Share & Earn</h3>
+              <h3 className="font-bold text-ink text-sm uppercase tracking-wider">Invite Friends — Earn $1 Reward Credit</h3>
             </div>
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="flex-1 flex items-center gap-2 bg-white rounded-xl border border-dark-100 px-4 py-2.5 min-w-0">
@@ -217,6 +259,82 @@ export default function Dashboard() {
           </div>
         </Card>
       </motion.div>
+
+      {/* Today's Market Overview */}
+      {(goldTrend || marketNews || nextLiveClass || dailyMarketSummary || openSignalsCount > 0) && (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-xs font-bold text-dark-400 uppercase tracking-widest">Today's Market Overview</h3>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {goldTrend && (
+              <Card className="p-4 relative overflow-hidden group">
+                <div className={`absolute inset-0 ${trend.bg} opacity-40 group-hover:opacity-60 transition-opacity`} />
+                <div className="relative z-10">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className={`w-8 h-8 rounded-lg ${trend.bg} flex items-center justify-center`}>
+                      <trend.icon size={16} className={trend.color} />
+                    </div>
+                    <span className="text-xs font-medium text-dark-500">Gold Trend</span>
+                  </div>
+                  <Badge className={`${trend.bg} ${trend.color} border ${trend.border}`}>{trend.label}</Badge>
+                </div>
+              </Card>
+            )}
+            {marketNews && (
+              <Card className="p-4 sm:col-span-1 lg:col-span-1">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+                    <FiMessageSquare size={16} className="text-blue-500" />
+                  </div>
+                  <span className="text-xs font-medium text-dark-500">Market News</span>
+                </div>
+                <p className="text-xs text-dark-700 leading-relaxed line-clamp-3">{marketNews}</p>
+              </Card>
+            )}
+            {nextLiveClass && (
+              <Card className="p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center">
+                    <FiCalendar size={16} className="text-purple-500" />
+                  </div>
+                  <span className="text-xs font-medium text-dark-500">Next Live Class</span>
+                </div>
+                <p className="text-sm font-semibold text-ink">{nextLiveClass.date}</p>
+                {nextLiveClass.time && <p className="text-xs text-dark-500">{nextLiveClass.time}</p>}
+                {nextLiveClass.link && nextLiveClass.link !== "#" && (
+                  <a href={nextLiveClass.link} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-primary-500 hover:text-primary-600">
+                    <FiExternalLink size={12} /> Join Class
+                  </a>
+                )}
+              </Card>
+            )}
+            {openSignalsCount > 0 && (
+              <Card className="p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center">
+                    <FiTrendingUp size={16} className="text-emerald-500" />
+                  </div>
+                  <span className="text-xs font-medium text-dark-500">Today's Signals</span>
+                </div>
+                <p className="text-2xl font-extrabold text-emerald-600">{openSignalsCount}</p>
+                <p className="text-xs text-dark-400">open signals</p>
+              </Card>
+            )}
+          </div>
+          {dailyMarketSummary && (
+            <Card className="p-4 mt-3">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center">
+                  <FiBarChart2 size={16} className="text-amber-500" />
+                </div>
+                <span className="text-xs font-medium text-dark-500">Daily Market Summary</span>
+              </div>
+              <p className="text-xs text-dark-700 leading-relaxed">{dailyMarketSummary}</p>
+            </Card>
+          )}
+        </motion.div>
+      )}
 
       {/* Free Learning Section for Free Users */}
       {isFreeUser && freeLearningContent.length > 0 && (

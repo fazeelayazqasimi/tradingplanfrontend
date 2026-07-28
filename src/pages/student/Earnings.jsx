@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FiDollarSign, FiTrendingUp, FiAward, FiDownload, FiRefreshCw } from 'react-icons/fi';
+import { FiDollarSign, FiTrendingUp, FiAward, FiDownload, FiRefreshCw, FiGift } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import Card from '../../components/ui/Card';
@@ -65,7 +65,7 @@ export default function Earnings() {
     { label: 'Total Earned', value: stats?.totalEarned || 0, icon: FiDollarSign, color: 'bg-blue-50', iconColor: 'text-blue-500' },
     { label: 'Available Balance', value: stats?.available || 0, icon: FiTrendingUp, color: 'bg-emerald-50', iconColor: 'text-emerald-500' },
     { label: 'Pending Balance', value: stats?.pending || 0, icon: FiAward, color: 'bg-amber-50', iconColor: 'text-amber-500' },
-    { label: 'Total Withdrawn', value: stats?.totalWithdrawn || 0, icon: FiDownload, color: 'bg-red-50', iconColor: 'text-red-500' },
+    { label: 'Cash Withdrawn', value: stats?.totalWithdrawn || 0, icon: FiDownload, color: 'bg-red-50', iconColor: 'text-red-500' },
   ];
 
   return (
@@ -82,7 +82,7 @@ export default function Earnings() {
 
       <motion.div variants={item} className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {loading ? (
-          Array.from({ length: 4 }).map((_, i) => (
+          Array.from({ length: 6 }).map((_, i) => (
             <Card key={i} className="p-4"><Skeleton className="h-16" /></Card>
           ))
         ) : (
@@ -99,6 +99,21 @@ export default function Earnings() {
               </div>
             </Card>
           ))
+        )}
+        {!loading && (
+          <>
+            <Card className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center">
+                  <FiGift className="w-5 h-5 text-purple-500" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs text-dark-500 truncate">Reward Credits Used</p>
+                  <p className="text-sm font-bold text-ink">{formatCurrency(stats?.totalRedeemed || 0)}</p>
+                </div>
+              </div>
+            </Card>
+          </>
         )}
       </motion.div>
 
@@ -152,7 +167,7 @@ export default function Earnings() {
                 {transactions.slice(0, 10).map((tx) => (
                   <div key={tx._id} className="flex items-center justify-between py-1.5 border-b border-dark-100 last:border-0">
                     <div className="min-w-0">
-                      <p className="text-xs font-medium text-ink truncate">{tx.description || tx.category}</p>
+                      <p className="text-xs font-medium text-ink break-words">{tx.description || tx.category}</p>
                       <p className="text-[11px] text-dark-400">{new Date(tx.createdAt).toLocaleDateString()}</p>
                     </div>
                     <span className="text-xs font-semibold text-emerald-600 shrink-0">+{formatCurrency(tx.amount)}</span>

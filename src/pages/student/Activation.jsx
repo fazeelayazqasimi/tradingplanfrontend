@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FiMail, FiUsers, FiDollarSign, FiInfo } from 'react-icons/fi';
+import { FiUsers, FiDollarSign, FiInfo } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
@@ -11,7 +11,6 @@ import api from '../../services/api';
 
 export default function Activation() {
   const { user, refreshUser } = useAuth();
-  const [tab, setTab] = useState('upline');
   const [walletBalances, setWalletBalances] = useState({ main: 0, funding: 0 });
   const [activationInfo, setActivationInfo] = useState({ membershipPrice: 120, uplineActivationDiscount: 20, fundingPercent: 20 });
 
@@ -53,14 +52,9 @@ export default function Activation() {
     setLoading(true);
     setError('');
     try {
-      if (tab === 'upline') {
-        await studentService.activateByUpline({ usernameOrEmail: email });
-        toast.success('Activation request sent to upline!');
-      } else {
-        await studentService.activateByUpline({ usernameOrEmail: email });
-        toast.success('Downline activated successfully!');
-        refreshUser();
-      }
+      await studentService.activateByUpline({ usernameOrEmail: email });
+      toast.success('Downline activated successfully!');
+      refreshUser();
       setEmail('');
     } catch (err) {
       const msg = err?.response?.data?.message || 'Failed';
@@ -80,47 +74,24 @@ export default function Activation() {
         <p className="text-sm text-dark-500 mt-1">
           {isActivated
             ? 'Activate your downline members using your wallet balance.'
-            : 'Enter your upline email to request activation.'}
+            : 'Your account needs activation. Contact your upline to get activated.'}
         </p>
-      </div>
-
-      <div className="flex border border-dark-100 rounded-xl overflow-hidden">
-        <button
-          onClick={() => setTab('upline')}
-          className={`flex-1 py-2.5 text-sm font-medium text-center transition-colors ${
-            tab === 'upline' ? 'bg-primary-500 text-white' : 'bg-white text-dark-500 hover:bg-dark-50'
-          }`}
-        >
-          Request from Upline
-        </button>
-        <button
-          onClick={() => setTab('downline')}
-          className={`flex-1 py-2.5 text-sm font-medium text-center transition-colors ${
-            tab === 'downline' ? 'bg-primary-500 text-white' : 'bg-white text-dark-500 hover:bg-dark-50'
-          }`}
-        >
-          Activate Downline
-        </button>
       </div>
 
       <Card className="p-5 space-y-4">
         <div className="flex items-center gap-2">
-          {tab === 'upline' ? <FiMail size={18} className="text-primary-500" /> : <FiUsers size={18} className="text-primary-500" />}
-          <span className="font-semibold text-ink">
-            {tab === 'upline' ? 'Request Activation from Upline' : 'Activate Downline Member'}
-          </span>
+          <FiUsers size={18} className="text-primary-500" />
+          <span className="font-semibold text-ink">Activate Downline Member</span>
         </div>
 
         <p className="text-sm text-dark-500">
-          {tab === 'upline'
-            ? 'Enter the email of your upline to request account activation.'
-            : `Enter your downline's email to activate them. Full charge: $${price}. You can use up to ${fundingPercent}% ($${maxFunding}) from your Funding Wallet; the rest comes from your Main Wallet.`}
+          Enter your downline's email to activate them. Full charge: ${price}. You can use up to {fundingPercent}% (${maxFunding}) from your Funding Wallet; the rest comes from your Main Wallet.
         </p>
 
         <Input
           value={email}
           onChange={e => { setEmail(e.target.value); setError(''); }}
-          placeholder={tab === 'upline' ? 'Upline email' : 'Downline email'}
+          placeholder="Downline email"
           error={error}
         />
 
@@ -129,21 +100,19 @@ export default function Activation() {
           className="w-full"
           onClick={handleSubmit}
           loading={loading}
-          disabled={tab === 'downline' && !canActivateDownline}
+          disabled={!canActivateDownline}
         >
-          {tab === 'upline' ? 'Request Activation' : `Activate — $${price}`}
+          Activate — ${price}
         </Button>
 
-        {tab === 'downline' && (
-          <div className="text-xs text-dark-400 bg-dark-50 rounded-xl p-3 flex items-start gap-2">
-            <FiInfo size={14} className="shrink-0 mt-0.5" />
-            <div>
-              <p><strong>Funding Wallet:</strong> ${walletBalances.funding.toFixed(2)} (max {fundingPercent}% = ${maxFunding})</p>
-              <p><strong>Main Wallet:</strong> ${walletBalances.main.toFixed(2)}</p>
-              {!canActivateDownline && <p className="text-red-500 mt-1">Insufficient balance. You need ${(price - walletBalances.funding - walletBalances.main).toFixed(2)} more in your Main Wallet.</p>}
-            </div>
+        <div className="text-xs text-dark-400 bg-dark-50 rounded-xl p-3 flex items-start gap-2">
+          <FiInfo size={14} className="shrink-0 mt-0.5" />
+          <div>
+            <p><strong>Funding Wallet:</strong> ${walletBalances.funding.toFixed(2)} (max {fundingPercent}% = ${maxFunding})</p>
+            <p><strong>Main Wallet:</strong> ${walletBalances.main.toFixed(2)}</p>
+            {!canActivateDownline && <p className="text-red-500 mt-1">Insufficient balance. You need ${(price - walletBalances.funding - walletBalances.main).toFixed(2)} more in your Main Wallet.</p>}
           </div>
-        )}
+        </div>
       </Card>
     </div>
   );

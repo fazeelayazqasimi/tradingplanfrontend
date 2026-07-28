@@ -168,7 +168,7 @@ export default function Rank() {
               </div>
               <div className="mt-4">
                 <Badge color="info" className="text-sm px-3 py-1">
-                  ${nextRankData?.activationGain ?? '?'}/referral · {nextRankData?.quantification ?? '?'}% quant · ${nextRankData?.indirectIncome ?? '?'} indirect
+                  ${nextRankData?.activationGain ?? '?'}/referral · {nextRankData?.quantification ?? '?'}% Profit Share · ${nextRankData?.indirectIncome ?? '?'} indirect
                 </Badge>
               </div>
               <p className="mt-3 text-sm text-dark-500">
@@ -345,7 +345,7 @@ export default function Rank() {
                         <span className="font-semibold text-emerald-600">${rank.activationGain}</span>
                       </div>
                       <div className="flex items-center justify-between text-xs">
-                        <span className="text-dark-500">Quantification</span>
+                        <span className="text-dark-500">Profit Share</span>
                         <span className="font-medium text-dark-700">{rank.quantification}%</span>
                       </div>
                       <div className="flex items-center justify-between text-xs">

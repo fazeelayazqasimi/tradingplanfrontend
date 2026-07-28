@@ -1,19 +1,31 @@
 ﻿import { Link, useLocation, Outlet } from 'react-router-dom';
 import { useState } from 'react';
-import { FiMenu, FiLayout, FiBookOpen, FiTrendingUp, FiCopy, FiPieChart, FiDollarSign, FiLink2, FiAward, FiFileText, FiImage, FiBell, FiMessageSquare, FiSettings, FiLogOut, FiX, FiCreditCard, FiClock, FiUsers, FiPercent, FiHome, FiBarChart2, FiUnlock, FiTrendingDown, FiVideo, FiChevronDown, FiChevronRight, FiChevronUp, FiBook, FiTag } from 'react-icons/fi';
+import { FiMenu, FiLayout, FiBookOpen, FiTrendingUp, FiCopy, FiPieChart, FiDollarSign, FiLink2, FiAward, FiFileText, FiImage, FiBell, FiMessageSquare, FiSettings, FiLogOut, FiX, FiCreditCard, FiClock, FiUsers, FiPercent, FiHome, FiBarChart2, FiUnlock, FiTrendingDown, FiVideo, FiChevronDown, FiChevronRight, FiChevronUp, FiBook, FiTag, FiMonitor } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
 import { getInitials } from '../../utils/helpers';
 import ThemeToggle from '../ui/ThemeToggle';
+import NotificationBell from '../NotificationBell';
 
 const sidebarSections = [
+  {
+    id: 'main',
+    title: 'Main',
+    icon: FiHome,
+    items: [
+      { path: '/student/dashboard', label: 'Dashboard', icon: FiLayout },
+    ],
+  },
   {
     id: 'learning',
     title: 'Learning',
     icon: FiBook,
     items: [
-      { path: '/student/dashboard', label: 'Dashboard', icon: FiLayout },
-      { path: '/student/courses', label: 'Trainings', icon: FiBookOpen },
+      { path: '/student/classes/physical', label: 'Physical Classes', icon: FiVideo },
+      { path: '/student/classes/online', label: 'Online Classes', icon: FiMonitor },
+      { path: '/student/classes/schedule', label: 'Class Schedule', icon: FiClock },
+      { path: '/student/study-material', label: 'Study Material', icon: FiBookOpen },
+      { path: '/student/recordings', label: 'Recordings', icon: FiFileText },
       { path: '/student/signals', label: 'Signals', icon: FiTrendingUp },
       { path: '/student/copy-trading', label: 'Copy Trading', icon: FiCopy },
       { path: '/student/certificates', label: 'Certificates', icon: FiFileText },
@@ -64,7 +76,7 @@ const bottomNavLinks = [
 
 export default function StudentLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [openSections, setOpenSections] = useState({ learning: true, finance: true, network: true, account: false });
+  const [openSections, setOpenSections] = useState({ main: true, learning: true, finance: true, network: true, account: false });
   const { pathname } = useLocation();
   const { user, logout } = useAuth();
   const { getSetting } = useSettings();
@@ -197,6 +209,7 @@ export default function StudentLayout() {
             </h1>
 
             <div className="flex items-center gap-3 ml-auto">
+              <NotificationBell />
               <div className="flex items-center gap-3 pl-3 border-l border-dark-100">
                 <div className="w-8 h-8 lg:w-9 lg:h-9 rounded-full bg-primary-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
                   {getInitials(user?.firstName, user?.lastName)}
