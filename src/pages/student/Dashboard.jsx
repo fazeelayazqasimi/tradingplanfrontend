@@ -101,7 +101,9 @@ export default function Dashboard() {
         if (results[7].status === "fulfilled" && results[7].value) setReferralStats(results[7].value.data?.data || results[7].value.data);
         if (results[8].status === "fulfilled" && results[8].value) {
           const rd = results[8].value.data?.data || results[8].value.data;
-          setReferralLink(rd?.referralLink || "");
+          const code = rd?.referralCode || rd?.code || "";
+          const baseUrl = import.meta.env.VITE_FRONTEND_URL || "https://the4xhub.com";
+          setReferralLink(code ? `${baseUrl}/register?ref=${code}` : rd?.referralLink || "");
         }
         const extractData = (res) => {
           if (!res?.data) return [];
