@@ -82,25 +82,32 @@ export default function Dashboard() {
           courseService.getCourses({ isFree: true, limit: 5, sort: "-order" }),
         ]);
         if (cancelled) return;
-        const enrolledData = results[0].status === "fulfilled" ? results[0].value : {};
-        const coursesList = enrolledData.data?.courses || enrolledData.data?.data || enrolledData.courses || enrolledData.data || [];
+        const enrolledRes = results[0].status === "fulfilled" ? results[0].value : {};
+        const enrolledBody = enrolledRes.data || {};
+        const coursesList = enrolledBody.data?.courses || enrolledBody.data || [];
         setEnrolled(Array.isArray(coursesList) ? coursesList.slice(0, 3) : []);
-        const signalsData = results[1].status === "fulfilled" ? results[1].value : {};
-        const signalsList = signalsData?.data?.data || signalsData?.data?.signals || signalsData?.data || [];
+        const signalsRes = results[1].status === "fulfilled" ? results[1].value : {};
+        const signalsBody = signalsRes.data || {};
+        const signalsList = signalsBody.data?.data || signalsBody.data?.signals || signalsBody.data || [];
         setSignals(Array.isArray(signalsList) ? signalsList.slice(0, 5) : []);
-        if (results[2].status === "fulfilled" && results[2].value) setWalletData(results[2].value.data || results[2].value);
-        if (results[3].status === "fulfilled" && results[3].value) setWalletStats(results[3].value.data || results[3].value);
+        if (results[2].status === "fulfilled" && results[2].value) setWalletData(results[2].value.data?.data || results[2].value.data);
+        if (results[3].status === "fulfilled" && results[3].value) setWalletStats(results[3].value.data?.data || results[3].value.data);
         if (results[4].status === "fulfilled" && results[4].value) {
-          const rd = results[4].value.data || results[4].value;
-          setRank(rd.rank || rd.data?.rank || null);
-          setNextRank(rd.nextRank || rd.data?.nextRank || null);
+          const rd = results[4].value.data?.data || results[4].value.data;
+          setRank(rd?.userRank?.currentRankId || null);
+          setNextRank(rd?.nextRank || null);
         }
-        if (results[7].status === "fulfilled" && results[7].value) setReferralStats(results[7].value.data || results[7].value);
-        if (results[9].status === "fulfilled") setFreeWebinars(results[9].value?.data?.data || results[9].value?.data?.webinars || []);
-        if (results[10].status === "fulfilled") setFreeZoomSessions(results[10].value?.data?.data || results[10].value?.data?.sessions || []);
-        if (results[11].status === "fulfilled") setMarketUpdates(results[11].value?.data?.data || results[11].value?.data?.updates || []);
-        if (results[12].status === "fulfilled") setAnnouncements(results[12].value?.data?.data || results[12].value?.data?.announcements || []);
-        if (results[13].status === "fulfilled") setFreeCourses(results[13].value?.data?.data || results[13].value?.data?.courses || []);
+        if (results[7].status === "fulfilled" && results[7].value) setReferralStats(results[7].value.data?.data || results[7].value.data);
+        const extractData = (res) => {
+          if (!res?.data) return [];
+          const body = res.data;
+          return body.data?.data || body.data?.webinars || body.data?.sessions || body.data?.updates || body.data?.announcements || body.data?.courses || body.data || [];
+        };
+        if (results[9].status === "fulfilled") setFreeWebinars(Array.isArray(results[9].value?.data?.data) ? results[9].value.data.data : extractData(results[9].value));
+        if (results[10].status === "fulfilled") setFreeZoomSessions(Array.isArray(results[10].value?.data?.data) ? results[10].value.data.data : extractData(results[10].value));
+        if (results[11].status === "fulfilled") setMarketUpdates(Array.isArray(results[11].value?.data?.data) ? results[11].value.data.data : extractData(results[11].value));
+        if (results[12].status === "fulfilled") setAnnouncements(Array.isArray(results[12].value?.data?.data) ? results[12].value.data.data : extractData(results[12].value));
+        if (results[13].status === "fulfilled") setFreeCourses(Array.isArray(results[13].value?.data?.data) ? results[13].value.data.data : extractData(results[13].value));
       } catch { if (!cancelled) toast.error("Failed to load dashboard data"); }
       finally { if (!cancelled) setLoading(false); }
     }

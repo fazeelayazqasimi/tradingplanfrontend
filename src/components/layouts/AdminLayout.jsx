@@ -1,6 +1,6 @@
 import { Link, useLocation, Outlet } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
-import { FiMenu, FiX, FiLayout, FiUsers, FiCreditCard, FiBookOpen, FiTrendingUp, FiBell, FiLink2, FiAward, FiDollarSign, FiSettings, FiLogOut, FiMessageSquare, FiHelpCircle, FiFileText, FiEdit, FiBarChart2, FiHome, FiLayers, FiDownload, FiTag, FiServer, FiImage, FiVideo, FiRadio, FiCalendar } from 'react-icons/fi';
+import { FiMenu, FiX, FiLayout, FiUsers, FiCreditCard, FiBookOpen, FiTrendingUp, FiBell, FiLink2, FiAward, FiDollarSign, FiSettings, FiLogOut, FiMessageSquare, FiHelpCircle, FiFileText, FiEdit, FiBarChart2, FiHome, FiLayers, FiDownload, FiTag, FiServer, FiImage, FiVideo, FiRadio, FiCalendar, FiChevronDown, FiChevronUp } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
 import { getInitials } from '../../utils/helpers';
@@ -10,35 +10,84 @@ import Modal from '../ui/Modal';
 import Button from '../ui/Button';
 import toast from 'react-hot-toast';
 
-const sidebarLinks = [
-  { path: '/admin/dashboard', label: 'Dashboard', icon: FiLayout },
-  { path: '/admin/students', label: 'Students', icon: FiUsers },
-  { path: '/admin/subscriptions', label: 'Subscriptions', icon: FiCreditCard },
-  { path: '/admin/courses', label: 'Courses', icon: FiBookOpen },
-  { path: '/admin/classes', label: 'Classes', icon: FiVideo },
-  { path: '/admin/assignments', label: 'Assignments', icon: FiEdit },
-  { path: '/admin/quizzes', label: 'Quizzes', icon: FiHelpCircle },
-  { path: '/admin/signals', label: 'Signals', icon: FiTrendingUp },
-  { path: '/admin/webinars', label: 'Webinars', icon: FiVideo },
-  { path: '/admin/zoom-sessions', label: 'Zoom Sessions', icon: FiRadio },
-  { path: '/admin/market-updates', label: 'Market Updates', icon: FiCalendar },
-  { path: '/admin/media', label: 'Media Library', icon: FiImage },
-  { path: '/admin/announcements', label: 'Announcements', icon: FiBell },
-  { path: '/admin/referrals', label: 'Referrals', icon: FiLink2 },
-  { path: '/admin/crm', label: 'Student CRM', icon: FiUsers },
-  { path: '/admin/ranks', label: 'Ranks', icon: FiAward },
-  { path: '/admin/withdrawals', label: 'Withdrawals', icon: FiDollarSign },
-  { path: '/admin/wallets', label: 'Wallets', icon: FiDollarSign },
-  { path: '/admin/deposits', label: 'Deposits', icon: FiDownload },
-  { path: '/admin/brokers', label: 'Trading Brokers', icon: FiServer },
-  { path: '/admin/coupons', label: 'Coupons & PINs', icon: FiTag },
-  { path: '/admin/payment-accounts', label: 'Payment Accounts', icon: FiLayers },
-  { path: '/admin/certificates', label: 'Certificates', icon: FiFileText },
-  { path: '/admin/support', label: 'Support', icon: FiMessageSquare },
-  { path: '/admin/reports', label: 'Reports', icon: FiBarChart2 },
-  { path: '/admin/content', label: 'Website Content', icon: FiLayout },
-  { path: '/admin/market-overview', label: 'Market Overview', icon: FiTrendingUp },
-  { path: '/admin/settings', label: 'Settings', icon: FiSettings },
+const sidebarSections = [
+  {
+    id: 'main',
+    title: 'Main',
+    icon: FiHome,
+    items: [
+      { path: '/admin/dashboard', label: 'Dashboard', icon: FiLayout },
+      { path: '/admin/students', label: 'Students', icon: FiUsers },
+      { path: '/admin/crm', label: 'Student CRM', icon: FiUsers },
+    ],
+  },
+  {
+    id: 'education',
+    title: 'Education',
+    icon: FiBookOpen,
+    items: [
+      { path: '/admin/courses', label: 'Courses', icon: FiBookOpen },
+      { path: '/admin/signals', label: 'Signals', icon: FiTrendingUp },
+      { path: '/admin/webinars', label: 'Webinars', icon: FiVideo },
+      { path: '/admin/zoom-sessions', label: 'Zoom Sessions', icon: FiRadio },
+      { path: '/admin/classes', label: 'Classes', icon: FiVideo },
+      { path: '/admin/assignments', label: 'Assignments', icon: FiEdit },
+      { path: '/admin/quizzes', label: 'Quizzes', icon: FiHelpCircle },
+      { path: '/admin/certificates', label: 'Certificates', icon: FiFileText },
+    ],
+  },
+  {
+    id: 'finance',
+    title: 'Finance',
+    icon: FiDollarSign,
+    items: [
+      { path: '/admin/subscriptions', label: 'Subscriptions', icon: FiCreditCard },
+      { path: '/admin/deposits', label: 'Deposits', icon: FiDownload },
+      { path: '/admin/withdrawals', label: 'Withdrawals', icon: FiDollarSign },
+      { path: '/admin/wallets', label: 'Wallets', icon: FiDollarSign },
+      { path: '/admin/payment-accounts', label: 'Payment Accounts', icon: FiLayers },
+      { path: '/admin/coupons', label: 'Coupons & PINs', icon: FiTag },
+    ],
+  },
+  {
+    id: 'marketing',
+    title: 'Marketing',
+    icon: FiImage,
+    items: [
+      { path: '/admin/media', label: 'Media Library', icon: FiImage },
+      { path: '/admin/announcements', label: 'Announcements', icon: FiBell },
+      { path: '/admin/content', label: 'Website Content', icon: FiLayout },
+      { path: '/admin/market-updates', label: 'Market Updates', icon: FiCalendar },
+      { path: '/admin/brokers', label: 'Trading Brokers', icon: FiServer },
+    ],
+  },
+  {
+    id: 'network',
+    title: 'Network',
+    icon: FiLink2,
+    items: [
+      { path: '/admin/referrals', label: 'Referrals', icon: FiLink2 },
+      { path: '/admin/ranks', label: 'Ranks', icon: FiAward },
+      { path: '/admin/market-overview', label: 'Market Overview', icon: FiTrendingUp },
+    ],
+  },
+  {
+    id: 'support',
+    title: 'Support',
+    icon: FiMessageSquare,
+    items: [
+      { path: '/admin/support', label: 'Support', icon: FiMessageSquare },
+      { path: '/admin/reports', label: 'Reports', icon: FiBarChart2 },
+    ],
+  },
+  {
+    id: 'settings',
+    title: 'Settings',
+    icon: FiSettings,
+    items: [
+      { path: '/admin/settings', label: 'Settings', icon: FiSettings },
+    ],
+  },
 ];
 
 const bottomNavLinks = [
@@ -51,6 +100,7 @@ const bottomNavLinks = [
 
 export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [openSections, setOpenSections] = useState({ main: true, education: true, finance: true, marketing: true, network: true, support: true, settings: true });
   const [pendingCount, setPendingCount] = useState(0);
   const [pendingList, setPendingList] = useState([]);
   const [pendingModalOpen, setPendingModalOpen] = useState(false);
@@ -108,9 +158,20 @@ export default function AdminLayout() {
   }, [pendingCount]);
 
   const getPageTitle = () => {
-    const current = sidebarLinks.find(l => l.path === pathname);
-    return current?.label || 'Admin';
+    for (const section of sidebarSections) {
+      const current = section.items.find(l => pathname === l.path || pathname.startsWith(l.path + '/'));
+      if (current) return current.label;
+    }
+    return 'Admin';
   };
+
+  const toggleSection = (id) => {
+    setOpenSections((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const isSectionActive = (section) => section.items.some(l => pathname === l.path || pathname.startsWith(l.path + '/'));
+
+  const isItemActive = (path) => pathname === path || pathname.startsWith(path + '/');
 
   return (
     <div className="min-h-screen bg-dark-50 font-inter pb-20 lg:pb-0">
@@ -149,37 +210,55 @@ export default function AdminLayout() {
           </button>
         </div>
 
-        <nav className="p-3 space-y-0.5 overflow-y-auto h-[calc(100%-8rem)] scrollbar-thin">
-          {sidebarLinks.map((link) => {
-            const Icon = link.icon;
-            const active = pathname === link.path;
-            const showBadge = (link.path === '/admin/subscriptions' && pendingCount > 0) || (link.path === '/admin/deposits' && pendingDeposits > 0);
+        <nav className="p-3 space-y-1 overflow-y-auto h-[calc(100%-8rem)] scrollbar-thin">
+          {sidebarSections.map((section) => {
+            const SectionIcon = section.icon;
+            const open = openSections[section.id];
+            const active = isSectionActive(section);
             return (
-              <Link
-                key={link.path}
-                to={link.path}
-                onClick={() => setSidebarOpen(false)}
-                className={`group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
-                  active
-                    ? 'bg-primary-50 text-primary-600 shadow-sm'
-                    : 'text-dark-500 hover:bg-dark-50 hover:text-dark-700'
-                }`}
-              >
-                <Icon
-                  size={18}
-                  className={`shrink-0 transition-colors duration-200 ${
+              <div key={section.id} className="space-y-0.5">
+                <button
+                  onClick={() => toggleSection(section.id)}
+                  className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
                     active
-                      ? 'text-primary-500'
-                      : 'text-dark-400 group-hover:text-dark-600'
+                      ? 'bg-primary-50 text-primary-600'
+                      : 'text-dark-500 hover:bg-dark-50 hover:text-dark-700'
                   }`}
-                />
-                <span className="flex-1">{link.label}</span>
-                {showBadge && (
-                  <span className="flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-red-500 text-[11px] font-bold text-white leading-none">
-                    {link.path === '/admin/subscriptions' ? (pendingCount > 99 ? '99+' : pendingCount) : (pendingDeposits > 99 ? '99+' : pendingDeposits)}
-                  </span>
+                >
+                  <SectionIcon size={18} className="shrink-0" />
+                  <span className="flex-1 text-left">{section.title}</span>
+                  {open ? <FiChevronUp size={14} className="shrink-0" /> : <FiChevronDown size={14} className="shrink-0" />}
+                </button>
+                {open && (
+                  <div className="ml-6 space-y-0.5">
+                    {section.items.map((item) => {
+                      const ItemIcon = item.icon;
+                      const itemActive = isItemActive(item.path);
+                      const showBadge = (item.path === '/admin/subscriptions' && pendingCount > 0) || (item.path === '/admin/deposits' && pendingDeposits > 0);
+                      return (
+                        <Link
+                          key={item.path}
+                          to={item.path}
+                          onClick={() => setSidebarOpen(false)}
+                          className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                            itemActive
+                              ? 'bg-primary-50 text-primary-600'
+                              : 'text-dark-400 hover:bg-dark-50 hover:text-dark-700'
+                          }`}
+                        >
+                          <ItemIcon size={15} className="shrink-0" />
+                          <span className="flex-1">{item.label}</span>
+                          {showBadge && (
+                            <span className="flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-red-500 text-[11px] font-bold text-white leading-none">
+                              {item.path === '/admin/subscriptions' ? (pendingCount > 99 ? '99+' : pendingCount) : (pendingDeposits > 99 ? '99+' : pendingDeposits)}
+                            </span>
+                          )}
+                        </Link>
+                      );
+                    })}
+                  </div>
                 )}
-              </Link>
+              </div>
             );
           })}
         </nav>
