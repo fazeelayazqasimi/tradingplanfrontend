@@ -119,9 +119,8 @@ export default function Referrals() {
         const cd = codeRes.value?.data?.data || codeRes.value?.data || codeRes.value;
         const referralCode = cd?.code || cd?.referralCode || cd || '';
         setCode(typeof referralCode === 'string' ? referralCode : referralCode?.toString() || '');
-        const baseUrl = import.meta.env.VITE_FRONTEND_URL || 'https://the4xhub.com';
         const code = typeof referralCode === 'string' ? referralCode : referralCode?.code || '';
-        setReferralLink(`${baseUrl}/register?ref=${code}`);
+        setReferralLink(`https://the4xhub.com/register?ref=${code}`);
       }
 
       if (statsRes.status === 'fulfilled') {
