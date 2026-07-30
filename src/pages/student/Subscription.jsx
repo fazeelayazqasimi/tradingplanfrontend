@@ -44,6 +44,8 @@ export default function Subscription() {
   const [loading, setLoading] = useState(true);
   const [subscribing, setSubscribing] = useState(null);
   const [wallet, setWallet] = useState(null);
+  const [walletBalances, setWalletBalances] = useState({ main: 0, funding: 0 });
+  const [activationInfo, setActivationInfo] = useState({ membershipPrice: 120, uplineActivationDiscount: 20, fundingPercent: 20 });
   const [confirmPlan, setConfirmPlan] = useState(null);
   const [showConfirm, setShowConfirm] = useState(false);
 
@@ -80,11 +82,33 @@ export default function Subscription() {
 
   const fetchWallet = useCallback(async () => {
     try {
-      const res = await walletService.getWallet();
-      const data = res?.data?.data || res?.data || res;
-      setWallet(data);
+      const [walletRes, allWalletsRes, infoRes] = await Promise.allSettled([
+        walletService.getWallet(),
+        walletService.getAllWallets(),
+        api.get('/subscriptions/activation-info'),
+      ]);
+      if (walletRes.status === 'fulfilled') {
+        const data = walletRes.value?.data?.data || walletRes.value?.data || walletRes.value;
+        setWallet(data);
+      }
+      if (allWalletsRes.status === 'fulfilled') {
+        const wallets = allWalletsRes.value?.data?.data || allWalletsRes.value?.data || [];
+        setWalletBalances({
+          main: wallets.find(w => w.type === 'main')?.availableBalance || 0,
+          funding: wallets.find(w => w.type === 'funding')?.availableBalance || 0,
+        });
+      }
+      if (infoRes.status === 'fulfilled') {
+        const data = infoRes.value?.data?.data || infoRes.value?.data || {};
+        setActivationInfo(prev => ({ ...prev, ...data }));
+      }
     } catch { /* silent */ }
   }, []);
+
+  const fundingPercent = activationInfo.fundingPercent || 20;
+  const price = activationInfo.membershipPrice;
+  const maxFunding = Math.round((price * fundingPercent) / 100);
+  const remainder = price - maxFunding;
 
   useEffect(() => {
     let cancelled = false;
@@ -338,6 +362,14 @@ export default function Subscription() {
               </div>
               <div className="text-right">
                 <p className="text-xs text-dark-400">Pending: {formatCurrency(wallet.pendingBalance ?? 0)}</p>
+              </div>
+            </div>
+            <div className="mt-3 text-xs text-dark-400 bg-dark-50 rounded-xl p-3 flex items-start gap-2">
+              <FiInfo size={14} className="shrink-0 mt-0.5" />
+              <div>
+                <p><strong>Funding Wallet:</strong> ${walletBalances.funding.toFixed(2)} (max {fundingPercent}% = ${maxFunding})</p>
+                <p><strong>Main Wallet:</strong> ${walletBalances.main.toFixed(2)}</p>
+                {(walletBalances.main + walletBalances.funding) < price && <p className="text-red-500 mt-1">Insufficient balance. You need ${(price - walletBalances.main - walletBalances.funding).toFixed(2)} more.</p>}
               </div>
             </div>
           </Card>
