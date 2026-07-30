@@ -286,7 +286,7 @@ export default function Settings() {
   );
 
   const renderField = (field) => {
-    const value = editedSettings[field.key] ?? '';
+    const value = editedSettings[field.key] ?? settings[field.key] ?? '';
     const isDirty = dirtyFields.has(field.key);
     const isReadonly = field.readOnly;
 
@@ -355,6 +355,59 @@ export default function Settings() {
               </button>
             )}
           </div>
+        </div>
+      );
+    }
+
+    if (field.type === 'select') {
+      return (
+        <div key={field.key} className="space-y-1.5">
+          <label className="block text-sm font-medium text-dark-600 mb-1.5">{field.label}</label>
+          <div className="flex items-center gap-3">
+            <select
+              value={value}
+              onChange={(e) => handleChange(field.key, e.target.value)}
+              className="flex-1 text-sm border border-dark-200 rounded-xl px-4 py-2.5 bg-white text-ink outline-none focus:border-primary-500 transition-colors"
+            >
+              {(field.options || []).map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+            {!isReadonly && isDirty && (
+              <button onClick={() => handleSaveField(field.key)} disabled={saving}
+                className="ml-2 rounded-lg p-2.5 text-primary-500 hover:bg-primary-50 transition-colors disabled:opacity-50">
+                <FiSave size={16} />
+              </button>
+            )}
+          </div>
+          {field.description && <p className="text-xs text-dark-400 mt-1">{field.description}</p>}
+        </div>
+      );
+    }
+
+    if (field.type === 'number') {
+      return (
+        <div key={field.key} className="space-y-1.5">
+          <label className="block text-sm font-medium text-dark-600 mb-1.5">{field.label}</label>
+          <div className="flex items-center gap-3">
+            <Input
+              label={field.label}
+              icon={field.icon}
+              type="number"
+              value={value}
+              onChange={(e) => handleChange(field.key, e.target.value)}
+              placeholder={field.placeholder}
+              readOnly={isReadonly}
+              className={`${isDirty ? 'border-amber-400' : ''}`}
+            />
+            {!isReadonly && isDirty && (
+              <button onClick={() => handleSaveField(field.key)} disabled={saving}
+                className="ml-2 rounded-lg p-2.5 text-primary-500 hover:bg-primary-50 transition-colors disabled:opacity-50">
+                <FiSave size={16} />
+              </button>
+            )}
+          </div>
+          {field.description && <p className="text-xs text-dark-400 mt-1">{field.description}</p>}
         </div>
       );
     }
@@ -434,62 +487,7 @@ export default function Settings() {
                 const sectionDirty = (SETTING_FIELDS[section.id] || []).some(
                   (f) => !f.readOnly && dirtyFields.has(f.key)
                 );
-if (field.type === 'select') {
-      const value = editedSettings[field.key] ?? settings[field.key] ?? '';
-      const isDirty = dirtyFields.has(field.key);
-      return (
-        <div key={field.key} className="space-y-1.5">
-          <label className="block text-sm font-medium text-dark-600 mb-1.5">{field.label}</label>
-          <div className="flex items-center gap-3">
-            <select
-              value={value}
-              onChange={(e) => handleChange(field.key, e.target.value)}
-              className="flex-1 text-sm border border-dark-200 rounded-xl px-4 py-2.5 bg-white text-ink outline-none focus:border-primary-500 transition-colors"
-            >
-              {(field.options || []).map((opt) => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
-            {!isReadonly && isDirty && (
-              <button onClick={() => handleSaveField(field.key)} disabled={saving}
-                className="ml-2 rounded-lg p-2.5 text-primary-500 hover:bg-primary-50 transition-colors disabled:opacity-50">
-                <FiSave size={16} />
-              </button>
-            )}
-          </div>
-          {field.description && <p className="text-xs text-dark-400 mt-1">{field.description}</p>}
-        </div>
-      );
-    }
-
-    if (field.type === 'number') {
-      return (
-        <div key={field.key} className="space-y-1.5">
-          <label className="block text-sm font-medium text-dark-600 mb-1.5">{field.label}</label>
-          <div className="flex items-center gap-3">
-            <Input
-              label={field.label}
-              icon={field.icon}
-              type="number"
-              value={editedSettings[field.key] ?? settings[field.key] ?? ''}
-              onChange={(e) => handleChange(field.key, e.target.value)}
-              placeholder={field.placeholder}
-              readOnly={isReadonly}
-              className={`${dirtyFields.has(field.key) ? 'border-amber-400' : ''}`}
-            />
-            {!isReadonly && dirtyFields.has(field.key) && (
-              <button onClick={() => handleSaveField(field.key)} disabled={saving}
-                className="ml-2 rounded-lg p-2.5 text-primary-500 hover:bg-primary-50 transition-colors disabled:opacity-50">
-                <FiSave size={16} />
-              </button>
-            )}
-          </div>
-          {field.description && <p className="text-xs text-dark-400 mt-1">{field.description}</p>}
-        </div>
-      );
-    }
-
-    return (
+                return (
                   <button
                     key={section.id}
                     onClick={() => setActiveSection(section.id)}
