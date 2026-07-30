@@ -52,7 +52,7 @@ export default function Subscription() {
       const res = await api.get('/settings/public');
       const data = res?.data?.data || res?.data?.settings || res?.data || {};
       const settings = Array.isArray(data) ? data.reduce((acc, s) => { acc[s.key] = s.value; return acc; }, {}) : data;
-      const price = Number(settings.membership_price) || 100;
+      const price = Number(settings.membership_price) || 120;
       setPlans([
         {
           key: 'yearly',
@@ -65,7 +65,7 @@ export default function Subscription() {
       ]);
     } catch {
       setPlans([
-        { key: 'yearly', name: 'Yearly', amount: 100, period: 'year', features: ['Full platform access'], popular: true },
+        { key: 'yearly', name: 'Yearly', amount: 120, period: 'year', features: ['Full platform access'], popular: true },
       ]);
     }
   }, []);

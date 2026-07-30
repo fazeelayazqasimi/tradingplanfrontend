@@ -17,7 +17,7 @@ const DEFAULTS = {
   social_twitter: '#',
   social_youtube: '#',
   social_telegram: '#',
-  membership_price: '100',
+  membership_price: '120',
   membership_duration: '365',
   withdrawal_fee_type: 'percent',
   withdrawal_fee_percent: '5',
