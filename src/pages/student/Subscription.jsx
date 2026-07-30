@@ -8,6 +8,7 @@ import {
   FiCalendar,
   FiDollarSign,
   FiShield,
+  FiInfo,
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Card from '../../components/ui/Card';
