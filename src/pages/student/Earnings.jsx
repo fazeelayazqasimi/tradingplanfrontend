@@ -39,7 +39,7 @@ export default function Earnings() {
       }
       if (txRes.status === 'fulfilled') {
         const td = txRes.value?.data?.data || txRes.value?.data?.transactions || txRes.value?.data || [];
-        setTransactions(Array.isArray(td) ? td : []);
+        setTransactions(Array.isArray(td) ? td.filter(tx => tx.category !== 'deposit') : []);
       }
     } catch {}
     setLoading(false);
