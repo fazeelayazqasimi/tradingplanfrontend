@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { FiSearch, FiEye, FiUserX, FiUserCheck, FiMail, FiPhone, FiCalendar, FiTrash2, FiAward, FiTrendingUp, FiDollarSign } from 'react-icons/fi';
+import { FiSearch, FiEye, FiUserX, FiUserCheck, FiMail, FiPhone, FiCalendar, FiTrash2, FiAward, FiTrendingUp, FiDollarSign, FiZap } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Button from '../../components/ui/Button';
 import DataTable from '../../components/ui/DataTable';
@@ -108,6 +108,7 @@ export default function Students() {
   const [detailLoading, setDetailLoading] = useState(false);
   const [togglingId, setTogglingId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
+  const [activatingId, setActivatingId] = useState(null);
   const [ranks, setRanks] = useState([]);
   const [selectedRankId, setSelectedRankId] = useState('');
   const [overridingRank, setOverridingRank] = useState(false);
@@ -186,6 +187,25 @@ export default function Students() {
     }
   };
 
+  const handleActivateStudent = async (student) => {
+    const studentId = getStudentId(student);
+    try {
+      setActivatingId(studentId);
+      await adminService.activateStudent(studentId);
+      toast.success(`Student ${student.firstName} ${student.lastName} activated successfully`);
+      setStudents((prev) =>
+        prev.map((s) => (getStudentId(s) === studentId ? { ...s, isApproved: true, subscriptionStatus: 'active' } : s))
+      );
+      if (getStudentId(selectedStudent) === studentId) {
+        setSelectedStudent((prev) => (prev ? { ...prev, isApproved: true, subscriptionStatus: 'active' } : prev));
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || err.message || 'Failed to activate student');
+    } finally {
+      setActivatingId(null);
+    }
+  };
+
   const handleToggleActive = async (student) => {
     const studentId = getStudentId(student);
     try {
@@ -222,6 +242,16 @@ export default function Students() {
           >
             <FiEye className="h-4 w-4" />
           </button>
+          {!row.isApproved && (
+            <button
+              onClick={() => handleActivateStudent(row)}
+              disabled={activatingId === rowId}
+              className="rounded-xl p-2 text-dark-400 hover:bg-amber-50 hover:text-amber-600 transition-all duration-200 disabled:opacity-50"
+              title="Activate Subscription"
+            >
+              <FiZap className="h-4 w-4" />
+            </button>
+          )}
           <button
             onClick={() => handleToggleActive(row)}
             disabled={togglingId === rowId}
@@ -452,6 +482,16 @@ export default function Students() {
             </div>
 
             <div className="flex items-center gap-3 pt-2">
+              {!selectedStudent.isApproved && (
+                <Button
+                  variant="primary"
+                  onClick={() => handleActivateStudent(selectedStudent)}
+                  disabled={activatingId === getStudentId(selectedStudent)}
+                  loading={activatingId === getStudentId(selectedStudent)}
+                >
+                  <FiZap className="mr-1.5" size={16} /> Activate Subscription
+                </Button>
+              )}
               <Button
                 variant={selectedStudent.isActive !== false ? 'danger' : 'success'}
                 onClick={() => handleToggleActive(selectedStudent)}

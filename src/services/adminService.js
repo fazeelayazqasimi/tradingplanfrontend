@@ -87,6 +87,7 @@ const adminService = {
   deletePurchase: (id) => unwrap(api.delete(`/course-purchases/${id}`)),
   deleteUser: (id) => unwrap(api.delete(`/users/${id}`)),
   deleteSubscription: (id) => unwrap(api.delete(`/subscriptions/${id}`)),
+  activateStudent: (userId) => unwrap(api.post(`/subscriptions/admin-activate/${userId}`)),
   deleteWithdrawal: (id) => unwrap(api.delete(`/withdrawals/${id}`)),
   deleteRank: (id) => unwrap(api.delete(`/ranks/${id}`)),
   deleteTicket: (id) => unwrap(api.delete(`/support/${id}`)),
