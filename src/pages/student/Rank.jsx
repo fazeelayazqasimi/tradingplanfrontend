@@ -56,6 +56,15 @@ const RANK_BORDER = {
   D6: 'border-emerald-200',
 };
 
+const RANK_GLOW = {
+  D1: 'shadow-gray-300/50',
+  D2: 'shadow-amber-300/50',
+  D3: 'shadow-blue-300/50',
+  D4: 'shadow-purple-300/50',
+  D5: 'shadow-rose-300/50',
+  D6: 'shadow-emerald-300/50',
+};
+
 
 
 export default function Rank() {
@@ -158,17 +167,24 @@ export default function Rank() {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: 'spring', stiffness: 200 }}>
-            <Card className="p-6 flex flex-col items-center justify-center text-center">
-              <div className={`relative w-36 h-36 rounded-full bg-gradient-to-br ${RANK_GRADIENTS[rankName] || 'from-primary-400 to-primary-600'} flex items-center justify-center shadow-lg`}>
-                <div className="absolute inset-1 rounded-full bg-white" />
-                <div className="relative z-10 flex flex-col items-center">
-                  <FiAward className="text-3xl text-white mb-1" />
-                  <span className="text-4xl font-black text-white">{rankName}</span>
+            <Card className={`p-6 flex flex-col items-center justify-center text-center border-2 ${RANK_BORDER[rankName] || 'border-primary-200'}`}>
+              <div className={`relative w-40 h-40 rounded-full bg-gradient-to-br ${RANK_GRADIENTS[rankName] || 'from-primary-400 to-primary-600'} flex items-center justify-center shadow-lg ${RANK_GLOW[rankName] || 'shadow-primary-300/50'}`}>
+                <div className="absolute inset-[3px] rounded-full bg-white flex items-center justify-center">
+                  <div className="flex flex-col items-center">
+                    <FiAward className={`text-3xl mb-1 ${rankName ? 'text-transparent bg-clip-text bg-gradient-to-br ' + (RANK_GRADIENTS[rankName] || 'from-primary-400 to-primary-600') : 'text-primary-500'}`} />
+                    <span className={`text-4xl font-black bg-clip-text text-transparent bg-gradient-to-br ${RANK_GRADIENTS[rankName] || 'from-primary-400 to-primary-600'}`}>{rankName}</span>
+                  </div>
                 </div>
               </div>
-              <div className="mt-4">
-                <Badge color="info" className="text-sm px-3 py-1">
-                  ${nextRankData?.activationGain ?? '?'}/referral · {nextRankData?.quantification ?? '?'}% Profit Share · ${nextRankData?.indirectIncome ?? '?'} indirect
+              <div className="mt-5 flex gap-2 flex-wrap justify-center">
+                <Badge color="info" className="text-xs px-3 py-1">
+                  ${nextRankData?.activationGain ?? '?'}/referral
+                </Badge>
+                <Badge color="success" className="text-xs px-3 py-1">
+                  {nextRankData?.quantification ?? '?'}% Profit Share
+                </Badge>
+                <Badge color="primary" className="text-xs px-3 py-1">
+                  ${nextRankData?.indirectIncome ?? '?'} indirect
                 </Badge>
               </div>
               <p className="mt-3 text-sm text-dark-500">
@@ -278,6 +294,12 @@ export default function Rank() {
           <h2 className="text-lg font-semibold text-ink mb-5">All Ranks</h2>
           {loading ? (
             <Skeleton count={3} className="h-20 w-full" />
+          ) : displayRanks.length === 0 ? (
+            <div className="text-center py-12">
+              <FiAward className="mx-auto text-5xl text-dark-300 mb-4" />
+              <p className="text-lg font-semibold text-dark-500">No ranks configured yet</p>
+              <p className="text-sm text-dark-400 mt-1">Check back later or contact support.</p>
+            </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {displayRanks.map((rank, idx) => {

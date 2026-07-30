@@ -134,8 +134,8 @@ export default function Dashboard() {
   const directReferrals = referralStats?.directReferrals || 0;
   const indirectReferrals = referralStats?.indirectReferrals || 0;
   const teamSize = directReferrals + indirectReferrals;
-  const currentRankName = rank?.name || "Bronze";
-  const nextRankName = nextRank?.name || "Silver";
+  const currentRankName = rank?.name || "—";
+  const nextRankName = nextRank?.name || "—";
 
   const goldTrend = marketOverview?.goldTrend || "neutral";
   const marketNews = marketOverview?.marketNews || "";
