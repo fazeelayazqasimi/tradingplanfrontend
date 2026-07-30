@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FiPlus, FiEdit, FiTrash2, FiSearch, FiFilter, FiCalendar, FiClock, FiUsers, FiLock, FiUnlock, FiChevronDown, FiChevronUp, FiChevronRight, FiCheckCircle, FiXCircle, FiAlertTriangle, FiMoreHorizontal, FiDownload, FiUpload, FiRefreshCw } from 'react-icons/fi';
-import { Link } from 'react-router-dom';
+import Input from '../../components/ui/Input';
 import toast from 'react-hot-toast';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
@@ -40,6 +40,13 @@ export default function Webinars() {
   const [webinarToDelete, setWebinarToDelete] = useState(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [formModalOpen, setFormModalOpen] = useState(false);
+  const [editingWebinar, setEditingWebinar] = useState(null);
+  const [form, setForm] = useState({
+    title: '', description: '', category: 'free-webinar', date: '', duration: 60,
+    instructorName: '', maxParticipants: 100, isFree: true, webinarUrl: '', recordedUrl: '',
+  });
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -84,6 +91,55 @@ export default function Webinars() {
       setWebinars((prev) => prev.filter((w) => w._id !== webinarToDelete._id));
     } catch {
       toast.error('Failed to delete webinar');
+    }
+  };
+
+  const openCreateModal = () => {
+    setEditingWebinar(null);
+    setForm({ title: '', description: '', category: 'free-webinar', date: '', duration: 60, instructorName: '', maxParticipants: 100, isFree: true, webinarUrl: '', recordedUrl: '' });
+    setFormModalOpen(true);
+  };
+
+  const openEditModal = (webinar) => {
+    setEditingWebinar(webinar);
+    setForm({
+      title: webinar.title || '',
+      description: webinar.description || '',
+      category: webinar.category || 'free-webinar',
+      date: webinar.date ? webinar.date.slice(0, 16) : '',
+      duration: webinar.duration || 60,
+      instructorName: webinar.instructorName || '',
+      maxParticipants: webinar.maxParticipants || 100,
+      isFree: webinar.isFree !== undefined ? webinar.isFree : true,
+      webinarUrl: webinar.webinarUrl || '',
+      recordedUrl: webinar.recordedUrl || '',
+    });
+    setFormModalOpen(true);
+  };
+
+  const handleFormChange = (field, value) => setForm((prev) => ({ ...prev, [field]: value }));
+
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setSubmitting(true);
+      const payload = { ...form };
+      if (payload.date) payload.date = new Date(payload.date).toISOString();
+      if (editingWebinar) {
+        await adminService.updateWebinar(editingWebinar._id, payload);
+        toast.success('Webinar updated');
+      } else {
+        await adminService.createWebinar(payload);
+        toast.success('Webinar created');
+      }
+      setFormModalOpen(false);
+      setEditingWebinar(null);
+      const listRes = await adminService.getWebinars({ page: 1, limit: 20, sort: '-date' });
+      setWebinars(listRes.data?.data || listRes.data || []);
+    } catch (err) {
+      toast.error(err.response?.data?.message || err.message || 'Failed to save webinar');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -148,11 +204,9 @@ export default function Webinars() {
           <h1 className="text-[28px] font-extrabold text-ink leading-tight">Webinars</h1>
           <p className="mt-1 text-[15px] text-dark-500">Manage free and premium webinars for students</p>
         </div>
-        <Link to="/admin/webinars/new">
-          <Button>
-            <FiPlus size={18} className="mr-2" /> New Webinar
-          </Button>
-        </Link>
+        <Button onClick={openCreateModal}>
+          <FiPlus size={18} className="mr-2" /> New Webinar
+        </Button>
       </div>
 
       {stats && (
@@ -241,9 +295,9 @@ export default function Webinars() {
                     >
                       {webinar.isPublished ? <FiCheckCircle size={16} className="text-emerald-500" /> : <FiXCircle size={16} className="text-dark-300" />}
                     </button>
-                    <Link to={`/admin/webinars/${webinar._id}/edit`} className="p-2 rounded-lg hover:bg-dark-50 text-dark-400 hover:text-ink transition-colors">
+                    <button onClick={() => openEditModal(webinar)} className="p-2 rounded-lg hover:bg-dark-50 text-dark-400 hover:text-ink transition-colors">
                       <FiEdit size={16} />
-                    </Link>
+                    </button>
                     <button
                       onClick={() => { setWebinarToDelete(webinar); setDeleteModalOpen(true); }}
                       className="p-2 rounded-lg hover:bg-red-50 text-dark-400 hover:text-red-600 transition-colors"
@@ -258,6 +312,50 @@ export default function Webinars() {
           ))
         )}
       </motion.div>
+
+      <Modal isOpen={formModalOpen} onClose={() => { setFormModalOpen(false); setEditingWebinar(null); }} title={editingWebinar ? 'Edit Webinar' : 'New Webinar'} size="lg">
+        <form onSubmit={handleFormSubmit} className="space-y-4">
+          <Input label="Title" value={form.title} onChange={(e) => handleFormChange('title', e.target.value)} required />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[12px] font-semibold uppercase tracking-wider text-dark-500 mb-1.5">Category</label>
+              <select value={form.category} onChange={(e) => handleFormChange('category', e.target.value)} className="w-full rounded-[11px] border border-dark-200 bg-dark-50 px-4 py-3 text-[14.5px] text-ink outline-none focus:border-primary-500 focus:bg-white transition-colors">
+                <option value="free-webinar">Free Webinar</option>
+                <option value="premium-webinar">Premium Webinar</option>
+                <option value="zoom-session">Zoom Session</option>
+                <option value="market-update">Market Update</option>
+              </select>
+            </div>
+            <Input label="Duration (min)" type="number" value={form.duration} onChange={(e) => handleFormChange('duration', e.target.value)} />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[12px] font-semibold uppercase tracking-wider text-dark-500 mb-1.5">Date & Time</label>
+              <input type="datetime-local" value={form.date} onChange={(e) => handleFormChange('date', e.target.value)} required className="w-full rounded-[11px] border border-dark-200 bg-dark-50 px-4 py-3 text-[14.5px] text-ink outline-none focus:border-primary-500 focus:bg-white transition-colors" />
+            </div>
+            <Input label="Instructor Name" value={form.instructorName} onChange={(e) => handleFormChange('instructorName', e.target.value)} />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <Input label="Max Participants" type="number" value={form.maxParticipants} onChange={(e) => handleFormChange('maxParticipants', e.target.value)} />
+            <Input label="Webinar URL" value={form.webinarUrl} onChange={(e) => handleFormChange('webinarUrl', e.target.value)} placeholder="https://..." />
+          </div>
+          <Input label="Recorded URL" value={form.recordedUrl} onChange={(e) => handleFormChange('recordedUrl', e.target.value)} placeholder="https://..." />
+          <div>
+            <label className="block text-[12px] font-semibold uppercase tracking-wider text-dark-500 mb-1.5">Description</label>
+            <textarea value={form.description} onChange={(e) => handleFormChange('description', e.target.value)} rows={3} className="w-full rounded-[11px] border border-dark-200 bg-dark-50 px-4 py-3 text-[14.5px] text-ink placeholder-dark-400 outline-none focus:border-primary-500 focus:bg-white transition-colors resize-none" />
+          </div>
+          <div className="flex items-center gap-6">
+            <label className="flex items-center gap-2 text-sm text-ink cursor-pointer">
+              <input type="checkbox" checked={form.isFree} onChange={(e) => handleFormChange('isFree', e.target.checked)} className="rounded border-dark-300" />
+              Free Webinar
+            </label>
+          </div>
+          <div className="flex items-center gap-3 pt-4 border-t border-dark-100">
+            <Button type="submit" loading={submitting}>{editingWebinar ? 'Update Webinar' : 'Create Webinar'}</Button>
+            <Button type="button" variant="outline" onClick={() => { setFormModalOpen(false); setEditingWebinar(null); }} disabled={submitting}>Cancel</Button>
+          </div>
+        </form>
+      </Modal>
 
       <Modal isOpen={deleteModalOpen} onClose={() => { setDeleteModalOpen(false); setWebinarToDelete(null); }} title="Delete Webinar" size="sm">
         <div className="space-y-4">

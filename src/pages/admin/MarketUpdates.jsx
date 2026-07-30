@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FiPlus, FiEdit, FiTrash2, FiSearch, FiFilter, FiCalendar, FiClock, FiTag, FiLock, FiUnlock, FiMoreHorizontal, FiCheckCircle, FiXCircle, FiFlag, FiChevronDown, FiChevronUp } from 'react-icons/fi';
-import { Link } from 'react-router-dom';
+import Input from '../../components/ui/Input';
 import toast from 'react-hot-toast';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
@@ -32,6 +32,59 @@ export default function MarketUpdates() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [updateToDelete, setUpdateToDelete] = useState(null);
   const [page, setPage] = useState(1);
+  const [formModalOpen, setFormModalOpen] = useState(false);
+  const [editingUpdate, setEditingUpdate] = useState(null);
+  const [form, setForm] = useState({
+    title: '', content: '', category: 'market-update', type: 'text',
+    summary: '', contentUrl: '', isPublished: true, pinned: false,
+  });
+  const [submitting, setSubmitting] = useState(false);
+
+  const openCreateModal = () => {
+    setEditingUpdate(null);
+    setForm({ title: '', content: '', category: 'market-update', type: 'text', summary: '', contentUrl: '', isPublished: true, pinned: false });
+    setFormModalOpen(true);
+  };
+
+  const openEditModal = (update) => {
+    setEditingUpdate(update);
+    setForm({
+      title: update.title || '',
+      content: update.content || '',
+      category: update.category || 'market-update',
+      type: update.type || 'text',
+      summary: update.summary || '',
+      contentUrl: update.contentUrl || '',
+      isPublished: update.isPublished !== undefined ? update.isPublished : true,
+      pinned: update.pinned || false,
+    });
+    setFormModalOpen(true);
+  };
+
+  const handleFormChange = (field, value) => setForm((prev) => ({ ...prev, [field]: value }));
+
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setSubmitting(true);
+      const payload = { ...form, pinned: form.pinned };
+      if (editingUpdate) {
+        await adminService.updateMarketUpdate(editingUpdate._id, payload);
+        toast.success('Update saved');
+      } else {
+        await adminService.createMarketUpdate(payload);
+        toast.success('Update created');
+      }
+      setFormModalOpen(false);
+      setEditingUpdate(null);
+      const listRes = await adminService.getMarketUpdates({ page: 1, limit: 20, sort: '-createdAt' });
+      setUpdates(listRes.value?.data?.data || listRes.value?.data || []);
+    } catch (err) {
+      toast.error(err.response?.data?.message || err.message || 'Failed to save update');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -105,7 +158,7 @@ export default function MarketUpdates() {
           <h1 className="text-[28px] font-extrabold text-ink leading-tight">Market Updates & Training</h1>
           <p className="mt-1 text-[15px] text-dark-500">Manage market updates, free training, and basic training content</p>
         </div>
-        <Link to="/admin/market-updates/new"><Button><FiPlus size={18} className="mr-2" /> New Update</Button></Link>
+        <Button onClick={openCreateModal}><FiPlus size={18} className="mr-2" /> New Update</Button>
       </div>
       {stats && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -165,7 +218,7 @@ export default function MarketUpdates() {
                     <button onClick={() => handleToggle(update)} className="p-2 rounded-lg hover:bg-dark-50 text-dark-400 hover:text-ink transition-colors" title={update.isPublished ? 'Unpublish' : 'Publish'}>
                       {update.isPublished ? <FiCheckCircle size={16} className="text-emerald-500" /> : <FiXCircle size={16} className="text-dark-300" />}
                     </button>
-                    <Link to={`/admin/market-updates/${update._id}/edit`} className="p-2 rounded-lg hover:bg-dark-50 text-dark-400 hover:text-ink transition-colors"><FiEdit size={16} /></Link>
+                    <button onClick={() => openEditModal(update)} className="p-2 rounded-lg hover:bg-dark-50 text-dark-400 hover:text-ink transition-colors"><FiEdit size={16} /></button>
                     <button onClick={() => { setUpdateToDelete(update); setDeleteModalOpen(true); }} className="p-2 rounded-lg hover:bg-red-50 text-dark-400 hover:text-red-600 transition-colors"><FiTrash2 size={16} /></button>
                   </div>
                 </div>
@@ -174,6 +227,49 @@ export default function MarketUpdates() {
           );
         })}
       </motion.div>
+      <Modal isOpen={formModalOpen} onClose={() => { setFormModalOpen(false); setEditingUpdate(null); }} title={editingUpdate ? 'Edit Update' : 'New Update'} size="lg">
+        <form onSubmit={handleFormSubmit} className="space-y-4">
+          <Input label="Title" value={form.title} onChange={(e) => handleFormChange('title', e.target.value)} required />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[12px] font-semibold uppercase tracking-wider text-dark-500 mb-1.5">Category</label>
+              <select value={form.category} onChange={(e) => handleFormChange('category', e.target.value)} className="w-full rounded-[11px] border border-dark-200 bg-dark-50 px-4 py-3 text-[14.5px] text-ink outline-none focus:border-primary-500 focus:bg-white transition-colors">
+                {Object.entries(categoryColors).map(([key, val]) => <option key={key} value={key}>{val.label}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-[12px] font-semibold uppercase tracking-wider text-dark-500 mb-1.5">Content Type</label>
+              <select value={form.type} onChange={(e) => handleFormChange('type', e.target.value)} className="w-full rounded-[11px] border border-dark-200 bg-dark-50 px-4 py-3 text-[14.5px] text-ink outline-none focus:border-primary-500 focus:bg-white transition-colors">
+                <option value="text">Text</option>
+                <option value="video">Video</option>
+                <option value="pdf">PDF</option>
+                <option value="link">Link</option>
+              </select>
+            </div>
+          </div>
+          <Input label="Content URL" value={form.contentUrl} onChange={(e) => handleFormChange('contentUrl', e.target.value)} placeholder="https://..." />
+          <Input label="Summary" value={form.summary} onChange={(e) => handleFormChange('summary', e.target.value)} placeholder="Brief summary..." />
+          <div>
+            <label className="block text-[12px] font-semibold uppercase tracking-wider text-dark-500 mb-1.5">Content</label>
+            <textarea value={form.content} onChange={(e) => handleFormChange('content', e.target.value)} rows={5} className="w-full rounded-[11px] border border-dark-200 bg-dark-50 px-4 py-3 text-[14.5px] text-ink placeholder-dark-400 outline-none focus:border-primary-500 focus:bg-white transition-colors resize-none" />
+          </div>
+          <div className="flex items-center gap-6">
+            <label className="flex items-center gap-2 text-sm text-ink cursor-pointer">
+              <input type="checkbox" checked={form.pinned} onChange={(e) => handleFormChange('pinned', e.target.checked)} className="rounded border-dark-300" />
+              Pinned
+            </label>
+            <label className="flex items-center gap-2 text-sm text-ink cursor-pointer">
+              <input type="checkbox" checked={form.isPublished} onChange={(e) => handleFormChange('isPublished', e.target.checked)} className="rounded border-dark-300" />
+              Published
+            </label>
+          </div>
+          <div className="flex items-center gap-3 pt-4 border-t border-dark-100">
+            <Button type="submit" loading={submitting}>{editingUpdate ? 'Update' : 'Create'}</Button>
+            <Button type="button" variant="outline" onClick={() => { setFormModalOpen(false); setEditingUpdate(null); }} disabled={submitting}>Cancel</Button>
+          </div>
+        </form>
+      </Modal>
+
       <Modal isOpen={deleteModalOpen} onClose={() => { setDeleteModalOpen(false); setUpdateToDelete(null); }} title="Delete Update" size="sm">
         <div className="space-y-4">
           <p className="text-sm text-dark-500">Are you sure you want to delete this update?</p>

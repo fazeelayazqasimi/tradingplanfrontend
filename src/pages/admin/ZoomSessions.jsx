@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FiPlus, FiEdit, FiTrash2, FiSearch, FiCalendar, FiClock, FiUsers, FiLock, FiUnlock, FiRepeat, FiMoreHorizontal, FiCheckCircle, FiXCircle } from 'react-icons/fi';
-import { Link } from 'react-router-dom';
+import Input from '../../components/ui/Input';
 import toast from 'react-hot-toast';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
@@ -25,6 +25,61 @@ export default function ZoomSessions() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [sessionToDelete, setSessionToDelete] = useState(null);
   const [page, setPage] = useState(1);
+  const [formModalOpen, setFormModalOpen] = useState(false);
+  const [editingSession, setEditingSession] = useState(null);
+  const [form, setForm] = useState({
+    title: '', description: '', category: 'free-zoom', date: '', duration: 60,
+    instructorName: '', maxParticipants: 50, zoomLink: '', isRecurring: false,
+  });
+  const [submitting, setSubmitting] = useState(false);
+
+  const openCreateModal = () => {
+    setEditingSession(null);
+    setForm({ title: '', description: '', category: 'free-zoom', date: '', duration: 60, instructorName: '', maxParticipants: 50, zoomLink: '', isRecurring: false });
+    setFormModalOpen(true);
+  };
+
+  const openEditModal = (session) => {
+    setEditingSession(session);
+    setForm({
+      title: session.title || '',
+      description: session.description || '',
+      category: session.category || 'free-zoom',
+      date: session.date ? session.date.slice(0, 16) : '',
+      duration: session.duration || 60,
+      instructorName: session.instructorName || '',
+      maxParticipants: session.maxParticipants || 50,
+      zoomLink: session.zoomLink || '',
+      isRecurring: session.isRecurring || false,
+    });
+    setFormModalOpen(true);
+  };
+
+  const handleFormChange = (field, value) => setForm((prev) => ({ ...prev, [field]: value }));
+
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setSubmitting(true);
+      const payload = { ...form };
+      if (payload.date) payload.date = new Date(payload.date).toISOString();
+      if (editingSession) {
+        await adminService.updateZoomSession(editingSession._id, payload);
+        toast.success('Session updated');
+      } else {
+        await adminService.createZoomSession(payload);
+        toast.success('Session created');
+      }
+      setFormModalOpen(false);
+      setEditingSession(null);
+      const listRes = await adminService.getZoomSessions({ page: 1, limit: 20, sort: '-date' });
+      setSessions(listRes.value?.data?.data || listRes.value?.data || []);
+    } catch (err) {
+      toast.error(err.response?.data?.message || err.message || 'Failed to save session');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -90,7 +145,7 @@ export default function ZoomSessions() {
           <h1 className="text-[28px] font-extrabold text-ink leading-tight">Zoom Sessions</h1>
           <p className="mt-1 text-[15px] text-dark-500">Manage live zoom sessions</p>
         </div>
-        <Link to="/admin/zoom-sessions/new"><Button><FiPlus size={18} className="mr-2" /> New Session</Button></Link>
+        <Button onClick={openCreateModal}><FiPlus size={18} className="mr-2" /> New Session</Button>
       </div>
       {stats && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -144,7 +199,7 @@ export default function ZoomSessions() {
                   <button onClick={() => handleToggle(session)} className="p-2 rounded-lg hover:bg-dark-50 text-dark-400 hover:text-ink transition-colors" title={session.isPublished ? 'Unpublish' : 'Publish'}>
                     {session.isPublished ? <FiCheckCircle size={16} className="text-emerald-500" /> : <FiXCircle size={16} className="text-dark-300" />}
                   </button>
-                  <Link to={`/admin/zoom-sessions/${session._id}/edit`} className="p-2 rounded-lg hover:bg-dark-50 text-dark-400 hover:text-ink transition-colors"><FiEdit size={16} /></Link>
+                  <button onClick={() => openEditModal(session)} className="p-2 rounded-lg hover:bg-dark-50 text-dark-400 hover:text-ink transition-colors"><FiEdit size={16} /></button>
                   <button onClick={() => { setSessionToDelete(session); setDeleteModalOpen(true); }} className="p-2 rounded-lg hover:bg-red-50 text-dark-400 hover:text-red-600 transition-colors"><FiTrash2 size={16} /></button>
                 </div>
               </div>
@@ -152,6 +207,47 @@ export default function ZoomSessions() {
           </motion.div>
         ))}
       </motion.div>
+      <Modal isOpen={formModalOpen} onClose={() => { setFormModalOpen(false); setEditingSession(null); }} title={editingSession ? 'Edit Session' : 'New Session'} size="lg">
+        <form onSubmit={handleFormSubmit} className="space-y-4">
+          <Input label="Title" value={form.title} onChange={(e) => handleFormChange('title', e.target.value)} required />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[12px] font-semibold uppercase tracking-wider text-dark-500 mb-1.5">Category</label>
+              <select value={form.category} onChange={(e) => handleFormChange('category', e.target.value)} className="w-full rounded-[11px] border border-dark-200 bg-dark-50 px-4 py-3 text-[14.5px] text-ink outline-none focus:border-primary-500 focus:bg-white transition-colors">
+                <option value="free-zoom">Free Zoom</option>
+                <option value="premium-zoom">Premium Zoom</option>
+              </select>
+            </div>
+            <Input label="Duration (min)" type="number" value={form.duration} onChange={(e) => handleFormChange('duration', e.target.value)} />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[12px] font-semibold uppercase tracking-wider text-dark-500 mb-1.5">Date & Time</label>
+              <input type="datetime-local" value={form.date} onChange={(e) => handleFormChange('date', e.target.value)} required className="w-full rounded-[11px] border border-dark-200 bg-dark-50 px-4 py-3 text-[14.5px] text-ink outline-none focus:border-primary-500 focus:bg-white transition-colors" />
+            </div>
+            <Input label="Instructor Name" value={form.instructorName} onChange={(e) => handleFormChange('instructorName', e.target.value)} />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <Input label="Max Participants" type="number" value={form.maxParticipants} onChange={(e) => handleFormChange('maxParticipants', e.target.value)} />
+            <Input label="Zoom Link" value={form.zoomLink} onChange={(e) => handleFormChange('zoomLink', e.target.value)} placeholder="https://zoom.us/j/..." />
+          </div>
+          <div>
+            <label className="block text-[12px] font-semibold uppercase tracking-wider text-dark-500 mb-1.5">Description</label>
+            <textarea value={form.description} onChange={(e) => handleFormChange('description', e.target.value)} rows={3} className="w-full rounded-[11px] border border-dark-200 bg-dark-50 px-4 py-3 text-[14.5px] text-ink placeholder-dark-400 outline-none focus:border-primary-500 focus:bg-white transition-colors resize-none" />
+          </div>
+          <div className="flex items-center gap-6">
+            <label className="flex items-center gap-2 text-sm text-ink cursor-pointer">
+              <input type="checkbox" checked={form.isRecurring} onChange={(e) => handleFormChange('isRecurring', e.target.checked)} className="rounded border-dark-300" />
+              Recurring Session
+            </label>
+          </div>
+          <div className="flex items-center gap-3 pt-4 border-t border-dark-100">
+            <Button type="submit" loading={submitting}>{editingSession ? 'Update Session' : 'Create Session'}</Button>
+            <Button type="button" variant="outline" onClick={() => { setFormModalOpen(false); setEditingSession(null); }} disabled={submitting}>Cancel</Button>
+          </div>
+        </form>
+      </Modal>
+
       <Modal isOpen={deleteModalOpen} onClose={() => { setDeleteModalOpen(false); setSessionToDelete(null); }} title="Delete Session" size="sm">
         <div className="space-y-4">
           <p className="text-sm text-dark-500">Are you sure you want to delete this session?</p>
