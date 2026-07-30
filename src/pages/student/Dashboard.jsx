@@ -51,6 +51,7 @@ export default function Dashboard() {
   const [freeCourses, setFreeCourses] = useState([]);
   const [marketOverview, setMarketOverview] = useState(null);
   const [openSignalsCount, setOpenSignalsCount] = useState(0);
+  const [copyStats, setCopyStats] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -75,6 +76,7 @@ export default function Dashboard() {
           marketUpdateService.getMarketUpdates({ limit: 5, sort: "-createdAt" }),
           announcementService.getAnnouncements({ limit: 5, sort: "-createdAt" }),
           courseService.getCourses({ isFree: true, limit: 5, sort: "-order" }),
+          studentService.getCopyStats(),
         ]);
         if (!mounted || cancelled) return;
         if (results[0].status === "fulfilled") {
@@ -115,6 +117,10 @@ export default function Dashboard() {
         if (results[11].status === "fulfilled") setMarketUpdates(Array.isArray(results[11].value?.data?.data) ? results[11].value.data.data : extractData(results[11].value));
         if (results[12].status === "fulfilled") setAnnouncements(Array.isArray(results[12].value?.data?.data) ? results[12].value.data.data : extractData(results[12].value));
         if (results[13].status === "fulfilled") setFreeCourses(Array.isArray(results[13].value?.data?.data) ? results[13].value.data.data : extractData(results[13].value));
+        if (results[14].status === "fulfilled" && results[14].value) {
+          const cs = results[14].value.data?.data || results[14].value.data;
+          setCopyStats(cs);
+        }
       } catch { if (!cancelled) toast.error("Failed to load dashboard data"); }
       finally { if (!cancelled) setLoading(false); }
     }
@@ -563,17 +569,17 @@ export default function Dashboard() {
                   <FiGlobe size={22} />
                 </div>
                 <div>
-                  <p className="text-xs font-medium text-dark-400">Master Accounts</p>
-                  <p className="text-2xl font-extrabold text-ink">3</p>
+                  <p className="text-xs font-medium text-dark-400">Total Trades</p>
+                  <p className="text-2xl font-extrabold text-ink">{copyStats?.totalTrades ?? '0'}</p>
                 </div>
               </div>
               <p className="text-sm text-dark-400 mb-4">Follow experienced traders and earn commissions on copied trades.</p>
               <Link to="/student/copy-trading"><Button className="w-full sm:w-auto">Copy Now</Button></Link>
             </div>
             <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 rounded-xl bg-white/70"><span className="text-xs font-medium text-dark-400">Win Rate</span><span className="text-sm font-bold text-emerald-600">72.4%</span></div>
-              <div className="flex items-center justify-between p-3 rounded-xl bg-white/70"><span className="text-xs font-medium text-dark-400">Monthly ROI</span><span className="text-sm font-bold text-emerald-600">+8.3%</span></div>
-              <div className="flex items-center justify-between p-3 rounded-xl bg-white/70"><span className="text-xs font-medium text-dark-400">Risk Level</span><Badge variant="warning">Medium</Badge></div>
+              <div className="flex items-center justify-between p-3 rounded-xl bg-white/70"><span className="text-xs font-medium text-dark-400">Win Rate</span><span className="text-sm font-bold text-emerald-600">{copyStats?.totalTrades ? ((copyStats.wins / copyStats.totalTrades) * 100).toFixed(1) + '%' : '—'}</span></div>
+              <div className="flex items-center justify-between p-3 rounded-xl bg-white/70"><span className="text-xs font-medium text-dark-400">Total Profit</span><span className="text-sm font-bold text-emerald-600">{formatCurrency(copyStats?.totalProfit ?? 0)}</span></div>
+              <div className="flex items-center justify-between p-3 rounded-xl bg-white/70"><span className="text-xs font-medium text-dark-400">Open Trades</span><span className="text-sm font-bold text-ink">{copyStats?.openTrades ?? 0}</span></div>
             </div>
           </div>
         </Card>

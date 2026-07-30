@@ -2,7 +2,6 @@ import api from './api';
 const studentService = {
   getSubscription: () => api.get('/subscriptions/me'),
   createSubscription: (data) => api.post('/subscriptions', data),
-  cancelSubscription: () => api.put('/subscriptions/me/cancel'),
   activateWithPin: (data) => api.post('/subscriptions/activate-with-pin', data),
   activateWithBalance: () => api.post('/subscriptions/activate-with-balance'),
   activateByUpline: (data) => api.post('/subscriptions/activate-by-upline', data),

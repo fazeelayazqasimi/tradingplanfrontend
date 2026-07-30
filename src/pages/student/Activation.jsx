@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FiUsers, FiDollarSign, FiInfo } from 'react-icons/fi';
+import { FiUsers, FiDollarSign, FiInfo, FiKey, FiZap } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
@@ -17,6 +17,12 @@ export default function Activation() {
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const [pinCode, setPinCode] = useState('');
+  const [pinLoading, setPinLoading] = useState(false);
+  const [pinError, setPinError] = useState('');
+
+  const [walletLoading, setWalletLoading] = useState(false);
 
   const isActivated = user?.isApproved && user?.subscriptionStatus === 'active';
   const price = activationInfo.membershipPrice;
@@ -47,6 +53,38 @@ export default function Activation() {
     fetchData();
   }, []);
 
+  const handleActivateWithPin = async () => {
+    if (!pinCode.trim()) { setPinError('Enter a PIN code'); return; }
+    setPinLoading(true);
+    setPinError('');
+    try {
+      await studentService.activateWithPin({ code: pinCode.trim() });
+      toast.success('Account activated successfully via PIN!');
+      refreshUser();
+      setPinCode('');
+    } catch (err) {
+      const msg = err?.response?.data?.message || 'Failed to activate with PIN';
+      setPinError(msg);
+      toast.error(msg);
+    } finally {
+      setPinLoading(false);
+    }
+  };
+
+  const handleActivateWithWallet = async () => {
+    setWalletLoading(true);
+    try {
+      await studentService.activateWithBalance();
+      toast.success('Account activated successfully via wallet balance!');
+      refreshUser();
+    } catch (err) {
+      const msg = err?.response?.data?.message || 'Failed to activate with wallet';
+      toast.error(msg);
+    } finally {
+      setWalletLoading(false);
+    }
+  };
+
   const handleSubmit = async () => {
     if (!email.trim()) { setError('Enter an email address'); return; }
     setLoading(true);
@@ -74,9 +112,72 @@ export default function Activation() {
         <p className="text-sm text-dark-500 mt-1">
           {isActivated
             ? 'Activate your downline members using your wallet balance.'
-            : 'Your account needs activation. Contact your upline to get activated.'}
+            : 'Activate your account using a PIN code or wallet balance.'}
         </p>
       </div>
+
+      {!isActivated && (
+        <>
+          <Card className="p-5 space-y-4">
+            <div className="flex items-center gap-2">
+              <FiKey size={18} className="text-primary-500" />
+              <span className="font-semibold text-ink">Activate with PIN Code</span>
+            </div>
+
+            <p className="text-sm text-dark-500">
+              Enter your PIN code to activate your account instantly.
+            </p>
+
+            <Input
+              value={pinCode}
+              onChange={e => { setPinCode(e.target.value); setPinError(''); }}
+              placeholder="Enter PIN code"
+              error={pinError}
+            />
+
+            <Button
+              variant="primary"
+              className="w-full"
+              onClick={handleActivateWithPin}
+              loading={pinLoading}
+              disabled={!pinCode.trim()}
+            >
+              <FiKey size={16} className="mr-1.5" /> Activate with PIN
+            </Button>
+          </Card>
+
+          <Card className="p-5 space-y-4">
+            <div className="flex items-center gap-2">
+              <FiZap size={18} className="text-amber-500" />
+              <span className="font-semibold text-ink">Activate with Wallet Balance</span>
+            </div>
+
+            <p className="text-sm text-dark-500">
+              Activate instantly using your wallet balance. Cost: ${price}.
+              Up to {fundingPercent}% (${maxFunding}) from your Funding Wallet; the rest from your Main Wallet.
+            </p>
+
+            <Button
+              variant="primary"
+              className="w-full"
+              onClick={handleActivateWithWallet}
+              loading={walletLoading}
+              disabled={(walletBalances.main + walletBalances.funding) < price}
+            >
+              <FiZap size={16} className="mr-1.5" /> Activate — ${price}
+            </Button>
+
+            <div className="text-xs text-dark-400 bg-dark-50 rounded-xl p-3 flex items-start gap-2">
+              <FiInfo size={14} className="shrink-0 mt-0.5" />
+              <div>
+                <p><strong>Funding Wallet:</strong> ${walletBalances.funding.toFixed(2)} (max {fundingPercent}% = ${maxFunding})</p>
+                <p><strong>Main Wallet:</strong> ${walletBalances.main.toFixed(2)}</p>
+                {(walletBalances.main + walletBalances.funding) < price && <p className="text-red-500 mt-1">Insufficient balance. You need ${(price - walletBalances.main - walletBalances.funding).toFixed(2)} more.</p>}
+              </div>
+            </div>
+          </Card>
+        </>
+      )}
 
       <Card className="p-5 space-y-4">
         <div className="flex items-center gap-2">

@@ -392,7 +392,7 @@ export default function Wallet() {
         paymentMethod: 'usdt_bep20',
         walletAddress: withdrawForm.walletAddress.trim(),
       });
-      toast.success('Withdrawal auto-processed! USDT sent to your wallet.');
+      toast.success('Withdrawal request submitted. Awaiting admin approval.');
       setShowWithdraw(false);
       setWithdrawForm({ amount: '', walletAddress: '' });
       setFormErrors({});
@@ -442,7 +442,7 @@ export default function Wallet() {
 
       {/* Wallet Type Tabs */}
       <div className="flex gap-2 bg-dark-50 p-1.5 rounded-xl">
-        {WALLET_TABS.filter(t => t.key !== 'ib').map((tab) => {
+        {WALLET_TABS.map((tab) => {
           const Icon = tab.icon;
           const w = allWallets.find(w => w.type === tab.key);
           return (

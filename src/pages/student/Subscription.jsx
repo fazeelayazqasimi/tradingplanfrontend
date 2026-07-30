@@ -15,6 +15,7 @@ import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 import Skeleton from '../../components/ui/Skeleton';
 import Modal from '../../components/ui/Modal';
+import { useAuth } from '../../context/AuthContext';
 import studentService from '../../services/studentService';
 import walletService from '../../services/walletService';
 import api from '../../services/api';
@@ -37,6 +38,7 @@ const STATUS_MAP = {
 };
 
 export default function Subscription() {
+  const { refreshUser } = useAuth();
   const [subscription, setSubscription] = useState(null);
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -47,9 +49,9 @@ export default function Subscription() {
 
   const fetchPlans = useCallback(async () => {
     try {
-      const res = await api.get('/settings');
-      const arr = res?.data?.data || res?.data?.settings || res?.data || [];
-      const settings = Array.isArray(arr) ? arr.reduce((acc, s) => { acc[s.key] = s.value; return acc; }, {}) : {};
+      const res = await api.get('/settings/public');
+      const data = res?.data?.data || res?.data?.settings || res?.data || {};
+      const settings = Array.isArray(data) ? data.reduce((acc, s) => { acc[s.key] = s.value; return acc; }, {}) : data;
       const price = Number(settings.membership_price) || 100;
       setPlans([
         {
@@ -115,9 +117,11 @@ export default function Subscription() {
         plan: confirmPlan.key,
         amount: confirmPlan.amount,
         paymentMethod: 'wallet',
+        transactionRef: `SUB-WALLET-${Date.now().toString(36).toUpperCase()}`,
       });
       toast.success(`Subscribed to ${confirmPlan.name} plan successfully via wallet`);
       await Promise.all([fetchSubscription(), fetchWallet()]);
+      refreshUser();
     } catch (err) {
       toast.error(err?.response?.data?.message || 'Failed to create subscription');
     } finally {

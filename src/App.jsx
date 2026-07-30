@@ -88,9 +88,16 @@ function ProtectedRoute({ children, role }) {
   if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin h-8 w-8 border-4 border-primary-500 border-t-transparent rounded-full" /></div>;
   if (!user) return <Navigate to="/login" replace />;
   if (role && user.role !== role) return <Navigate to="/" replace />;
-  if (role === 'student' && user.subscriptionExpiry && new Date(user.subscriptionExpiry) < new Date()) {
-    if (window.location.pathname !== '/student/activation') {
-      return <Navigate to="/student/activation" replace />;
+  if (role === 'student') {
+    const isNotActivated = !user.isApproved || user.subscriptionStatus === 'none' || user.subscriptionStatus === 'cancelled';
+    const isExpired = user.subscriptionStatus === 'expired' || (user.subscriptionExpiry && new Date(user.subscriptionExpiry) < new Date());
+    const allowedPaths = ['/student/subscription', '/student/activation', '/student/free-learning', '/student/settings', '/student/support'];
+    const currentPath = window.location.pathname;
+    if (isNotActivated && !allowedPaths.some(p => currentPath.startsWith(p))) {
+      return <Navigate to="/student/subscription" replace />;
+    }
+    if (isExpired && !allowedPaths.some(p => currentPath.startsWith(p))) {
+      return <Navigate to="/student/subscription" replace />;
     }
   }
   return children;
