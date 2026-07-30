@@ -24,8 +24,9 @@ api.interceptors.response.use(
             `/auth/refresh`,
             { refreshToken }
           );
-          localStorage.setItem('token', data.data.token);
-          originalRequest.headers.Authorization = `Bearer ${data.data.token}`;
+          const authData = data.data || data;
+          localStorage.setItem('token', authData.token);
+          originalRequest.headers.Authorization = `Bearer ${authData.token}`;
           return api(originalRequest);
         }
       } catch {

@@ -12,7 +12,7 @@ export const AuthProvider = ({ children }) => {
     if (!token) { setLoading(false); return; }
     try {
       const { data } = await authService.getMe();
-      setUser(data.data);
+      setUser(data.data || data);
     } catch {
       localStorage.removeItem('token');
       setUser(null);
@@ -23,20 +23,26 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => { loadUser(); }, [loadUser]);
 
+  const extractAuthData = (data) => {
+    return data.data ? data.data : data;
+  };
+
   const login = async (credentials) => {
     const { data } = await authService.login(credentials);
-    localStorage.setItem('token', data.data.token);
-    if (data.data.refreshToken) localStorage.setItem('refreshToken', data.data.refreshToken);
-    setUser(data.data.user);
-    return data.data;
+    const authData = extractAuthData(data);
+    localStorage.setItem('token', authData.token);
+    if (authData.refreshToken) localStorage.setItem('refreshToken', authData.refreshToken);
+    setUser(authData.user);
+    return authData;
   };
 
   const register = async (userData) => {
     const { data } = await authService.register(userData);
-    localStorage.setItem('token', data.data.token);
-    if (data.data.refreshToken) localStorage.setItem('refreshToken', data.data.refreshToken);
-    setUser(data.data.user);
-    return data.data;
+    const authData = extractAuthData(data);
+    localStorage.setItem('token', authData.token);
+    if (authData.refreshToken) localStorage.setItem('refreshToken', authData.refreshToken);
+    setUser(authData.user);
+    return authData;
   };
 
   const logout = () => {
@@ -50,7 +56,7 @@ export const AuthProvider = ({ children }) => {
   const refreshUser = useCallback(async () => {
     try {
       const { data } = await authService.getMe();
-      setUser(data.data);
+      setUser(data.data || data);
     } catch {
       logout();
     }
