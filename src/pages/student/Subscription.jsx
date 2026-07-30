@@ -226,7 +226,15 @@ export default function Subscription() {
             </Card>
           </motion.div>
         </motion.div>
-      ) : null}
+      ) : (
+        <Card className="p-6 text-center">
+          <div className="w-14 h-14 rounded-2xl bg-dark-50 text-dark-400 flex items-center justify-center mx-auto mb-3">
+            <FiCreditCard size={24} />
+          </div>
+          <h3 className="text-lg font-semibold text-ink mb-1">No Active Subscription</h3>
+          <p className="text-sm text-dark-500 mb-4">Choose a plan below to get started with full platform access.</p>
+        </Card>
+      )}
 
       {hasSubscription && (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
