@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { FiSearch, FiCheck, FiX, FiEye, FiDollarSign, FiClock, FiCheckCircle, FiXCircle, FiTrash2 } from 'react-icons/fi';
+import { FiSearch, FiCheck, FiX, FiEye, FiDollarSign, FiClock, FiCheckCircle, FiXCircle, FiTrash2, FiImage, FiExternalLink } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
@@ -127,6 +127,17 @@ export default function Deposits() {
       ),
     },
     {
+      header: 'Proof',
+      render: (_, row) => row.screenshot ? (
+        <a href={row.screenshot} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs font-medium text-primary-600 hover:text-primary-700" onClick={(e) => e.stopPropagation()}>
+          <img src={row.screenshot} alt="Deposit proof" className="h-9 w-9 rounded-lg object-cover border border-dark-200" />
+          <FiExternalLink size={12} />
+        </a>
+      ) : (
+        <span className="text-xs text-dark-400 flex items-center gap-1.5"><FiImage size={13} /> No proof</span>
+      ),
+    },
+    {
       header: 'Status',
       render: (_, row) => (
         <Badge color={statusColor[row.status] || 'neutral'}>{row.status}</Badge>
@@ -225,6 +236,23 @@ export default function Deposits() {
                 <p className="text-sm text-dark-400">{selected.userId?.email}</p>
               </div>
             </div>
+            {selected.screenshot && (
+              <div>
+                <p className="text-sm font-semibold text-ink mb-2 flex items-center gap-2">
+                  <FiImage size={15} className="text-primary-500" /> Payment Screenshot (Proof)
+                </p>
+                <a href={selected.screenshot} target="_blank" rel="noopener noreferrer" className="block">
+                  <img
+                    src={selected.screenshot}
+                    alt="Deposit payment proof"
+                    className="w-full max-h-72 object-contain rounded-xl border border-dark-200 bg-dark-50 cursor-pointer"
+                  />
+                </a>
+                <p className="text-xs text-dark-400 mt-1.5 flex items-center gap-1">
+                  <FiExternalLink size={12} /> Click the image to view it in full size
+                </p>
+              </div>
+            )}
             <div className="rounded-xl border border-dark-100 divide-y divide-dark-50">
               <div className="flex items-center justify-between px-4 py-3">
                 <span className="text-sm text-dark-500">Amount</span>
