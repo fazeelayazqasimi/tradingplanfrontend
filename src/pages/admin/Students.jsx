@@ -7,6 +7,7 @@ import Modal from '../../components/ui/Modal';
 import Badge from '../../components/ui/Badge';
 import Select from '../../components/ui/Select';
 import Skeleton from '../../components/ui/Skeleton';
+import BulkActionsBar from '../../components/ui/BulkActionsBar';
 import adminService from '../../services/adminService';
 import { formatDate } from '../../utils/helpers';
 import usePagination from '../../hooks/usePagination';
@@ -112,6 +113,8 @@ export default function Students() {
   const [ranks, setRanks] = useState([]);
   const [selectedRankId, setSelectedRankId] = useState('');
   const [overridingRank, setOverridingRank] = useState(false);
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   const pagination = usePagination({ totalItems: students.length, perPage: 10 });
 
@@ -184,6 +187,26 @@ export default function Students() {
       toast.error(err.response?.data?.message || err.message || 'Failed to delete student');
     } finally {
       setDeletingId(null);
+    }
+  };
+
+  const toggleSelect = (id) => {
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  };
+
+  const handleBulkDelete = async () => {
+    if (!window.confirm(`Delete ${selectedIds.length} students? This cannot be undone.`)) return;
+    setBulkDeleting(true);
+    try {
+      await Promise.all(selectedIds.map((id) => adminService.deleteUser(id)));
+      toast.success(`${selectedIds.length} students deleted`);
+      setSelectedIds([]);
+      setStudents((prev) => prev.filter((s) => !selectedIds.includes(getStudentId(s))));
+      pagination.setTotalItems((prev) => Math.max(0, prev - selectedIds.length));
+    } catch (err) {
+      toast.error(err.response?.data?.message || err.message || 'Failed to delete students');
+    } finally {
+      setBulkDeleting(false);
     }
   };
 
@@ -315,6 +338,10 @@ export default function Students() {
           loading={loading}
           emptyMessage="No students found"
           rowKey={(row) => getStudentId(row)}
+          selectable
+          selectedIds={selectedIds}
+          onSelect={toggleSelect}
+          onSelectAll={setSelectedIds}
         />
 
         {pagination.totalPages > 1 && (
@@ -353,6 +380,13 @@ export default function Students() {
           </div>
         )}
       </div>
+
+      <BulkActionsBar
+        count={selectedIds.length}
+        onDelete={handleBulkDelete}
+        onClear={() => setSelectedIds([])}
+        deleting={bulkDeleting}
+      />
 
       <Modal
         isOpen={detailOpen}

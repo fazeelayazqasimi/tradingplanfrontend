@@ -18,6 +18,7 @@ import DataTable from '../../components/ui/DataTable';
 import Modal from '../../components/ui/Modal';
 import Badge from '../../components/ui/Badge';
 import Skeleton from '../../components/ui/Skeleton';
+import BulkActionsBar from '../../components/ui/BulkActionsBar';
 import adminService from '../../services/adminService';
 import { formatCurrency, formatDate } from '../../utils/helpers';
 import usePagination from '../../hooks/usePagination';
@@ -41,6 +42,8 @@ export default function CoursePurchases() {
   const [detailOpen, setDetailOpen] = useState(false);
   const [processingId, setProcessingId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   const pagination = usePagination({ totalItems: purchases.length, perPage: 10 });
 
@@ -91,6 +94,10 @@ export default function CoursePurchases() {
     }
   };
 
+  const toggleSelect = (id) => {
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  };
+
   const handleDelete = async (p) => {
     if (!window.confirm('Delete this purchase? This cannot be undone.')) return;
     const pid = getId(p);
@@ -104,6 +111,22 @@ export default function CoursePurchases() {
       toast.error(err.response?.data?.message || err.message || 'Failed to delete');
     } finally {
       setDeletingId(null);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (!window.confirm(`Delete ${selectedIds.length} purchases? This cannot be undone.`)) return;
+    setBulkDeleting(true);
+    try {
+      await Promise.all(selectedIds.map((id) => adminService.deletePurchase(id)));
+      toast.success(`${selectedIds.length} purchases deleted`);
+      setSelectedIds([]);
+      setPurchases((prev) => prev.filter((x) => !selectedIds.includes(getId(x))));
+      pagination.setTotalItems((prev) => Math.max(0, prev - selectedIds.length));
+    } catch (err) {
+      toast.error(err.response?.data?.message || err.message || 'Failed to delete purchases');
+    } finally {
+      setBulkDeleting(false);
     }
   };
 
@@ -290,6 +313,10 @@ export default function CoursePurchases() {
           data={purchases}
           loading={loading}
           emptyMessage="No course purchases found"
+          selectable
+          selectedIds={selectedIds}
+          onSelect={toggleSelect}
+          onSelectAll={setSelectedIds}
         />
 
         {pagination.totalPages > 1 && (
@@ -311,6 +338,13 @@ export default function CoursePurchases() {
           </div>
         )}
       </Card>
+
+      <BulkActionsBar
+        count={selectedIds.length}
+        onDelete={handleBulkDelete}
+        onClear={() => setSelectedIds([])}
+        deleting={bulkDeleting}
+      />
 
       <Modal
         isOpen={detailOpen}

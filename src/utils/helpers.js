@@ -1,5 +1,51 @@
 export const formatCurrency = (amount) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount || 0);
 
+const API_ORIGIN = (() => {
+  const base = (import.meta.env.VITE_API_URL || '/api').trim();
+  if (base.startsWith('http')) {
+    try {
+      const url = new URL(base);
+      url.pathname = '';
+      url.search = '';
+      url.hash = '';
+      return url.toString().replace(/\/$/, '');
+    } catch { return ''; }
+  }
+  return '';
+})();
+
+export const getAssetUrl = (path) => {
+  if (!path) return '';
+  if (/^https?:\/\//i.test(path)) return path;
+  if (path.startsWith('/uploads/') && API_ORIGIN) return `${API_ORIGIN}${path}`;
+  return path;
+};
+
+export const downloadFile = async (url, filename = 'file') => {
+  try {
+    const res = await fetch(url);
+    const blob = await res.blob();
+    const objectUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = objectUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(objectUrl);
+    return true;
+  } catch {
+    const a = document.createElement('a');
+    a.href = url;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    return false;
+  }
+};
+
 export const formatDate = (date) => {
   if (!date) return '';
   return new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });

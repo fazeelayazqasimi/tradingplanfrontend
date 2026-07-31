@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { FiSearch, FiCheck, FiX, FiEye, FiDollarSign, FiClock, FiCheckCircle, FiXCircle, FiTrash2, FiImage, FiExternalLink } from 'react-icons/fi';
+import { FiSearch, FiCheck, FiX, FiEye, FiDollarSign, FiClock, FiCheckCircle, FiXCircle, FiTrash2, FiImage, FiDownload, FiMaximize2 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
@@ -9,8 +9,9 @@ import Modal from '../../components/ui/Modal';
 import Badge from '../../components/ui/Badge';
 import Skeleton from '../../components/ui/Skeleton';
 import Input from '../../components/ui/Input';
+import BulkActionsBar from '../../components/ui/BulkActionsBar';
 import adminService from '../../services/adminService';
-import { formatCurrency, formatDate } from '../../utils/helpers';
+import { formatCurrency, formatDate, getAssetUrl, downloadFile } from '../../utils/helpers';
 import usePagination from '../../hooks/usePagination';
 
 const statusColor = { pending: 'warning', approved: 'success', rejected: 'danger', expired: 'neutral', failed: 'danger' };
@@ -25,6 +26,32 @@ export default function Deposits() {
   const [processingId, setProcessingId] = useState(null);
   const [rejectNote, setRejectNote] = useState('');
   const [deletingId, setDeletingId] = useState(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewSrc, setPreviewSrc] = useState('');
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+
+  const openPreview = (src) => {
+    setPreviewSrc(getAssetUrl(src));
+    setPreviewOpen(true);
+  };
+
+  const toggleSelect = (id) => setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+
+  const handleBulkDelete = async () => {
+    if (!selectedIds.length) return;
+    setBulkDeleting(true);
+    try {
+      await Promise.all(selectedIds.map(id => adminService.deleteDeposit(id)));
+      toast.success(`${selectedIds.length} deposit(s) deleted`);
+      setSelectedIds([]);
+      fetchDeposits();
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Failed to delete selected deposits');
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
 
   const pagination = usePagination({ totalItems: 0, perPage: 10 });
 
@@ -129,10 +156,10 @@ export default function Deposits() {
     {
       header: 'Proof',
       render: (_, row) => row.screenshot ? (
-        <a href={row.screenshot} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs font-medium text-primary-600 hover:text-primary-700" onClick={(e) => e.stopPropagation()}>
-          <img src={row.screenshot} alt="Deposit proof" className="h-9 w-9 rounded-lg object-cover border border-dark-200" />
-          <FiExternalLink size={12} />
-        </a>
+        <button onClick={() => openPreview(row.screenshot)} className="inline-flex items-center gap-1.5 group" title="View proof">
+          <img src={getAssetUrl(row.screenshot)} alt="Deposit proof" className="h-9 w-9 rounded-lg object-cover border border-dark-200 group-hover:ring-2 group-hover:ring-primary-200 transition-all" />
+          <FiMaximize2 size={12} className="text-dark-400 group-hover:text-primary-600" />
+        </button>
       ) : (
         <span className="text-xs text-dark-400 flex items-center gap-1.5"><FiImage size={13} /> No proof</span>
       ),
@@ -223,7 +250,16 @@ export default function Deposits() {
             <Button type="submit">Search</Button>
           </form>
         </div>
-        <DataTable columns={columns} data={deposits} loading={loading} emptyMessage="No deposit requests found" />
+        <DataTable
+          columns={columns}
+          data={deposits}
+          loading={loading}
+          emptyMessage="No deposit requests found"
+          selectable
+          selectedIds={selectedIds}
+          onSelect={toggleSelect}
+          onSelectAll={(ids) => setSelectedIds(ids)}
+        />
       </Card>
 
       <Modal isOpen={detailOpen} onClose={() => { setDetailOpen(false); setRejectNote(''); }} title="Deposit Details" size="md">
@@ -238,18 +274,26 @@ export default function Deposits() {
             </div>
             {selected.screenshot && (
               <div>
-                <p className="text-sm font-semibold text-ink mb-2 flex items-center gap-2">
-                  <FiImage size={15} className="text-primary-500" /> Payment Screenshot (Proof)
-                </p>
-                <a href={selected.screenshot} target="_blank" rel="noopener noreferrer" className="block">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-semibold text-ink flex items-center gap-2">
+                    <FiImage size={15} className="text-primary-500" /> Payment Screenshot (Proof)
+                  </p>
+                  <button
+                    onClick={() => downloadFile(getAssetUrl(selected.screenshot), `deposit-proof-${selected._id}.png`)}
+                    className="inline-flex items-center gap-1.5 text-xs font-medium text-primary-600 hover:text-primary-700"
+                  >
+                    <FiDownload size={13} /> Download
+                  </button>
+                </div>
+                <button onClick={() => openPreview(selected.screenshot)} className="block w-full">
                   <img
-                    src={selected.screenshot}
+                    src={getAssetUrl(selected.screenshot)}
                     alt="Deposit payment proof"
-                    className="w-full max-h-72 object-contain rounded-xl border border-dark-200 bg-dark-50 cursor-pointer"
+                    className="w-full max-h-72 object-contain rounded-xl border border-dark-200 bg-dark-50 cursor-zoom-in"
                   />
-                </a>
+                </button>
                 <p className="text-xs text-dark-400 mt-1.5 flex items-center gap-1">
-                  <FiExternalLink size={12} /> Click the image to view it in full size
+                  <FiMaximize2 size={12} /> Click the image to open it in a popup
                 </p>
               </div>
             )}
@@ -327,6 +371,30 @@ export default function Deposits() {
           </div>
         )}
       </Modal>
+
+      <Modal isOpen={previewOpen} onClose={() => setPreviewOpen(false)} title="Deposit Proof" size="lg">
+        {previewSrc && (
+          <div className="space-y-4">
+            <div className="flex justify-center bg-dark-50 rounded-xl p-3 max-h-[70vh] overflow-auto">
+              <img src={previewSrc} alt="Deposit proof" className="max-w-full object-contain" />
+            </div>
+            <div className="flex justify-end gap-3">
+              <Button variant="outline" onClick={() => setPreviewOpen(false)}>Close</Button>
+              <Button onClick={() => downloadFile(previewSrc, 'deposit-proof.png')}>
+                <FiDownload size={15} className="mr-1.5" /> Download
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      <BulkActionsBar
+        selectedCount={selectedIds.length}
+        onClear={() => setSelectedIds([])}
+        onDelete={handleBulkDelete}
+        deleting={bulkDeleting}
+        confirmMessage={`Delete ${selectedIds.length} selected deposit(s)?`}
+      />
     </div>
   );
 }

@@ -31,7 +31,7 @@ import walletService from '../../services/walletService';
 import studentService from '../../services/studentService';
 import depositService from '../../services/depositService';
 import paymentAccountService from '../../services/paymentAccountService';
-import { formatCurrency, formatDate, copyToClipboard } from '../../utils/helpers';
+import { formatCurrency, formatDate, copyToClipboard, getAssetUrl } from '../../utils/helpers';
 import usePagination from '../../hooks/usePagination';
 
 const CHART_COLORS = ['#10B981', '#2563EB', '#F59E0B', '#8B5CF6'];
@@ -756,7 +756,7 @@ export default function Wallet() {
                   </div>
                   {activePaymentAccount.qrCodeUrl && (
                     <div className="flex justify-center">
-                      <img src={activePaymentAccount.qrCodeUrl} alt="Deposit QR Code" className="w-44 h-44 border border-dark-200 rounded-xl object-contain bg-white" />
+                      <img src={getAssetUrl(activePaymentAccount.qrCodeUrl)} alt="Deposit QR Code" className="w-44 h-44 border border-dark-200 rounded-xl object-contain bg-white" />
                     </div>
                   )}
 

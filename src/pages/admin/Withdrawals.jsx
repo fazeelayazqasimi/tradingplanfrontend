@@ -8,6 +8,7 @@ import Modal from '../../components/ui/Modal';
 import Badge from '../../components/ui/Badge';
 import Pagination from '../../components/ui/Pagination';
 import Select from '../../components/ui/Select';
+import BulkActionsBar from '../../components/ui/BulkActionsBar';
 import { formatCurrency, formatDate } from '../../utils/helpers';
 import usePagination from '../../hooks/usePagination';
 import adminService from '../../services/adminService';
@@ -38,6 +39,8 @@ export default function Withdrawals() {
   const [detailModal, setDetailModal] = useState(null);
   const [processing, setProcessing] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
   const { page, perPage, setPage, total, setTotal } = usePagination(1, 10);
 
   const fetchWithdrawals = async () => {
@@ -115,6 +118,25 @@ export default function Withdrawals() {
       toast.error(err.response?.data?.message || 'Failed to mark as paid');
     } finally {
       setProcessing(null);
+    }
+  };
+
+  const toggleSelect = (id) => {
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  };
+
+  const handleBulkDelete = async () => {
+    if (!window.confirm(`Delete ${selectedIds.length} withdrawal requests? This cannot be undone.`)) return;
+    setBulkDeleting(true);
+    try {
+      await Promise.all(selectedIds.map((id) => adminService.deleteWithdrawal(id)));
+      toast.success(`${selectedIds.length} withdrawals deleted`);
+      setSelectedIds([]);
+      fetchWithdrawals();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to delete withdrawals');
+    } finally {
+      setBulkDeleting(false);
     }
   };
 
@@ -238,6 +260,10 @@ export default function Withdrawals() {
           data={withdrawals}
           loading={loading}
           emptyMessage="No withdrawal requests found"
+          selectable
+          selectedIds={selectedIds}
+          onSelect={toggleSelect}
+          onSelectAll={setSelectedIds}
         />
 
         {total > perPage && (
@@ -251,6 +277,13 @@ export default function Withdrawals() {
           </div>
         )}
       </Card>
+
+      <BulkActionsBar
+        count={selectedIds.length}
+        onDelete={handleBulkDelete}
+        onClear={() => setSelectedIds([])}
+        deleting={bulkDeleting}
+      />
 
       <Modal
         isOpen={!!detailModal}

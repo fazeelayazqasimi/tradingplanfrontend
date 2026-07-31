@@ -10,7 +10,9 @@ import Badge from '../../components/ui/Badge';
 import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
 import Skeleton from '../../components/ui/Skeleton';
+import BulkActionsBar from '../../components/ui/BulkActionsBar';
 import adminService from '../../services/adminService';
+import { getAssetUrl } from '../../utils/helpers';
 
 const defaultForm = {
   bankName: '', accountHolderName: '', accountNumber: '', iban: '',
@@ -40,6 +42,8 @@ export default function PaymentAccounts() {
   const [form, setForm] = useState(defaultForm);
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   const fetchAccounts = useCallback(async () => {
     try {
@@ -136,6 +140,25 @@ export default function PaymentAccounts() {
     }
   };
 
+  const toggleSelect = (id) => {
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  };
+
+  const handleBulkDelete = async () => {
+    if (!window.confirm(`Delete ${selectedIds.length} payment accounts? This cannot be undone.`)) return;
+    setBulkDeleting(true);
+    try {
+      await Promise.all(selectedIds.map((id) => adminService.deletePaymentAccount(id)));
+      toast.success(`${selectedIds.length} payment accounts deleted`);
+      setSelectedIds([]);
+      fetchAccounts();
+    } catch {
+      toast.error('Failed to delete payment accounts');
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
+
   const columns = [
     {
       header: 'Bank/Provider',
@@ -213,8 +236,24 @@ export default function PaymentAccounts() {
       </div>
 
       <Card className="overflow-hidden">
-        <DataTable columns={columns} data={accounts} loading={loading} emptyMessage="No payment accounts added yet" />
+        <DataTable
+          columns={columns}
+          data={accounts}
+          loading={loading}
+          emptyMessage="No payment accounts added yet"
+          selectable
+          selectedIds={selectedIds}
+          onSelect={toggleSelect}
+          onSelectAll={setSelectedIds}
+        />
       </Card>
+
+      <BulkActionsBar
+        count={selectedIds.length}
+        onDelete={handleBulkDelete}
+        onClear={() => setSelectedIds([])}
+        deleting={bulkDeleting}
+      />
 
       <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={editing ? 'Edit Payment Account' : 'Add Payment Account'} size="md">
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -245,7 +284,7 @@ export default function PaymentAccounts() {
                   }}
                 />
                 {form.qrCodeUrl && (
-                  <img src={form.qrCodeUrl} alt="QR preview" className="mt-3 w-32 h-32 border border-dark-200 rounded-xl object-contain bg-white" />
+                  <img src={getAssetUrl(form.qrCodeUrl)} alt="QR preview" className="mt-3 w-32 h-32 border border-dark-200 rounded-xl object-contain bg-white" />
                 )}
               </div>
             </>

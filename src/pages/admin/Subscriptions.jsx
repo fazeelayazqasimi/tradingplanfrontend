@@ -22,6 +22,7 @@ import DataTable from '../../components/ui/DataTable';
 import Modal from '../../components/ui/Modal';
 import Badge from '../../components/ui/Badge';
 import Skeleton from '../../components/ui/Skeleton';
+import BulkActionsBar from '../../components/ui/BulkActionsBar';
 import adminService from '../../services/adminService';
 import { formatCurrency, formatDate } from '../../utils/helpers';
 import usePagination from '../../hooks/usePagination';
@@ -135,6 +136,8 @@ export default function Subscriptions() {
   const [editForm, setEditForm] = useState({});
   const [editSaving, setEditSaving] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   const pagination = usePagination({ totalItems: items.length, perPage: 10 });
 
@@ -236,6 +239,34 @@ export default function Subscriptions() {
       toast.error(err.response?.data?.message || err.message || 'Failed to delete');
     } finally {
       setDeletingId(null);
+    }
+  };
+
+  const toggleSelect = (id) => {
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  };
+
+  const handleBulkDelete = async () => {
+    if (!window.confirm(`Delete ${selectedIds.length} items? This cannot be undone.`)) return;
+    setBulkDeleting(true);
+    try {
+      await Promise.all(
+        selectedIds.map(async (id) => {
+          const row = items.find((x) => getSubId(x) === id);
+          if (row?._type === 'purchase') {
+            await adminService.deletePurchase(id);
+          } else {
+            await adminService.deleteSubscription(id);
+          }
+        })
+      );
+      toast.success(`${selectedIds.length} items deleted`);
+      setSelectedIds([]);
+      setItems((prev) => prev.filter((x) => !selectedIds.includes(getSubId(x))));
+    } catch (err) {
+      toast.error(err.response?.data?.message || err.message || 'Failed to delete');
+    } finally {
+      setBulkDeleting(false);
     }
   };
 
@@ -377,8 +408,19 @@ export default function Subscriptions() {
           data={items}
           loading={loading}
           emptyMessage="No subscriptions or purchases found"
+          selectable
+          selectedIds={selectedIds}
+          onSelect={toggleSelect}
+          onSelectAll={setSelectedIds}
         />
       </Card>
+
+      <BulkActionsBar
+        count={selectedIds.length}
+        onDelete={handleBulkDelete}
+        onClear={() => setSelectedIds([])}
+        deleting={bulkDeleting}
+      />
 
       <Modal
         isOpen={detailOpen}

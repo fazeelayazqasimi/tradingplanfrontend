@@ -11,6 +11,7 @@ import Skeleton from '../../components/ui/Skeleton';
 import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
 import couponService from '../../services/couponService';
+import BulkActionsBar from '../../components/ui/BulkActionsBar';
 import { formatCurrency, formatDate } from '../../utils/helpers';
 import Pagination from '../../components/ui/Pagination';
 import usePagination from '../../hooks/usePagination';
@@ -42,6 +43,8 @@ export default function Coupons() {
     usageLimit: '', perUserLimit: 1, applicableTo: 'all',
     startsAt: '', expiresAt: '', description: '', isActive: true, noCommission: false,
   });
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   const { page, limit, nextPage, prevPage, goToPage, setTotalItems, currentPage, totalPages } = usePagination(1, 10);
 
@@ -123,6 +126,25 @@ export default function Coupons() {
     }
   };
 
+  const toggleSelect = (id) => {
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  };
+
+  const handleBulkDelete = async () => {
+    if (!window.confirm(`Delete ${selectedIds.length} coupons? This cannot be undone.`)) return;
+    setBulkDeleting(true);
+    try {
+      await Promise.all(selectedIds.map((id) => couponService.deleteCoupon(id)));
+      toast.success(`${selectedIds.length} coupons deleted`);
+      setSelectedIds([]);
+      fetchCoupons();
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Failed to delete coupons');
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
+
   const handleToggleActive = async (coupon) => {
     try {
       await couponService.updateCoupon(coupon._id, { isActive: !coupon.isActive });
@@ -198,7 +220,18 @@ export default function Coupons() {
             </div>
           ) : (
             <>
-              <DataTable columns={columns} data={coupons} page={page} totalPages={totalPages} onNextPage={nextPage} onPrevPage={prevPage} />
+              <DataTable
+                columns={columns}
+                data={coupons}
+                page={page}
+                totalPages={totalPages}
+                onNextPage={nextPage}
+                onPrevPage={prevPage}
+                selectable
+                selectedIds={selectedIds}
+                onSelect={toggleSelect}
+                onSelectAll={setSelectedIds}
+              />
               {totalPages > 1 && (
                 <div className="flex justify-center mt-4">
                   <Pagination page={page} totalPages={totalPages} onPageChange={goToPage} />
@@ -208,6 +241,13 @@ export default function Coupons() {
           )}
         </Card>
       </motion.div>
+
+      <BulkActionsBar
+        count={selectedIds.length}
+        onDelete={handleBulkDelete}
+        onClear={() => setSelectedIds([])}
+        deleting={bulkDeleting}
+      />
 
       <Modal isOpen={showGenerate} onClose={() => setShowGenerate(false)} title="Generate PINs" size="sm">
         <div className="space-y-4">
