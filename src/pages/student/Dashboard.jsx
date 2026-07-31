@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { FiBookOpen, FiTrendingUp, FiDollarSign, FiAward, FiArrowRight, FiCreditCard, FiClock, FiCheckCircle, FiCopy, FiLink, FiUsers, FiUserPlus, FiBarChart2, FiStar, FiZap, FiGlobe, FiTrendingDown, FiLock, FiGift, FiShare2, FiCheck, FiExternalLink, FiCalendar, FiMessageSquare } from "react-icons/fi";
+import { FiBookOpen, FiTrendingUp, FiDollarSign, FiAward, FiArrowRight, FiCreditCard, FiClock, FiCheckCircle, FiCopy, FiLink, FiUsers, FiUserPlus, FiBarChart2, FiStar, FiZap, FiGlobe, FiTrendingDown, FiLock, FiGift, FiShare2, FiCheck, FiExternalLink, FiCalendar, FiMessageSquare, FiKey } from "react-icons/fi";
 import toast from "react-hot-toast";
 import Card from "../../components/ui/Card";
 import Badge from "../../components/ui/Badge";
 import Button from "../../components/ui/Button";
 import Skeleton from "../../components/ui/Skeleton";
+import Input from "../../components/ui/Input";
+import Modal from "../../components/ui/Modal";
 import { useAuth } from "../../context/AuthContext";
 import { formatCurrency, copyToClipboard } from "../../utils/helpers";
 import SystemFlow from "../../components/website/SystemFlow";
@@ -20,6 +22,7 @@ import announcementService from "../../services/announcementService";
 import webinarService from "../../services/webinarService";
 import zoomSessionService from "../../services/zoomSessionService";
 import marketUpdateService from "../../services/marketUpdateService";
+import api from "../../services/api";
 
 const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.04 } } };
 const item = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 280, damping: 22 } } };
@@ -32,7 +35,7 @@ const walletStatsData = [
 ];
 
 export default function Dashboard() {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [enrolled, setEnrolled] = useState([]);
   const [signals, setSignals] = useState([]);
   const [walletData, setWalletData] = useState(null);
@@ -52,6 +55,12 @@ export default function Dashboard() {
   const [marketOverview, setMarketOverview] = useState(null);
   const [openSignalsCount, setOpenSignalsCount] = useState(0);
   const [copyStats, setCopyStats] = useState(null);
+  const [showActivateModal, setShowActivateModal] = useState(false);
+  const [activatePin, setActivatePin] = useState("");
+  const [activateLoading, setActivateLoading] = useState(false);
+  const [activateError, setActivateError] = useState("");
+  const [fundingBalance, setFundingBalance] = useState(0);
+  const [activationInfo, setActivationInfo] = useState({ membershipPrice: 120, fundingPercent: 20 });
 
   useEffect(() => {
     let cancelled = false;
@@ -71,12 +80,6 @@ export default function Dashboard() {
           signalService.getSignals({ status: "open", isPublished: true, perPage: 1 }),
           referralService.getStats(),
           referralService.getReferralCode(),
-          webinarService.getWebinars({ isFree: true, limit: 5, sort: "-date" }),
-          zoomSessionService.getZoomSessions({ category: "free-zoom", limit: 5, sort: "-date" }),
-          marketUpdateService.getMarketUpdates({ limit: 5, sort: "-createdAt" }),
-          announcementService.getAnnouncements({ limit: 5, sort: "-createdAt" }),
-          courseService.getCourses({ isFree: true, limit: 5, sort: "-order" }),
-          studentService.getCopyStats(),
         ]);
         if (!mounted || cancelled) return;
         if (results[0].status === "fulfilled") {
@@ -106,25 +109,37 @@ export default function Dashboard() {
           const code = rd?.referralCode || rd?.code || "";
           setReferralLink(code ? `https://the4xhub.com/register?ref=${code}` : rd?.referralLink || "");
         }
-        const extractData = (res) => {
-          if (!res?.data) return [];
-          const body = res.data;
-          return body.data?.data || body.data?.webinars || body.data?.sessions || body.data?.updates || body.data?.announcements || body.data?.courses || body.data || [];
-        };
-        if (results[9].status === "fulfilled") setFreeWebinars(Array.isArray(results[9].value?.data?.data) ? results[9].value.data.data : extractData(results[9].value));
-        if (results[10].status === "fulfilled") setFreeZoomSessions(Array.isArray(results[10].value?.data?.data) ? results[10].value.data.data : extractData(results[10].value));
-        if (results[11].status === "fulfilled") setMarketUpdates(Array.isArray(results[11].value?.data?.data) ? results[11].value.data.data : extractData(results[11].value));
-        if (results[12].status === "fulfilled") setAnnouncements(Array.isArray(results[12].value?.data?.data) ? results[12].value.data.data : extractData(results[12].value));
-        if (results[13].status === "fulfilled") setFreeCourses(Array.isArray(results[13].value?.data?.data) ? results[13].value.data.data : extractData(results[13].value));
-        if (results[14].status === "fulfilled" && results[14].value) {
-          const cs = results[14].value.data?.data || results[14].value.data;
-          setCopyStats(cs);
-        }
       } catch { if (!cancelled) toast.error("Failed to load dashboard data"); }
       finally { if (!cancelled) setLoading(false); }
     }
     fetchDashboard();
-    return () => { mounted = false; cancelled = true; };
+
+    const timer = setTimeout(async () => {
+      const results = await Promise.allSettled([
+        webinarService.getWebinars({ isFree: true, limit: 5, sort: "-date" }),
+        zoomSessionService.getZoomSessions({ category: "free-zoom", limit: 5, sort: "-date" }),
+        marketUpdateService.getMarketUpdates({ limit: 5, sort: "-createdAt" }),
+        announcementService.getAnnouncements({ limit: 5, sort: "-createdAt" }),
+        courseService.getCourses({ isFree: true, limit: 5, sort: "-order" }),
+        studentService.getCopyStats(),
+      ]);
+      if (!mounted || cancelled) return;
+      const extractData = (res) => {
+        if (!res?.data) return [];
+        const body = res.data;
+        return body.data?.data || body.data?.webinars || body.data?.sessions || body.data?.updates || body.data?.announcements || body.data?.courses || body.data || [];
+      };
+      if (results[0].status === "fulfilled") setFreeWebinars(Array.isArray(results[0].value?.data?.data) ? results[0].value.data.data : extractData(results[0].value));
+      if (results[1].status === "fulfilled") setFreeZoomSessions(Array.isArray(results[1].value?.data?.data) ? results[1].value.data.data : extractData(results[1].value));
+      if (results[2].status === "fulfilled") setMarketUpdates(Array.isArray(results[2].value?.data?.data) ? results[2].value.data.data : extractData(results[2].value));
+      if (results[3].status === "fulfilled") setAnnouncements(Array.isArray(results[3].value?.data?.data) ? results[3].value.data.data : extractData(results[3].value));
+      if (results[4].status === "fulfilled") setFreeCourses(Array.isArray(results[4].value?.data?.data) ? results[4].value.data.data : extractData(results[4].value));
+      if (results[5].status === "fulfilled" && results[5].value) {
+        const cs = results[5].value.data?.data || results[5].value.data;
+        setCopyStats(cs);
+      }
+    }, 400);
+    return () => { mounted = false; cancelled = true; clearTimeout(timer); };
   }, []);
 
   const availableBalance = walletStats?.available ?? walletData?.availableBalance ?? walletData?.balance ?? 0;
@@ -133,6 +148,7 @@ export default function Dashboard() {
   const rewardCredits = referralStats?.totalEarnings || 0;
   const directReferrals = referralStats?.directReferrals || 0;
   const indirectReferrals = referralStats?.indirectReferrals || 0;
+  const activeMembers = referralStats?.activeMembers || referralStats?.activeReferrals || 0;
   const teamSize = directReferrals + indirectReferrals;
   const currentRankName = rank?.name || "—";
   const nextRankName = nextRank?.name || "—";
@@ -158,6 +174,64 @@ export default function Dashboard() {
     const bDate = b.date || b.publishedAt || b.createdAt || "";
     return new Date(bDate) - new Date(aDate);
   });
+
+  const openActivateModal = async () => {
+    setActivatePin("");
+    setActivateError("");
+    setShowActivateModal(true);
+    const [walletRes, infoRes] = await Promise.allSettled([
+      walletService.getAllWallets(),
+      api.get("/subscriptions/activation-info"),
+    ]);
+    if (walletRes.status === "fulfilled") {
+      const wallets = walletRes.value?.data?.data || walletRes.value?.data || [];
+      setFundingBalance(wallets.find(w => w.type === "funding")?.availableBalance || 0);
+    }
+    if (infoRes.status === "fulfilled") {
+      const data = infoRes.value?.data?.data || infoRes.value?.data || {};
+      setActivationInfo(prev => ({ ...prev, ...data }));
+    }
+  };
+
+  const handleActivateWithPin = async () => {
+    if (!activatePin.trim()) { setActivateError("Enter a PIN code"); return; }
+    setActivateLoading(true);
+    setActivateError("");
+    try {
+      await studentService.activateWithPin({ code: activatePin.trim() });
+      toast.success("Account activated successfully via PIN!");
+      setShowActivateModal(false);
+      setActivatePin("");
+      refreshUser();
+    } catch (err) {
+      setActivateError(err?.response?.data?.message || "Failed to activate with PIN");
+    } finally {
+      setActivateLoading(false);
+    }
+  };
+
+  const handleActivateWithWallet = async () => {
+    setActivateLoading(true);
+    setActivateError("");
+    try {
+      await studentService.activateWithBalance();
+      toast.success("Account activated successfully via wallet balance!");
+      setShowActivateModal(false);
+      refreshUser();
+    } catch (err) {
+      setActivateError(err?.response?.data?.message || "Failed to activate with wallet");
+    } finally {
+      setActivateLoading(false);
+    }
+  };
+
+  const membershipPrice = activationInfo.membershipPrice || 120;
+  const fundingPercent = activationInfo.fundingPercent || 20;
+  const fundingPart = parseFloat((membershipPrice * fundingPercent / 100).toFixed(2));
+  const fundingUsed = Math.min(fundingBalance, fundingPart);
+  const mainNeeded = membershipPrice - fundingUsed;
+  const totalAvailable = availableBalance + fundingBalance;
+  const canActivate = totalAvailable >= membershipPrice;
 
   const handleCopyReferral = async () => {
     const ok = await copyToClipboard(referralLink);
@@ -199,16 +273,14 @@ export default function Dashboard() {
                 </h1>
                 <p className="text-white/70 text-sm sm:text-base max-w-lg">
                   {isFreeUser
-                    ? "Explore free resources and upgrade to unlock premium features."
+                    ? "Explore free resources and activate your membership to unlock premium features."
                     : "Your trading empire awaits — here's your overview."}
                 </p>
               </div>
               {isFreeUser && (
-                <Link to="/student/subscription">
-                  <Button variant="white" className="font-bold shadow-lg">
-                    <FiZap className="mr-2" /> Upgrade Now
-                  </Button>
-                </Link>
+                <Button variant="white" className="font-bold shadow-lg" onClick={openActivateModal}>
+                  <FiZap className="mr-2" /> Activate Now
+                </Button>
               )}
             </div>
           </div>
@@ -224,11 +296,17 @@ export default function Dashboard() {
               <h2 className="text-xl sm:text-2xl font-extrabold">One Membership. Unlimited Opportunities.</h2>
               <p className="text-white/80 text-sm mt-1">Ready to Learn, Trade & Grow Today</p>
             </div>
-            <Link to={isFreeUser ? "/student/subscription" : "/student/classes"}>
-              <Button variant="white" className="text-purple-700 font-bold shadow-lg shrink-0">
-                {isFreeUser ? "Get Started" : "Explore Classes"}
+            {isFreeUser ? (
+              <Button variant="white" className="text-purple-700 font-bold shadow-lg shrink-0" onClick={openActivateModal}>
+                Activate Now
               </Button>
-            </Link>
+            ) : (
+              <Link to="/student/classes">
+                <Button variant="white" className="text-purple-700 font-bold shadow-lg shrink-0">
+                  Explore Classes
+                </Button>
+              </Link>
+            )}
           </div>
         </Card>
       </motion.div>
@@ -242,7 +320,7 @@ export default function Dashboard() {
               <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white">
                 <FiShare2 size={15} />
               </div>
-              <h3 className="font-bold text-ink text-sm uppercase tracking-wider">Invite Friends — Earn $1 Reward Credit</h3>
+              <h3 className="font-bold text-ink text-sm uppercase tracking-wider">Invite Friends — Earn $1 Registration Bonus</h3>
             </div>
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="flex-1 flex items-center gap-2 bg-white rounded-xl border border-dark-100 px-4 py-2.5 min-w-0">
@@ -405,11 +483,9 @@ export default function Dashboard() {
                     </div>
                     <h4 className="text-base font-bold text-ink mb-1">{feature.label}</h4>
                     <p className="text-xs text-dark-400 mb-4">{feature.desc}</p>
-                    <Link to="/student/subscription">
-                      <Button variant="primary" size="sm">
-                        <FiLock size={13} className="mr-1.5" /> Upgrade to Unlock
-                      </Button>
-                    </Link>
+                    <Button variant="primary" size="sm" onClick={openActivateModal}>
+                      <FiLock size={13} className="mr-1.5" /> Activate to Unlock
+                    </Button>
                   </div>
                 </Card>
               );
@@ -475,7 +551,7 @@ export default function Dashboard() {
           <h3 className="text-xs font-bold text-dark-400 uppercase tracking-widest">Affiliate Dashboard</h3>
           <Link to="/student/referrals" className="text-xs text-primary-500 font-medium flex items-center gap-1">Details <FiArrowRight size={12} /></Link>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card className="p-4 flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white shadow-md shrink-0">
               <FiAward size={20} />
@@ -504,6 +580,24 @@ export default function Dashboard() {
             </div>
           </Card>
           <Card className="p-4 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center text-white shadow-md shrink-0">
+              <FiUsers size={20} />
+            </div>
+            <div>
+              <p className="text-xs font-medium text-dark-400">Indirect Members</p>
+              <p className="text-xl font-extrabold text-ink">{indirectReferrals}</p>
+            </div>
+          </Card>
+          <Card className="p-4 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white shadow-md shrink-0">
+              <FiCheckCircle size={20} />
+            </div>
+            <div>
+              <p className="text-xs font-medium text-dark-400">Active Members</p>
+              <p className="text-xl font-extrabold text-ink">{activeMembers}</p>
+            </div>
+          </Card>
+          <Card className="p-4 flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-400 to-violet-600 flex items-center justify-center text-white shadow-md shrink-0">
               <FiUsers size={20} />
             </div>
@@ -522,7 +616,7 @@ export default function Dashboard() {
             </div>
           </Card>
           <Card className="p-4 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center text-white shadow-md shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-400 to-indigo-600 flex items-center justify-center text-white shadow-md shrink-0">
               <FiBarChart2 size={20} />
             </div>
             <div>
@@ -588,6 +682,61 @@ export default function Dashboard() {
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="mt-4">
         <Card className="p-5"><SystemFlow compact /></Card>
       </motion.div>
+
+      {/* Activate Now Modal */}
+      <Modal isOpen={showActivateModal} onClose={() => setShowActivateModal(false)} title="Activate Now" size="sm">
+        <div className="space-y-5">
+          <div className="p-4 rounded-xl bg-primary-50 border border-primary-100">
+            <p className="text-sm text-primary-700">
+              Activate your premium membership for <strong>${membershipPrice}</strong>. {fundingPercent}% ($<strong>{fundingPart}</strong>) is taken from your funding wallet if available, the rest from your main wallet.
+            </p>
+          </div>
+
+          <div>
+            <p className="text-[13px] font-semibold text-ink mb-2 flex items-center gap-2"><FiKey size={14} className="text-primary-500" /> Activate with PIN Code</p>
+            <div className="flex gap-2">
+              <Input
+                value={activatePin}
+                onChange={e => { setActivatePin(e.target.value); setActivateError(''); }}
+                placeholder="Enter PIN code"
+                error={activateError}
+              />
+              <Button onClick={handleActivateWithPin} loading={activateLoading} disabled={!activatePin.trim()}>
+                <FiKey size={15} className="mr-1" /> Activate
+              </Button>
+            </div>
+          </div>
+
+          <div className="border-t border-dark-100 pt-4">
+            <p className="text-[13px] font-semibold text-ink mb-2 flex items-center gap-2"><FiDollarSign size={14} className="text-amber-500" /> Activate with Wallet</p>
+            <div className="space-y-1.5 bg-dark-50 rounded-xl px-4 py-3 text-sm">
+              <div className="flex justify-between">
+                <span className="text-dark-500">Funding Wallet ({fundingPercent}%)</span>
+                <span className="font-semibold text-ink">${fundingUsed.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-dark-500">Main Wallet</span>
+                <span className="font-semibold text-ink">${mainNeeded.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between border-t border-dark-200 pt-1.5">
+                <span className="text-dark-500">Total Available</span>
+                <span className="font-bold text-ink">${totalAvailable.toFixed(2)}</span>
+              </div>
+            </div>
+            {!canActivate && (
+              <p className="text-xs text-red-500 bg-red-50 rounded-lg p-2 mt-2">
+                Insufficient balance. You need ${(membershipPrice - totalAvailable).toFixed(2)} more.
+              </p>
+            )}
+            <Button variant="primary" className="w-full mt-3" onClick={handleActivateWithWallet} loading={activateLoading} disabled={!canActivate}>
+              <FiDollarSign size={15} className="mr-1" /> Pay ${membershipPrice} from Wallet
+            </Button>
+            <Link to="/student/wallet" onClick={() => setShowActivateModal(false)}>
+              <Button variant="outline" size="sm" className="w-full mt-2">Deposit Funds First</Button>
+            </Link>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

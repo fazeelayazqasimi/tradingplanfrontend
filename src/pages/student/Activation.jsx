@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FiKey, FiZap, FiUsers, FiCheckCircle, FiInfo } from 'react-icons/fi';
+import { FiKey, FiZap, FiUsers, FiCheckCircle, FiInfo, FiDollarSign } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
@@ -12,7 +12,8 @@ import api from '../../services/api';
 export default function Activation() {
   const { user, refreshUser } = useAuth();
   const [mainBalance, setMainBalance] = useState(0);
-  const [activationInfo, setActivationInfo] = useState({ membershipPrice: 120, uplineActivationDiscount: 20 });
+  const [fundingBalance, setFundingBalance] = useState(0);
+  const [activationInfo, setActivationInfo] = useState({ membershipPrice: 120, uplineActivationDiscount: 20, fundingPercent: 20 });
 
   const [pinCode, setPinCode] = useState('');
   const [pinLoading, setPinLoading] = useState(false);
@@ -26,8 +27,12 @@ export default function Activation() {
 
   const isActivated = user?.isApproved && user?.subscriptionStatus === 'active';
   const price = activationInfo.membershipPrice;
-  const discountPercent = activationInfo.uplineActivationDiscount || 20;
-  const downlinePrice = Math.round(price * (100 - discountPercent) / 100);
+  const fundingPercent = activationInfo.fundingPercent || 20;
+  const fundingPart = parseFloat((price * fundingPercent / 100).toFixed(2));
+  const fundingUsed = Math.min(fundingBalance, fundingPart);
+  const mainNeeded = price - fundingUsed;
+  const totalAvailable = mainBalance + fundingBalance;
+  const canPay = totalAvailable >= price;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -39,6 +44,7 @@ export default function Activation() {
         if (walletRes.status === 'fulfilled') {
           const wallets = walletRes.value?.data?.data || walletRes.value?.data || [];
           setMainBalance(wallets.find(w => w.type === 'main')?.availableBalance || 0);
+          setFundingBalance(wallets.find(w => w.type === 'funding')?.availableBalance || 0);
         }
         if (infoRes.status === 'fulfilled') {
           const data = infoRes.value?.data?.data || infoRes.value?.data || {};
@@ -98,6 +104,32 @@ export default function Activation() {
     }
   };
 
+  const PaymentSplit = ({ disabled }) => (
+    <div className="space-y-2 bg-dark-50 rounded-xl px-4 py-3">
+      <div className="flex items-center justify-between">
+        <span className="text-sm text-dark-500">Membership Price</span>
+        <span className="text-lg font-bold text-ink">${price}</span>
+      </div>
+      <div className="flex items-center justify-between">
+        <span className="text-sm text-dark-500">Funding Wallet ({fundingPercent}%{fundingBalance < fundingPart ? ` - available $${fundingBalance.toFixed(2)}` : ''})</span>
+        <span className="text-sm font-semibold text-ink">${fundingUsed.toFixed(2)}</span>
+      </div>
+      <div className="flex items-center justify-between">
+        <span className="text-sm text-dark-500">Main Wallet</span>
+        <span className="text-sm font-semibold text-ink">${mainNeeded.toFixed(2)}</span>
+      </div>
+      <div className="flex items-center justify-between border-t border-dark-200 pt-2">
+        <span className="text-sm text-dark-500">Total Balance Available</span>
+        <span className="text-base font-bold text-ink">${totalAvailable.toFixed(2)}</span>
+      </div>
+      {!disabled && !canPay && (
+        <div className="text-xs text-red-500 bg-red-50 rounded-lg p-2">
+          Insufficient balance. You need ${(price - totalAvailable).toFixed(2)} more (funding + main wallet combined).
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <div className="max-w-lg mx-auto space-y-6">
       <div>
@@ -146,27 +178,18 @@ export default function Activation() {
               <span className="font-semibold text-ink">Activate with Wallet</span>
             </div>
             <p className="text-sm text-dark-500">
-              Activate instantly using your main wallet balance. Cost: <strong>${price}</strong>.
+              Activate instantly using your wallet balance. {fundingPercent}% of the <strong>${price}</strong> price is taken from your funding wallet (if available), the rest from your main wallet.
             </p>
-            <div className="flex items-center justify-between bg-dark-50 rounded-xl px-4 py-3">
-              <span className="text-sm text-dark-500">Main Wallet Balance</span>
-              <span className="text-lg font-bold text-ink">${mainBalance.toFixed(2)}</span>
-            </div>
+            <PaymentSplit />
             <Button
               variant="primary"
               className="w-full"
               onClick={handleActivateWithWallet}
               loading={walletLoading}
-              disabled={mainBalance < price}
+              disabled={!canPay}
             >
-              <FiZap size={16} className="mr-1.5" /> Pay ${price}
+              <FiDollarSign size={16} className="mr-1.5" /> Pay ${price}
             </Button>
-            {mainBalance < price && (
-              <div className="text-xs text-red-500 bg-red-50 rounded-xl p-3 flex items-start gap-2">
-                <FiInfo size={14} className="shrink-0 mt-0.5" />
-                <span>Insufficient balance. You need ${(price - mainBalance).toFixed(2)} more in your main wallet.</span>
-              </div>
-            )}
           </Card>
         </>
       ) : (
@@ -191,7 +214,7 @@ export default function Activation() {
               <span className="font-semibold text-ink">Activate Downline Member</span>
             </div>
             <p className="text-sm text-dark-500">
-              Enter your downline member's email to activate them. You get a <strong>{discountPercent}% discount</strong> on downline activation (${downlinePrice}).
+              Enter your downline member's email to activate them. {fundingPercent}% of the <strong>${price}</strong> price is taken from your funding wallet (if available), the rest from your main wallet.
             </p>
             <Input
               value={email}
@@ -199,28 +222,16 @@ export default function Activation() {
               placeholder="Downline email"
               error={error}
             />
-            <div className="flex items-center justify-between bg-dark-50 rounded-xl px-4 py-3">
-              <div>
-                <span className="text-sm text-dark-500">Main Wallet</span>
-                <p className="text-xs text-dark-400">Balance: ${mainBalance.toFixed(2)}</p>
-              </div>
-              <span className="text-lg font-bold text-ink">${downlinePrice}</span>
-            </div>
+            <PaymentSplit disabled={!email.trim()} />
             <Button
               variant="primary"
               className="w-full"
               onClick={handleActivateDownline}
               loading={loading}
-              disabled={mainBalance < downlinePrice || !email.trim()}
+              disabled={!canPay || !email.trim()}
             >
-              <FiUsers size={16} className="mr-1.5" /> Activate Downline — ${downlinePrice}
+              <FiUsers size={16} className="mr-1.5" /> Activate Downline — ${price}
             </Button>
-            {mainBalance < downlinePrice && (
-              <div className="text-xs text-red-500 bg-red-50 rounded-xl p-3 flex items-start gap-2">
-                <FiInfo size={14} className="shrink-0 mt-0.5" />
-                <span>Insufficient balance. You need ${(downlinePrice - mainBalance).toFixed(2)} more in your main wallet.</span>
-              </div>
-            )}
           </Card>
         </>
       )}

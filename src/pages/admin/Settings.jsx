@@ -72,12 +72,6 @@ const SETTING_FIELDS = {
     { key: 'upline_activation_discount', label: 'Upline Activation Discount (%)', type: 'number', icon: FiDollarSign, placeholder: '20', description: 'Discount % when upline activates a downline package using their wallet' },
   ],
   referral: [
-    { key: 'referral_signup_bonus', label: 'Referral Signup Bonus ($)', icon: FiDollarSign, type: 'number', placeholder: '10', description: 'Bonus given to referrer when their referral signs up' },
-    { key: 'referral_level_1_commission', label: 'Level 1 Commission ($)', icon: FiDollarSign, type: 'number', placeholder: '30' },
-    { key: 'referral_level_2_commission', label: 'Level 2 Commission ($)', icon: FiDollarSign, type: 'number', placeholder: '10' },
-    { key: 'referral_level_3_commission', label: 'Level 3 Commission ($)', icon: FiDollarSign, type: 'number', placeholder: '5' },
-    { key: 'referral_level_4_commission', label: 'Level 4 Commission ($)', icon: FiDollarSign, type: 'number', placeholder: '3' },
-    { key: 'referral_level_5_commission', label: 'Level 5 Commission ($)', icon: FiDollarSign, type: 'number', placeholder: '2' },
     { key: 'referral_max_levels', label: 'Max Referral Levels', icon: FiUsers, type: 'number', placeholder: '5' },
   ],
   broker: [
@@ -101,8 +95,7 @@ const SETTING_FIELDS = {
     { key: 'withdrawal_fee_fixed', label: 'Fixed Withdrawal Fee ($)', icon: FiDollarSign, type: 'number', placeholder: '0', description: 'Fixed fee per withdrawal (used when type is Fixed)' },
   ],
   funding: [
-    { key: 'free_registration_bonus_enabled', label: 'Free Registration $1 Bonus', type: 'toggle', description: 'When enabled, new users get free registration bonus on registration' },
-    { key: 'free_registration_bonus_amount', label: 'Free Registration Bonus Amount ($)', type: 'number', icon: FiDollarSign, placeholder: '1', description: 'Amount awarded as free registration bonus' },
+    { key: 'free_registration_bonus_enabled', label: 'Registration Referral $1 Bonus', type: 'toggle', description: 'When enabled, the direct upline receives a fixed $1 registration referral bonus in their funding wallet when a downline registers via their referral link' },
     { key: 'funding_wallet_usage_percent', label: 'Funding Wallet Usage %', type: 'number', icon: FiDollarSign, placeholder: '20', description: 'Max percentage of membership amount that can be paid from funding wallet' },
   ],
   trading: [

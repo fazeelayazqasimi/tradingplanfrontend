@@ -432,7 +432,7 @@ export default function Referrals() {
               Total earned from free registrations: <span className="font-bold text-rose-600">{formatCurrency(stats.freeRegistrationEarnings)}</span>
             </p>
             <p className="text-xs text-dark-400">
-              Each free registration gives you $1 + $1 per prior pending registration. Amount is credited to your funding wallet instantly.
+              Each direct registration gives you a fixed $1 registration referral bonus, credited instantly to your funding wallet.
             </p>
           </Card>
         </motion.div>

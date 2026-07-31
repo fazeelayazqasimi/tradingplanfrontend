@@ -77,6 +77,7 @@ const adminService = {
   createPaymentAccount: (data) => unwrap(api.post('/payment-accounts', data)),
   updatePaymentAccount: (id, data) => unwrap(api.put(`/payment-accounts/${id}`, data)),
   deletePaymentAccount: (id) => unwrap(api.delete(`/payment-accounts/${id}`)),
+  uploadPaymentQr: (formData) => api.post('/payment-accounts/upload-qr', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
   getAllDeposits: (params) => unwrap(api.get('/deposits/all', { params })),
   approveDeposit: (id, data) => unwrap(api.put(`/deposits/${id}/approve`, data)),
   rejectDeposit: (id, data) => unwrap(api.put(`/deposits/${id}/reject`, data)),

@@ -3,20 +3,11 @@ import { useState, useEffect, useRef } from 'react';
 import websiteService from '../../services/websiteService';
 import gsap from 'gsap';
 
-const defaultRanks = [
-  { tier: 'D1', direct: 0, team: 0, commission: '$30', profitShare: '4%' },
-  { tier: 'D2', direct: 3, team: 20, commission: '$40', profitShare: '6%' },
-  { tier: 'D3', direct: 5, team: 100, commission: '$50', profitShare: '8%' },
-  { tier: 'D4', direct: 8, team: 300, commission: '$60', profitShare: '10%' },
-  { tier: 'D5', direct: 12, team: 800, commission: '$65', profitShare: '11%' },
-  { tier: 'D6', direct: 20, team: 1500, commission: '$70', profitShare: '12%' },
-];
-
 const benefits = [
-  { icon: '💰', title: 'Direct Commission', desc: 'Earn up to $70 per direct referral based on your rank.' },
+  { icon: '💰', title: 'Direct Commission', desc: 'Earn a direct commission for every direct referral activation based on your current rank.' },
   { icon: '👥', title: 'Indirect Income', desc: 'Earn from your entire team network as it grows.' },
   { icon: '📈', title: 'Rank Progression', desc: 'Climb from D1 to D6 with clear requirements.' },
-  { icon: '🎯', title: 'Profit Sharing', desc: 'Get up to 12% from the network profit pool.' },
+  { icon: '🎯', title: 'Profit Sharing', desc: 'Get a share from the network profit pool based on your rank configuration.' },
   { icon: '🔗', title: 'Personal Referral Link', desc: 'Share your unique link and track every signup.' },
   { icon: '🏆', title: 'Bonus Rewards', desc: 'Additional bonuses for top-performing members.' },
 ];
@@ -36,21 +27,20 @@ function ScrollReveal({ children, className = '' }) {
 }
 
 export default function ReferralProgram() {
-  const [ranks, setRanks] = useState(defaultRanks);
+  const [ranks, setRanks] = useState([]);
   const heroRef = useRef(null);
 
   useEffect(() => {
     gsap.fromTo(heroRef.current, { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' });
     websiteService.getRanks().then(({ data }) => {
       if (data?.data?.length) {
-        const m = data.data.map((r, i) => ({
+        setRanks(data.data.map((r) => ({
           tier: r.name,
-          direct: r.minDirectReferrals || defaultRanks[i]?.direct || 0,
-          team: r.minTeamSize || defaultRanks[i]?.team || 0,
-          commission: `$${r.activationGain || defaultRanks[i]?.commission?.replace('$', '')}`,
-          profitShare: `${r.quantification || defaultRanks[i]?.profitShare?.replace('%', '')}%`,
-        }));
-        setRanks(m);
+          direct: r.minDirectReferrals ?? 0,
+          team: r.minTeamMembers ?? 0,
+          commission: `$${r.activationGain ?? 0}`,
+          profitShare: `${r.quantification ?? 0}%`,
+        })));
       }
     }).catch(() => {});
   }, []);
@@ -141,17 +131,19 @@ export default function ReferralProgram() {
               </div>
             </div>
             <div className="bg-gradient-to-br from-primary-50 to-emerald-50 rounded-2xl border border-dark-100 p-6 sm:p-8 shadow-card">
-              <h3 className="font-bold text-xl mb-4">Example Earnings</h3>
+              <h3 className="font-bold text-xl mb-4">Earning Types</h3>
               <div className="space-y-4">
                 {[
-                  { label: '3 Direct Referrals (D2)', amount: '$120', color: 'text-emerald-500' },
-                  { label: '5 Direct, 100 Team (D3)', amount: '$1,000+', color: 'text-primary-500' },
-                  { label: '8 Direct, 300 Team (D4)', amount: '$6,000+', color: 'text-amber-500' },
-                  { label: 'Full Network (D6)', amount: '$30,000+', color: 'text-purple-500' },
+                  { label: 'Registration Referral Bonus', desc: 'Fixed $1 credited to your funding wallet when a direct referral registers through your link.' },
+                  { label: 'Direct Commission', desc: 'Credited when a direct referral activates their package - amount depends on your current rank.' },
+                  { label: 'Indirect Income', desc: 'Earned from deeper levels of your referral network based on the rank configuration.' },
+                  { label: 'Profit Sharing', desc: 'Rank-based percentage share from the network profit pool.' },
                 ].map((e, i) => (
-                  <div key={i} className="flex justify-between items-center py-3 border-b border-dark-100 last:border-b-0">
-                    <span className="text-sm">{e.label}</span>
-                    <span className={`font-bold text-lg ${e.color}`}>{e.amount}</span>
+                  <div key={i} className="py-3 border-b border-dark-100 last:border-b-0">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-sm font-semibold">{e.label}</span>
+                    </div>
+                    <p className="text-xs text-dark-500">{e.desc}</p>
                   </div>
                 ))}
               </div>

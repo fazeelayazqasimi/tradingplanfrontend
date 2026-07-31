@@ -32,11 +32,7 @@ const STATUS_CONFIG = {
 };
 
 const PAYMENT_METHODS = [
-  { value: 'bank_transfer', label: 'Bank Transfer' },
-  { value: 'paypal', label: 'PayPal' },
   { value: 'usdt_bep20', label: 'USDT (BEP20)' },
-  { value: 'crypto', label: 'Other Cryptocurrency' },
-  { value: 'mobile_money', label: 'Mobile Money' },
 ];
 
 const container = {
@@ -66,6 +62,7 @@ export default function Withdrawals() {
     cryptocurrency: 'USDT',
   });
   const [formErrors, setFormErrors] = useState({});
+  const [withdrawFeeInfo, setWithdrawFeeInfo] = useState({ feeType: 'percent', feePercent: 10, feeFixed: 0, processingHours: 24 });
 
   const { page, limit, nextPage, prevPage, goToPage } = usePagination(1, 10);
   const [totalPages, setTotalPages] = useState(1);
@@ -103,6 +100,10 @@ export default function Withdrawals() {
       if (!cancelled) setLoading(false);
     }
     init();
+    studentService.getWithdrawalFeeInfo().then((res) => {
+      const data = res?.data?.data || {};
+      if (data.feeType) setWithdrawFeeInfo(data);
+    }).catch(() => {});
     return () => { cancelled = true; };
   }, [fetchWallet, fetchWithdrawals]);
 
@@ -189,21 +190,8 @@ export default function Withdrawals() {
     if (!form.paymentMethod) {
       errors.paymentMethod = 'Select a payment method';
     }
-    const isCrypto = form.paymentMethod === 'usdt_bep20' || form.paymentMethod === 'crypto';
-    if (isCrypto) {
-      if (!form.walletAddress?.trim()) {
-        errors.walletAddress = 'Wallet address is required';
-      }
-    } else {
-      if (!form.accountNumber?.trim()) {
-        errors.accountNumber = 'Account number is required';
-      }
-      if (!form.accountName?.trim()) {
-        errors.accountName = 'Account name is required';
-      }
-      if (form.paymentMethod === 'bank_transfer' && !form.bankName?.trim()) {
-        errors.bankName = 'Bank name is required for bank transfers';
-      }
+    if (!form.walletAddress?.trim()) {
+      errors.walletAddress = 'Wallet address is required';
     }
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -213,21 +201,14 @@ export default function Withdrawals() {
     if (!validateForm()) return;
     setSubmitting(true);
     try {
-      const isCrypto = form.paymentMethod === 'usdt_bep20' || form.paymentMethod === 'crypto';
       const payload = {
         amount: parseFloat(form.amount),
-        paymentMethod: form.paymentMethod,
+        paymentMethod: form.paymentMethod || 'usdt_bep20',
+        walletAddress: form.walletAddress.trim(),
+        cryptocurrency: 'USDT',
       };
-      if (isCrypto) {
-        payload.walletAddress = form.walletAddress.trim();
-        payload.cryptocurrency = form.cryptocurrency || 'USDT';
-      } else {
-        payload.accountNumber = form.accountNumber.trim();
-        payload.accountName = form.accountName.trim();
-        payload.bankName = form.bankName.trim() || undefined;
-      }
       await studentService.requestWithdrawal(payload);
-      toast.success('Withdrawal request submitted successfully');
+      toast.success('Withdrawal request submitted. Processing takes up to 24 hours.');
       setShowModal(false);
       setForm({ amount: '', paymentMethod: '', accountNumber: '', accountName: '', bankName: '', walletAddress: '', cryptocurrency: 'USDT' });
       setFormErrors({});
@@ -338,7 +319,7 @@ export default function Withdrawals() {
         </Card>
       </motion.div>
 
-      <Modal isOpen={showModal} onClose={() => { setShowModal(false); setFormErrors({}); }} title="Request Withdrawal" size="md">
+      <Modal isOpen={showModal} onClose={() => { setShowModal(false); setFormErrors({}); }} title="Request Withdrawal (USDT BEP20)" size="md">
         <div className="space-y-4">
           <Input
             label="Amount ($)"
@@ -351,63 +332,33 @@ export default function Withdrawals() {
             min="0"
             step="0.01"
           />
-          <Select
-            label="Payment Method"
-            options={PAYMENT_METHODS}
-            value={form.paymentMethod}
-            onChange={updateField('paymentMethod')}
-            error={formErrors.paymentMethod}
+
+          {form.amount && parseFloat(form.amount) > 0 && (
+            <div className="p-3 rounded-[11px] bg-dark-50 text-xs text-dark-500 space-y-1">
+              <div className="flex justify-between">
+                <span>Withdrawal Fee ({withdrawFeeInfo.feeType === 'fixed' ? `$${withdrawFeeInfo.feeFixed}` : `${withdrawFeeInfo.feePercent}%`})</span>
+                <span className="font-semibold text-red-500">
+                  -{formatCurrency(withdrawFeeInfo.feeType === 'fixed' ? withdrawFeeInfo.feeFixed : (parseFloat(form.amount) * withdrawFeeInfo.feePercent / 100))}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span>You will receive</span>
+                <span className="font-semibold text-ink">
+                  {formatCurrency(withdrawFeeInfo.feeType === 'fixed'
+                    ? Math.max(0, parseFloat(form.amount) - withdrawFeeInfo.feeFixed)
+                    : parseFloat(form.amount) * (100 - withdrawFeeInfo.feePercent) / 100)}
+                </span>
+              </div>
+            </div>
+          )}
+
+          <Input
+            label="USDT BEP20 Wallet Address"
+            placeholder="Enter your USDT BEP20 wallet address"
+            value={form.walletAddress}
+            onChange={updateField('walletAddress')}
+            error={formErrors.walletAddress}
           />
-          {form.paymentMethod === 'bank_transfer' && (
-            <Input
-              label="Bank Name"
-              placeholder="Enter your bank name"
-              value={form.bankName}
-              onChange={updateField('bankName')}
-              error={formErrors.bankName}
-            />
-          )}
-          {(form.paymentMethod === 'usdt_bep20' || form.paymentMethod === 'crypto') ? (
-            <>
-              <Input
-                label="Wallet Address"
-                placeholder="Enter your USDT BEP20 wallet address"
-                value={form.walletAddress}
-                onChange={updateField('walletAddress')}
-                error={formErrors.walletAddress}
-              />
-              {form.paymentMethod === 'crypto' && (
-                <Select
-                  label="Cryptocurrency"
-                  options={[
-                    { value: 'USDT', label: 'USDT' },
-                    { value: 'BTC', label: 'Bitcoin' },
-                    { value: 'ETH', label: 'Ethereum' },
-                    { value: 'BNB', label: 'BNB' },
-                  ]}
-                  value={form.cryptocurrency}
-                  onChange={updateField('cryptocurrency')}
-                />
-              )}
-            </>
-          ) : (
-            <>
-              <Input
-                label="Account Number"
-                placeholder="Enter account number"
-                value={form.accountNumber}
-                onChange={updateField('accountNumber')}
-                error={formErrors.accountNumber}
-              />
-              <Input
-                label="Account Name"
-                placeholder="Enter account holder name"
-                value={form.accountName}
-                onChange={updateField('accountName')}
-                error={formErrors.accountName}
-              />
-            </>
-          )}
 
           {wallet && (
             <div className="p-3 rounded-[11px] bg-dark-50">
@@ -417,6 +368,10 @@ export default function Withdrawals() {
               </p>
             </div>
           )}
+
+          <div className="p-3 rounded-xl bg-amber-50 border border-amber-200">
+            <p className="text-xs text-amber-700">Withdrawal processing takes up to {withdrawFeeInfo.processingHours || 24} hours. A {withdrawFeeInfo.feeType === 'fixed' ? `$${withdrawFeeInfo.feeFixed} ` : `${withdrawFeeInfo.feePercent}% `}withdrawal fee will be deducted.</p>
+          </div>
 
           <div className="flex justify-end gap-3 pt-2">
             <Button variant="outline" onClick={() => { setShowModal(false); setFormErrors({}); }}>

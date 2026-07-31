@@ -82,7 +82,7 @@ export default function Home() {
   const heroCtaRef = useRef(null);
   const heroRatesRef = useRef(null);
   const heroImageRef = useRef(null);
-  const [ranks, setRanks] = useState(defaultStats.map((_, i) => ({ tier: `LEVEL 0${i+1}`, name: `D${i+1}`, direct: [0,3,5,8,12,20][i], team: [0,20,100,300,800,1500][i], commission: ['$30','$40','$50','$60','$65','$70'][i] })));
+  const [ranks, setRanks] = useState([]);
   const [faqs, setFaqs] = useState([]);
   const [stats, setStats] = useState(defaultStats);
   const [pricingFeatures, setPricingFeatures] = useState(defaultPricingFeatures);

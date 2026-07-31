@@ -14,7 +14,6 @@ import {
   FiCopy,
   FiCheckCircle,
   FiServer,
-  FiTag,
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
@@ -32,7 +31,6 @@ import walletService from '../../services/walletService';
 import studentService from '../../services/studentService';
 import depositService from '../../services/depositService';
 import paymentAccountService from '../../services/paymentAccountService';
-import couponService from '../../services/couponService';
 import { formatCurrency, formatDate, copyToClipboard } from '../../utils/helpers';
 import usePagination from '../../hooks/usePagination';
 
@@ -43,6 +41,7 @@ const INCOME_LABELS = {
   indirect_income: 'Indirect Income',
   trading_profit: 'Trading Profit',
   bonus: 'Bonus',
+  registration: 'Registration Bonus',
   purchase: 'Course Purchase',
   subscription: 'Subscription',
   withdrawal: 'Withdrawal',
@@ -65,6 +64,7 @@ const CATEGORY_OPTIONS = [
   { value: 'indirect_income', label: 'Indirect Income' },
   { value: 'trading_profit', label: 'Trading Profit' },
   { value: 'bonus', label: 'Bonus' },
+  { value: 'registration', label: 'Registration Bonus' },
   { value: 'purchase', label: 'Course Purchase' },
   { value: 'subscription', label: 'Subscription' },
   { value: 'withdrawal', label: 'Withdrawal' },
@@ -84,7 +84,6 @@ const PAYMENT_METHODS = [
 const WALLET_TABS = [
   { key: 'main', label: 'Main Wallet', icon: FiDollarSign },
   { key: 'funding', label: 'Funding Wallet', icon: FiServer },
-  { key: 'ib', label: 'Rebate', icon: FiLayers },
 ];
 
 export default function Wallet() {
@@ -107,14 +106,12 @@ export default function Wallet() {
   const [formErrors, setFormErrors] = useState({});
 
   const [paymentAccounts, setPaymentAccounts] = useState([]);
-  const [depositForm, setDepositForm] = useState({ accountId: '', amount: '', paymentMethod: 'bank_transfer', coinType: '' });
+  const [depositForm, setDepositForm] = useState({ accountId: '', amount: '', paymentMethod: 'usdt_bep20', coinType: '' });
   const [depositErrors, setDepositErrors] = useState({});
   const [depositHistory, setDepositHistory] = useState([]);
-  const [supportedCoins, setSupportedCoins] = useState({});
-  const [coinPayment, setCoinPayment] = useState(null);
-  const [showCoupon, setShowCoupon] = useState(false);
-  const [couponCode, setCouponCode] = useState('');
-  const [couponResult, setCouponResult] = useState(null);
+  const [depositScreenshot, setDepositScreenshot] = useState(null);
+  const [depositSubmitted, setDepositSubmitted] = useState(null);
+  const [withdrawFeeInfo, setWithdrawFeeInfo] = useState({ feeType: 'percent', feePercent: 10, feeFixed: 0, processingHours: 24 });
 
   const { page, limit, nextPage, prevPage, goToPage } = usePagination(1, 10);
   const [totalPages, setTotalPages] = useState(1);
@@ -196,19 +193,19 @@ export default function Wallet() {
     } catch { /* silent */ }
   }, []);
 
-  const fetchSupportedCoins = useCallback(async () => {
+  const fetchWithdrawFeeInfo = useCallback(async () => {
     try {
-      const res = await depositService.getSupportedCoins();
-      const data = res?.data?.data?.supportedCoins || {};
-      setSupportedCoins(data);
+      const res = await studentService.getWithdrawalFeeInfo();
+      const data = res?.data?.data || {};
+      if (data.feeType) setWithdrawFeeInfo(data);
     } catch { /* silent */ }
   }, []);
 
   useEffect(() => {
     fetchPaymentAccounts();
     fetchDepositHistory();
-    fetchSupportedCoins();
-  }, [fetchPaymentAccounts, fetchDepositHistory, fetchSupportedCoins]);
+    fetchWithdrawFeeInfo();
+  }, [fetchPaymentAccounts, fetchDepositHistory, fetchWithdrawFeeInfo]);
 
   const validateDeposit = () => {
     const errors = {};
@@ -218,48 +215,36 @@ export default function Wallet() {
     return Object.keys(errors).length === 0;
   };
 
-  const [depositResponse, setDepositResponse] = useState(null);
+  const handleUploadDepositScreenshot = async (file) => {
+    const formData = new FormData();
+    formData.append('screenshot', file);
+    const res = await depositService.uploadScreenshot(formData);
+    return res?.data?.data?.url || res?.data?.url || null;
+  };
 
   const handleDeposit = async () => {
     if (!validateDeposit()) return;
+    if (!depositScreenshot) { toast.error('Please attach the payment screenshot'); return; }
     setSubmitting(true);
-    setDepositResponse(null);
     try {
+      let screenshotUrl = null;
+      if (depositScreenshot) screenshotUrl = await handleUploadDepositScreenshot(depositScreenshot);
       const payload = {
         amount: parseFloat(depositForm.amount),
-        paymentMethod: depositForm.paymentMethod || 'usdt_bep20',
+        paymentMethod: 'usdt_bep20',
+        walletType: walletTab === 'funding' ? 'funding' : 'main',
+        screenshot: screenshotUrl,
+        accountId: activePaymentAccount?._id || null,
       };
       const res = await depositService.createDeposit(payload);
       const data = res.data?.data || res.data;
-      if (data?.depositAddress) {
-        setDepositResponse(data);
-        toast.success('Crypto deposit created! Send USDT to the address below.');
-      } else {
-        toast.success('Deposit auto-approved! Funds credited to your wallet.');
-        setShowDeposit(false);
-        setDepositForm({ amount: '', paymentMethod: 'usdt_bep20', accountId: '' });
-        setDepositErrors({});
-        fetchWallet();
-        fetchStats();
-        fetchAllWallets();
-        fetchDepositHistory();
-      }
+      setDepositSubmitted(data);
+      toast.success('Deposit request submitted! Awaiting admin approval.');
+      fetchDepositHistory();
     } catch (err) {
       toast.error(err?.response?.data?.message || 'Failed to submit deposit request');
     } finally {
       setSubmitting(false);
-    }
-  };
-
-  const handleValidateCoupon = async () => {
-    if (!couponCode.trim()) return toast.error('Enter a coupon code');
-    try {
-      const res = await couponService.validateCoupon({ code: couponCode, amount: wallet?.availableBalance || 0 });
-      setCouponResult(res?.data?.data || null);
-      toast.success('Coupon is valid!');
-    } catch (err) {
-      toast.error(err?.response?.data?.message || 'Invalid coupon');
-      setCouponResult(null);
     }
   };
 
@@ -278,6 +263,7 @@ export default function Wallet() {
 
   const byCategory = stats?.byCategory || {};
   const expenses = stats?.expenses || {};
+  const activePaymentAccount = paymentAccounts.find((a) => a.isActive && (a.walletAddress || a.accountNumber)) || null;
   const chartData = stats
     ? [
         { name: 'Direct Income', value: byCategory.direct_income ?? byCategory.directIncome ?? 0 },
@@ -420,16 +406,12 @@ export default function Wallet() {
           <h1 className="text-2xl font-bold text-ink">Wallet</h1>
           <p className="mt-1 text-sm text-dark-500">Manage your finances, deposits, and withdrawals</p>
         </div>
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="sm" onClick={() => { setShowCoupon(true); setCouponCode(''); setCouponResult(null); }}>
-            <FiTag size={16} />
-            Coupon
-          </Button>
+        <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" size="sm" onClick={handleRefresh} disabled={loading || loadingTx}>
             <FiRefreshCw size={16} className={loading || loadingTx ? 'animate-spin' : ''} />
             Refresh
           </Button>
-          <Button variant="outline" size="sm" onClick={() => { setDepositForm({ amount: '' }); setCoinPayment(null); setDepositErrors({}); setShowDeposit(true); }}>
+          <Button variant="outline" size="sm" onClick={() => { setDepositForm({ amount: '' }); setDepositScreenshot(null); setDepositSubmitted(null); setDepositErrors({}); setShowDeposit(true); }}>
             <FiPlus size={16} />
             Deposit
           </Button>
@@ -695,18 +677,8 @@ export default function Wallet() {
         </Card>
       </motion.div>
 
-      <Modal isOpen={showDeposit} onClose={() => { setShowDeposit(false); setDepositErrors({}); setCoinPayment(null); setDepositResponse(null); setSubmitting(false); }} title={submitting ? 'Processing Deposit...' : depositResponse ? 'Crypto Deposit - USDT BEP20' : `Deposit to ${WALLET_TABS.find(t => t.key === walletTab)?.label || 'Wallet'}`} size="sm">
-          {submitting && !depositResponse ? (
-            <div className="flex flex-col items-center justify-center py-10 space-y-4">
-              <div className="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center">
-                <div className="animate-spin h-8 w-8 border-4 border-primary-500 border-t-transparent rounded-full" />
-              </div>
-              <div className="text-center">
-                <p className="text-base font-semibold text-ink">Creating Deposit Address...</p>
-                <p className="text-sm text-dark-500 mt-1">Please wait while we generate a secure payment address via CoinPayments.</p>
-              </div>
-            </div>
-          ) : depositResponse ? (
+      <Modal isOpen={showDeposit} onClose={() => { setShowDeposit(false); setDepositErrors({}); setDepositScreenshot(null); setDepositSubmitted(null); setSubmitting(false); }} title={depositSubmitted ? 'Deposit Submitted' : `Deposit to ${WALLET_TABS.find(t => t.key === walletTab)?.label || 'Wallet'}`} size="sm">
+          {depositSubmitted ? (
             <div className="space-y-4">
               <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200">
                 <div className="flex items-center gap-3">
@@ -714,49 +686,45 @@ export default function Wallet() {
                     <FiCheckCircle className="text-emerald-600" size={20} />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-emerald-800">Deposit Address Generated</p>
-                    <p className="text-xs text-emerald-600">Send USDT (BEP20) to the address below</p>
+                    <p className="text-sm font-semibold text-emerald-800">Deposit Request Submitted</p>
+                    <p className="text-xs text-emerald-600">Your payment will be verified by the admin.</p>
                   </div>
                 </div>
               </div>
-              <div className="p-4 rounded-xl bg-dark-50 border border-dark-200">
-                <p className="text-xs font-medium text-dark-500 mb-2">Deposit Address</p>
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-mono text-ink break-all flex-1">{depositResponse.depositAddress}</p>
-                  <button
-                    onClick={() => { copyToClipboard(depositResponse.depositAddress); toast.success('Address copied!'); }}
-                    className="shrink-0 p-2 rounded-lg bg-white border border-dark-100 hover:bg-primary-50 transition-colors"
-                    title="Copy address"
-                  >
-                    <FiCopy size={16} className="text-dark-400" />
-                  </button>
+              <div className="p-4 rounded-xl bg-dark-50 border border-dark-200 space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-dark-500">Amount</span>
+                  <span className="font-semibold text-ink">{formatCurrency(depositSubmitted.amount)}</span>
                 </div>
-                <p className="text-xs text-dark-400 mt-2">Send exactly <span className="font-semibold text-ink">{depositResponse.amount || depositForm.amount}</span> USDT (BEP20)</p>
+                <div className="flex justify-between text-sm">
+                  <span className="text-dark-500">Status</span>
+                  <span className="font-semibold capitalize text-amber-600">{depositSubmitted.status}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-dark-500">Date</span>
+                  <span className="text-dark-600">{formatDate(depositSubmitted.createdAt)}</span>
+                </div>
               </div>
-              {depositResponse.paymentUrl && (
-                <div className="flex justify-center">
-                  <img src={depositResponse.paymentUrl} alt="QR Code" className="w-48 h-48 border border-dark-200 rounded-xl" />
-                </div>
-              )}
               <div className="p-3 rounded-xl bg-amber-50 border border-amber-200">
-                <p className="text-xs text-amber-700">Your deposit will be credited automatically via blockchain confirmation. This may take a few minutes.</p>
+                <p className="text-xs text-amber-700">Your wallet will be credited once the admin approves your deposit. This usually takes a few hours.</p>
               </div>
-              <p className="text-xs text-dark-400 text-center">Expires: {depositResponse.expiresAt ? new Date(depositResponse.expiresAt).toLocaleString() : '24 hours'}</p>
-              <Button variant="outline" className="w-full" onClick={() => { setShowDeposit(false); setDepositResponse(null); setDepositForm({ amount: '', paymentMethod: 'usdt_bep20', accountId: '' }); setSubmitting(false); }}>Close</Button>
+              <Button variant="outline" className="w-full" onClick={() => { setShowDeposit(false); setDepositSubmitted(null); setDepositForm({ amount: '' }); setDepositScreenshot(null); setSubmitting(false); }}>Close</Button>
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="p-4 rounded-xl bg-blue-50 border border-blue-200">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
-                    <FiDollarSign className="text-blue-600" size={20} />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-blue-800">USDT (BEP20)</p>
-                    <p className="text-xs text-blue-600">Pay via CoinPayments — address generated instantly</p>
+              {activePaymentAccount && (
+                <div className="p-4 rounded-xl bg-blue-50 border border-blue-200">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
+                      <FiDollarSign className="text-blue-600" size={20} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-blue-800">USDT (BEP20)</p>
+                      <p className="text-xs text-blue-600">Send USDT to the address below, then submit your payment proof</p>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
               <Input
                 label="Amount ($)"
@@ -770,41 +738,72 @@ export default function Wallet() {
                 step="0.01"
               />
 
+              {activePaymentAccount ? (
+                <div className="space-y-3">
+                  <div className="p-4 rounded-xl bg-dark-50 border border-dark-200">
+                    <p className="text-xs font-medium text-dark-500 mb-2">USDT BEP20 Deposit Address</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-mono text-ink break-all flex-1">{activePaymentAccount.walletAddress}</p>
+                      <button
+                        onClick={() => { copyToClipboard(activePaymentAccount.walletAddress); toast.success('Address copied!'); }}
+                        className="shrink-0 p-2 rounded-lg bg-white border border-dark-100 hover:bg-primary-50 transition-colors"
+                        title="Copy address"
+                      >
+                        <FiCopy size={16} className="text-dark-400" />
+                      </button>
+                    </div>
+                    <p className="text-xs text-dark-400 mt-2">Network: <span className="font-semibold text-ink">{activePaymentAccount.network || 'BEP20'}</span></p>
+                  </div>
+                  {activePaymentAccount.qrCodeUrl && (
+                    <div className="flex justify-center">
+                      <img src={activePaymentAccount.qrCodeUrl} alt="Deposit QR Code" className="w-44 h-44 border border-dark-200 rounded-xl object-contain bg-white" />
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="block text-[13px] font-semibold text-ink mb-1.5">Payment Screenshot (Proof)</label>
+                    <label className="flex flex-col items-center justify-center w-full h-28 rounded-xl border-2 border-dashed border-dark-200 bg-dark-50 cursor-pointer hover:border-primary-400 hover:bg-primary-50 transition-colors">
+                      {depositScreenshot ? (
+                        <img src={depositScreenshot && typeof depositScreenshot === 'string' ? depositScreenshot : URL.createObjectURL(depositScreenshot)} alt="Screenshot preview" className="h-full w-auto max-w-full object-contain rounded-lg" />
+                      ) : (
+                        <span className="text-sm text-dark-500">Click to attach screenshot</span>
+                      )}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) setDepositScreenshot(file);
+                        }}
+                      />
+                    </label>
+                    {depositScreenshot && (
+                      <button
+                        type="button"
+                        className="text-xs text-red-500 mt-1.5 hover:underline"
+                        onClick={() => setDepositScreenshot(null)}
+                      >
+                        Remove screenshot
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="p-3 rounded-xl bg-amber-50 border border-amber-200">
+                  <p className="text-xs text-amber-700">No active USDT deposit address found. Please contact support.</p>
+                </div>
+              )}
+
               <div className="flex justify-end gap-3 pt-2">
                 <Button variant="outline" onClick={() => { setShowDeposit(false); setDepositErrors({}); }}>Cancel</Button>
-                <Button onClick={handleDeposit} loading={submitting}>
-                  Generate Deposit Address
+                <Button onClick={handleDeposit} loading={submitting} disabled={!activePaymentAccount}>
+                  Submit Deposit Request
                 </Button>
               </div>
             </div>
           )}
         </Modal>
-
-      <Modal isOpen={showCoupon} onClose={() => { setShowCoupon(false); setCouponResult(null); }} title="Apply Coupon / PIN" size="sm">
-        <div className="space-y-4">
-          <p className="text-sm text-dark-500">Enter your coupon code or PIN to get a discount or credit.</p>
-          <Input
-            label="Coupon Code / PIN"
-            placeholder="Enter code..."
-            icon={FiTag}
-            value={couponCode}
-            onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-          />
-          {couponResult && (
-            <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200">
-              <p className="text-sm font-semibold text-emerald-700">Coupon Applied!</p>
-              <p className="text-xs text-emerald-600 mt-1">
-                Discount: {formatCurrency(couponResult.discount)} | Final: {formatCurrency(couponResult.finalAmount)}
-              </p>
-              <p className="text-xs text-emerald-500 mt-0.5">{couponResult.coupon.description || ''}</p>
-            </div>
-          )}
-          <div className="flex justify-end gap-3 pt-2">
-            <Button variant="outline" onClick={() => { setShowCoupon(false); setCouponResult(null); }}>Close</Button>
-            <Button onClick={handleValidateCoupon} disabled={!couponCode.trim()}>Validate</Button>
-          </div>
-        </div>
-      </Modal>
 
       <Modal isOpen={showWithdraw} onClose={() => { setShowWithdraw(false); setFormErrors({}); }} title="Request Withdrawal (USDT BEP20)" size="sm">
           <div className="space-y-4">
@@ -815,7 +814,7 @@ export default function Wallet() {
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-purple-800">Withdraw USDT (BEP20)</p>
-                  <p className="text-xs text-purple-600">Funds sent to your wallet address</p>
+                  <p className="text-xs text-purple-600">Funds sent to your wallet address within {withdrawFeeInfo.processingHours || 24} hours</p>
                 </div>
               </div>
             </div>
@@ -831,6 +830,25 @@ export default function Wallet() {
               min="0"
               step="0.01"
             />
+
+            {withdrawForm.amount && parseFloat(withdrawForm.amount) > 0 && (
+              <div className="p-3 rounded-[11px] bg-dark-50 text-xs text-dark-500 space-y-1">
+                <div className="flex justify-between">
+                  <span>Withdrawal Fee ({withdrawFeeInfo.feeType === 'fixed' ? `$${withdrawFeeInfo.feeFixed}` : `${withdrawFeeInfo.feePercent}%`})</span>
+                  <span className="font-semibold text-red-500">
+                    -{formatCurrency(withdrawFeeInfo.feeType === 'fixed' ? withdrawFeeInfo.feeFixed : (parseFloat(withdrawForm.amount) * withdrawFeeInfo.feePercent / 100))}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span>You will receive</span>
+                  <span className="font-semibold text-ink">
+                    {formatCurrency(withdrawFeeInfo.feeType === 'fixed'
+                      ? Math.max(0, parseFloat(withdrawForm.amount) - withdrawFeeInfo.feeFixed)
+                      : parseFloat(withdrawForm.amount) * (100 - withdrawFeeInfo.feePercent) / 100)}
+                  </span>
+                </div>
+              </div>
+            )}
 
             <Input
               label="USDT BEP20 Wallet Address"
@@ -848,6 +866,10 @@ export default function Wallet() {
                 </p>
               </div>
             )}
+
+            <div className="p-3 rounded-xl bg-amber-50 border border-amber-200">
+              <p className="text-xs text-amber-700">Withdrawal processing takes up to {withdrawFeeInfo.processingHours || 24} hours. A {withdrawFeeInfo.feeType === 'fixed' ? `$${withdrawFeeInfo.feeFixed} ` : `${withdrawFeeInfo.feePercent}% `}withdrawal fee will be deducted.</p>
+            </div>
 
             <div className="flex justify-end gap-3 pt-2">
               <Button variant="outline" onClick={() => { setShowWithdraw(false); setFormErrors({}); }}>

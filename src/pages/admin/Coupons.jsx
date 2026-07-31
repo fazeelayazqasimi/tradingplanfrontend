@@ -40,7 +40,7 @@ export default function Coupons() {
   const [form, setForm] = useState({
     code: '', type: 'percentage', value: '', minPurchase: 0, maxDiscount: '',
     usageLimit: '', perUserLimit: 1, applicableTo: 'all',
-    startsAt: '', expiresAt: '', description: '', isActive: true,
+    startsAt: '', expiresAt: '', description: '', isActive: true, noCommission: false,
   });
 
   const { page, limit, nextPage, prevPage, goToPage, setTotalItems, currentPage, totalPages } = usePagination(1, 10);
@@ -64,7 +64,7 @@ export default function Coupons() {
   useEffect(() => { fetchCoupons(); }, [fetchCoupons]);
 
   const resetForm = () => {
-    setForm({ code: '', type: 'percentage', value: '', minPurchase: 0, maxDiscount: '', usageLimit: '', perUserLimit: 1, applicableTo: 'all', startsAt: '', expiresAt: '', description: '', isActive: true });
+    setForm({ code: '', type: 'percentage', value: '', minPurchase: 0, maxDiscount: '', usageLimit: '', perUserLimit: 1, applicableTo: 'all', startsAt: '', expiresAt: '', description: '', isActive: true, noCommission: false });
     setEditing(null);
   };
 
@@ -75,7 +75,7 @@ export default function Coupons() {
       usageLimit: coupon.usageLimit?.toString() || '', perUserLimit: coupon.perUserLimit?.toString() || '1',
       applicableTo: coupon.applicableTo || 'all', startsAt: coupon.startsAt ? coupon.startsAt.slice(0, 16) : '',
       expiresAt: coupon.expiresAt ? coupon.expiresAt.slice(0, 16) : '', description: coupon.description || '',
-      isActive: coupon.isActive,
+      isActive: coupon.isActive, noCommission: !!coupon.noCommission,
     });
     setEditing(coupon);
     setShowForm(true);
@@ -137,6 +137,7 @@ export default function Coupons() {
     { header: 'Code', render: (_, row) => <span className="font-mono font-bold text-primary-600">{row.code}</span> },
     { header: 'Type', render: (_, row) => <Badge color={typeColors[row.type]}>{row.type}</Badge> },
     { header: 'Value', render: (_, row) => row.type === 'percentage' ? `${row.value}%` : formatCurrency(row.value) },
+    { header: 'Commission', render: (_, row) => row.type === 'pin' ? (row.noCommission ? <Badge color="danger">No Commission</Badge> : <Badge color="success">Commission</Badge>) : '\u2014' },
     { header: 'Used', render: (_, row) => `${row.usedCount || 0}${row.usageLimit ? ` / ${row.usageLimit}` : ''}` },
     {
       header: 'Status',
@@ -311,6 +312,20 @@ export default function Coupons() {
             <Input label="Expiry Date" type="datetime-local" value={form.expiresAt} onChange={(e) => setForm(p => ({ ...p, expiresAt: e.target.value }))} />
           </div>
           <Input label="Description (optional)" placeholder="Brief description of this coupon" value={form.description} onChange={(e) => setForm(p => ({ ...p, description: e.target.value }))} />
+          {form.type === 'pin' && (
+            <label className="flex items-center gap-3 p-3 rounded-xl border border-dark-200 bg-dark-50 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={form.noCommission}
+                onChange={(e) => setForm(p => ({ ...p, noCommission: e.target.checked }))}
+                className="h-4 w-4 accent-primary-600"
+              />
+              <div>
+                <span className="block text-[13px] font-semibold text-ink">No Commission</span>
+                <span className="block text-xs text-dark-500 mt-0.5">PIN activation will not pay commission to the upline</span>
+              </div>
+            </label>
+          )}
           <div className="flex justify-end gap-3 pt-2">
             <Button variant="outline" type="button" onClick={() => { setShowForm(false); resetForm(); }}>Cancel</Button>
             <Button type="submit" loading={submitting}>{editing ? 'Update' : 'Create'} Coupon</Button>

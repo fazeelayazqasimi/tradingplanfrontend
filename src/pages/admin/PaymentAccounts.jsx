@@ -15,7 +15,8 @@ import adminService from '../../services/adminService';
 const defaultForm = {
   bankName: '', accountHolderName: '', accountNumber: '', iban: '',
   swiftCode: '', branchAddress: '', currency: 'USD',
-  paymentType: 'bank_transfer', isActive: true, notes: '', order: 0
+  paymentType: 'crypto', isActive: true, notes: '', order: 0,
+  walletAddress: '', network: 'BEP20', qrCodeUrl: ''
 };
 
 const paymentTypeOptions = [
@@ -23,6 +24,12 @@ const paymentTypeOptions = [
   { value: 'crypto', label: 'Cryptocurrency' },
   { value: 'mobile_money', label: 'Mobile Money' },
   { value: 'other', label: 'Other' },
+];
+
+const QR_IMAGE_OPTIONS = [
+  { value: '', label: 'No QR Code' },
+  { value: '/uploads/qr/usdt-bep20.png', label: '/uploads/qr/usdt-bep20.png' },
+  { value: '/uploads/qr/usdt-trc20.png', label: '/uploads/qr/usdt-trc20.png' },
 ];
 
 export default function PaymentAccounts() {
@@ -65,10 +72,13 @@ export default function PaymentAccounts() {
       swiftCode: account.swiftCode || '',
       branchAddress: account.branchAddress || '',
       currency: account.currency || 'USD',
-      paymentType: account.paymentType || 'bank_transfer',
+      paymentType: account.paymentType || 'crypto',
       isActive: account.isActive ?? true,
       notes: account.notes || '',
       order: account.order || 0,
+      walletAddress: account.walletAddress || '',
+      network: account.network || 'BEP20',
+      qrCodeUrl: account.qrCodeUrl || '',
     });
     setErrors({});
     setModalOpen(true);
@@ -81,9 +91,15 @@ export default function PaymentAccounts() {
 
   const validate = () => {
     const errs = {};
-    if (!form.bankName?.trim()) errs.bankName = 'Bank name is required';
-    if (!form.accountHolderName?.trim()) errs.accountHolderName = 'Account holder name is required';
-    if (!form.accountNumber?.trim()) errs.accountNumber = 'Account number is required';
+    if (form.paymentType === 'crypto') {
+      if (!form.bankName?.trim()) errs.bankName = 'Wallet label is required';
+      if (!form.walletAddress?.trim()) errs.walletAddress = 'Wallet address is required';
+      if (!form.network?.trim()) errs.network = 'Network is required';
+    } else {
+      if (!form.bankName?.trim()) errs.bankName = 'Bank name is required';
+      if (!form.accountHolderName?.trim()) errs.accountHolderName = 'Account holder name is required';
+      if (!form.accountNumber?.trim()) errs.accountNumber = 'Account number is required';
+    }
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -137,7 +153,12 @@ export default function PaymentAccounts() {
     },
     {
       header: 'Account Details',
-      render: (_, row) => (
+      render: (_, row) => row.paymentType === 'crypto' ? (
+        <div>
+          <p className="text-sm text-ink font-medium font-mono">{row.walletAddress || row.accountNumber}</p>
+          <p className="text-xs text-dark-400">Network: {row.network || 'BEP20'}{row.qrCodeUrl && ' \u00b7 QR attached'}</p>
+        </div>
+      ) : (
         <div>
           <p className="text-sm text-ink font-medium">{row.accountNumber}</p>
           {row.iban && <p className="text-xs text-dark-400">IBAN: {row.iban}</p>}
@@ -197,16 +218,51 @@ export default function PaymentAccounts() {
 
       <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={editing ? 'Edit Payment Account' : 'Add Payment Account'} size="md">
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <Input label="Bank Name" value={form.bankName} onChange={(e) => handleChange('bankName', e.target.value)} error={errors.bankName} placeholder="e.g. Chase Bank" />
-            <Input label="Account Holder Name" value={form.accountHolderName} onChange={(e) => handleChange('accountHolderName', e.target.value)} error={errors.accountHolderName} placeholder="Full name on account" />
-          </div>
-          <Input label="Account Number / Wallet Address" value={form.accountNumber} onChange={(e) => handleChange('accountNumber', e.target.value)} error={errors.accountNumber} placeholder="Account number or wallet address" />
-          <div className="grid grid-cols-2 gap-4">
-            <Input label="IBAN (optional)" value={form.iban} onChange={(e) => handleChange('iban', e.target.value)} placeholder="IBAN code" />
-            <Input label="SWIFT Code (optional)" value={form.swiftCode} onChange={(e) => handleChange('swiftCode', e.target.value)} placeholder="SWIFT/BIC" />
-          </div>
-          <Input label="Branch Address (optional)" value={form.branchAddress} onChange={(e) => handleChange('branchAddress', e.target.value)} placeholder="Branch address" />
+          {form.paymentType === 'crypto' ? (
+            <>
+              <div className="grid grid-cols-2 gap-4">
+                <Input label="Wallet Label" value={form.bankName} onChange={(e) => handleChange('bankName', e.target.value)} error={errors.bankName} placeholder="e.g. USDT BEP20" />
+                <Input label="Network" value={form.network} onChange={(e) => handleChange('network', e.target.value)} error={errors.network} placeholder="e.g. BEP20" />
+              </div>
+              <Input label="Wallet Address" value={form.walletAddress} onChange={(e) => handleChange('walletAddress', e.target.value)} error={errors.walletAddress} placeholder="USDT BEP20 deposit address" />
+              <div>
+                <label className="block text-[13px] font-semibold text-ink mb-1.5">QR Code Image</label>
+                <Select options={QR_IMAGE_OPTIONS} value={form.qrCodeUrl} onChange={(e) => handleChange('qrCodeUrl', e.target.value)} />
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="mt-2 block w-full text-xs text-dark-500 file:mr-3 file:rounded-lg file:border-0 file:bg-primary-50 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-primary-600 hover:file:bg-primary-100"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    const fd = new FormData();
+                    fd.append('qrCode', file);
+                    try {
+                      const res = await adminService.uploadPaymentQr(fd);
+                      const url = res?.data?.data?.url || res?.data?.url;
+                      if (url) { handleChange('qrCodeUrl', url); toast.success('QR code uploaded'); }
+                    } catch { toast.error('QR upload failed'); }
+                  }}
+                />
+                {form.qrCodeUrl && (
+                  <img src={form.qrCodeUrl} alt="QR preview" className="mt-3 w-32 h-32 border border-dark-200 rounded-xl object-contain bg-white" />
+                )}
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="grid grid-cols-2 gap-4">
+                <Input label="Bank Name" value={form.bankName} onChange={(e) => handleChange('bankName', e.target.value)} error={errors.bankName} placeholder="e.g. Chase Bank" />
+                <Input label="Account Holder Name" value={form.accountHolderName} onChange={(e) => handleChange('accountHolderName', e.target.value)} error={errors.accountHolderName} placeholder="Full name on account" />
+              </div>
+              <Input label="Account Number" value={form.accountNumber} onChange={(e) => handleChange('accountNumber', e.target.value)} error={errors.accountNumber} placeholder="Account number" />
+              <div className="grid grid-cols-2 gap-4">
+                <Input label="IBAN (optional)" value={form.iban} onChange={(e) => handleChange('iban', e.target.value)} placeholder="IBAN code" />
+                <Input label="SWIFT Code (optional)" value={form.swiftCode} onChange={(e) => handleChange('swiftCode', e.target.value)} placeholder="SWIFT/BIC" />
+              </div>
+              <Input label="Branch Address (optional)" value={form.branchAddress} onChange={(e) => handleChange('branchAddress', e.target.value)} placeholder="Branch address" />
+            </>
+          )}
           <div className="grid grid-cols-3 gap-4">
             <Select label="Payment Type" options={paymentTypeOptions} value={form.paymentType} onChange={(e) => handleChange('paymentType', e.target.value)} />
             <Input label="Currency" value={form.currency} onChange={(e) => handleChange('currency', e.target.value)} placeholder="USD" />
