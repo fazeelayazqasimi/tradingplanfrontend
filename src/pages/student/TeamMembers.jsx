@@ -236,14 +236,17 @@ export default function TeamMembers() {
   const totalCommission = stats?.totalCommission ?? stats?.total_earnings ?? stats?.totalEarnings ?? 0;
 
   const allMembers = [...directReferrals, ...indirectReferrals];
-  const activeMembers = allMembers.filter(m => {
-    const u = m.referredUserId || m.user || {};
-    return u.isApproved || u.subscriptionStatus === 'active';
-  }).length;
-  const freeMembers = allMembers.filter(m => {
-    const u = m.referredUserId || m.user || {};
-    return !u.isApproved || u.subscriptionStatus !== 'active';
-  }).length;
+  const activeMembers =
+    stats?.activeMembers ??
+    stats?.active_members ??
+    allMembers.filter((m) => {
+      const u = m.referredUserId || m.user || {};
+      return u.isApproved || u.subscriptionStatus === 'active';
+    }).length;
+  const freeMembers =
+    stats?.freeMembers ??
+    stats?.free_members ??
+    allMembers.length - activeMembers;
 
   const summaryCards = [
     {
