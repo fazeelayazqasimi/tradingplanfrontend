@@ -4,7 +4,7 @@ import websiteService from '../services/websiteService';
 const SettingsContext = createContext(null);
 
 const DEFAULTS = {
-  institute_name: 'The 4x Hub',
+  institute_name: '',
   institute_email: '',
   institute_phone: '',
   institute_address: '',

@@ -10,7 +10,7 @@ export default function BrandLogo({ variant = 'black', showName = false, imgClas
   const content = (
     <div className="flex items-center gap-2.5 min-w-0">
       <img src={src} alt={instituteName || 'Logo'} className={`w-auto shrink-0 ${imgClassName || 'h-8'}`} draggable={false} />
-      {showName && (
+      {showName && instituteName && (
         <span className={`font-extrabold truncate ${nameClassName || 'text-base text-ink'}`} style={{ fontFamily: '"Plus Jakarta Sans", sans-serif' }}>
           {instituteName}
         </span>
