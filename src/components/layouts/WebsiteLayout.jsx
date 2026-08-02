@@ -123,7 +123,7 @@ export default function WebsiteLayout() {
         <div className="max-w-[1240px] mx-auto px-3 sm:px-8">
           <div className="flex items-center justify-between h-[60px] sm:h-[72px] bg-white/80 backdrop-blur-xl rounded-xl sm:rounded-2xl border border-dark-100/50 px-3 sm:px-6 shadow-glass mt-2">
             <Link to="/" className="flex items-center gap-2 flex-shrink-0">
-              <BrandLogo variant="black" showName imgClassName="h-[30px] sm:h-[34px]" nameClassName="text-base sm:text-lg text-ink" />
+              <BrandLogo variant="black" imgClassName="h-[30px] sm:h-[34px]" />
             </Link>
             <nav className="hidden lg:flex items-center gap-0.5 xl:gap-1 text-[13px] xl:text-[14px] font-medium text-dark-500">
               {mainNav.map((item, i) => (
@@ -245,7 +245,7 @@ export default function WebsiteLayout() {
             </div>
           </div>
           <div className="flex flex-col sm:flex-row justify-between items-center pt-6 sm:pt-7 border-t border-white/10 text-[12px] text-white/40 gap-2">
-            <span>&copy; {new Date().getFullYear()} {instituteName}. All rights reserved.</span>
+            <span>&copy; {new Date().getFullYear()} {instituteName || 'Trading Academy'}. All rights reserved.</span>
             <span className="text-center sm:text-right">Trading involves risk. Past performance is not indicative of future results.</span>
           </div>
         </div>
