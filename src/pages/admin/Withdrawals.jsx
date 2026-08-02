@@ -156,6 +156,14 @@ export default function Withdrawals() {
       ),
     },
     {
+      key: 'net',
+      header: 'To Send (Net)',
+      render: (_, row) => {
+        const net = row.netAmount ?? (row.amount - (row.fee || 0));
+        return <span className="font-semibold text-emerald-600">{formatCurrency(net)}</span>;
+      },
+    },
+    {
       key: 'method',
       header: 'Payment Method',
       render: (_, row) => (
@@ -304,6 +312,18 @@ export default function Withdrawals() {
                 <p className="text-[12px] font-semibold uppercase tracking-wider text-dark-500">Amount</p>
                 <p className="text-[15px] font-semibold text-ink mt-1">
                   {formatCurrency(detailModal.amount || 0)}
+                </p>
+              </div>
+              <div>
+                <p className="text-[12px] font-semibold uppercase tracking-wider text-dark-500">Withdrawal Fee</p>
+                <p className="text-[15px] font-medium text-ink mt-1">
+                  {formatCurrency(detailModal.fee || 0)}
+                </p>
+              </div>
+              <div>
+                <p className="text-[12px] font-semibold uppercase tracking-wider text-dark-500">To Send (Net)</p>
+                <p className="text-[15px] font-bold text-emerald-600 mt-1">
+                  {formatCurrency(detailModal.netAmount ?? (detailModal.amount - (detailModal.fee || 0)))}
                 </p>
               </div>
               <div>

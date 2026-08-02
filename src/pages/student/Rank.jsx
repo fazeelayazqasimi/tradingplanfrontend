@@ -123,6 +123,7 @@ export default function Rank() {
   const rankName = currentRank?.userRank?.currentRankId?.name || currentRank?.name || currentRank?.rank || currentRank?.rankName || 'D1';
   const directCount = currentRank?.directCount ?? currentRank?.directReferrals ?? currentRank?.direct_count ?? 0;
   const totalTeam = currentRank?.totalTeam ?? currentRank?.teamSize ?? currentRank?.team ?? 0;
+  const qualifiedLegs = currentRank?.qualifiedLegs ?? 0;
   const totalRevenue = currentRank?.totalRevenue ?? currentRank?.revenue ?? currentRank?.total_revenue ?? 0;
   const promotionDate = currentRank?.userRank?.rankHistory?.[0]?.achievedAt || currentRank?.promotedAt || currentRank?.rankUpdatedAt || currentRank?.updatedAt;
 
@@ -132,11 +133,17 @@ export default function Rank() {
 
   const directNeeded = nextRankData ? Math.max(0, nextRankData.minDirectReferrals - directCount) : 0;
   const teamNeeded = nextRankData ? Math.max(0, nextRankData.minTeamSize - totalTeam) : 0;
+  const qualifiedLegsRequired = nextRankData?.minAtLeast ?? 0;
+  const requiredLegRankName = nextRankData?.minAtLeastRank ?? null;
+  const legsNeeded = qualifiedLegsRequired > 0 ? Math.max(0, qualifiedLegsRequired - qualifiedLegs) : 0;
   const directPct = nextRankData && nextRankData.minDirectReferrals > 0
     ? Math.min(100, (directCount / nextRankData.minDirectReferrals) * 100)
     : 100;
   const teamPct = nextRankData && nextRankData.minTeamSize > 0
     ? Math.min(100, (totalTeam / nextRankData.minTeamSize) * 100)
+    : 100;
+  const legsPct = qualifiedLegsRequired > 0
+    ? Math.min(100, (qualifiedLegs / qualifiedLegsRequired) * 100)
     : 100;
 
   return (
@@ -251,6 +258,33 @@ export default function Rank() {
                       <p className="mt-1.5 text-xs text-dark-500">{teamNeeded} more team member{teamNeeded !== 1 ? 's' : ''} needed</p>
                     )}
                   </div>
+
+                  {qualifiedLegsRequired > 0 && requiredLegRankName && (
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm text-dark-600 flex items-center gap-1.5">
+                          <FiAward size={14} />
+                          Qualified Legs ({requiredLegRankName}+)
+                        </span>
+                        <span className="text-sm font-semibold text-ink">
+                          {qualifiedLegs} / {qualifiedLegsRequired}
+                        </span>
+                      </div>
+                      <div className="h-1.5 rounded bg-dark-100 overflow-hidden">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${legsPct}%` }}
+                          transition={{ duration: 1, delay: 0.6 }}
+                          className="h-full rounded bg-gradient-to-r from-primary-500 to-emerald-500"
+                        />
+                      </div>
+                      {legsNeeded > 0 && (
+                        <p className="mt-1.5 text-xs text-dark-500">
+                          {legsNeeded} more qualified leg{legsNeeded !== 1 ? 's' : ''} with a {requiredLegRankName}+ member needed
+                        </p>
+                      )}
+                    </div>
+                  )}
 
                   <div className="flex flex-wrap gap-2 pt-2">
                     {displayRanks.map((r) => {

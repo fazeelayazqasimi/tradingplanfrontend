@@ -263,7 +263,10 @@ export default function Wallet() {
 
   const byCategory = stats?.byCategory || {};
   const expenses = stats?.expenses || {};
-  const activePaymentAccount = paymentAccounts.find((a) => a.isActive && (a.walletAddress || a.accountNumber)) || null;
+  const activePaymentAccount = paymentAccounts.find((a) => a.isActive && a.paymentType === 'crypto' && a.walletAddress) || null;
+  const depositQrUrl = activePaymentAccount?.qrCodeUrl
+    ? getAssetUrl(activePaymentAccount.qrCodeUrl)
+    : (activePaymentAccount?.qrDataUrl || '');
   const chartData = stats
     ? [
         { name: 'Direct Income', value: byCategory.direct_income ?? byCategory.directIncome ?? 0 },
@@ -754,9 +757,9 @@ export default function Wallet() {
                     </div>
                     <p className="text-xs text-dark-400 mt-2">Network: <span className="font-semibold text-ink">{activePaymentAccount.network || 'BEP20'}</span></p>
                   </div>
-                  {activePaymentAccount.qrCodeUrl && (
+                  {depositQrUrl && (
                     <div className="flex justify-center">
-                      <img src={getAssetUrl(activePaymentAccount.qrCodeUrl)} alt="Deposit QR Code" className="w-44 h-44 border border-dark-200 rounded-xl object-contain bg-white" />
+                      <img src={depositQrUrl} alt="Deposit QR Code" className="w-44 h-44 border border-dark-200 rounded-xl object-contain bg-white" />
                     </div>
                   )}
 

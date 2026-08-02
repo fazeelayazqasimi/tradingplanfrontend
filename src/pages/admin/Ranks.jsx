@@ -237,7 +237,7 @@ export default function Ranks() {
                   {rank.activationGain > 0 && (
                     <div className="flex items-center gap-2 text-[14px] text-dark-500">
                       <FiDollarSign size={14} className="text-dark-400" />
-                      <span>Activation: <span className="font-medium text-emerald-600">{formatCurrency(rank.activationGain)}</span></span>
+                      <span>Max Commission: <span className="font-medium text-emerald-600">{formatCurrency(rank.activationGain)}</span></span>
                     </div>
                   )}
                   {rank.quantification > 0 && (
@@ -366,7 +366,7 @@ export default function Ranks() {
               />
             </div>
             <div>
-              <label className="block text-[12px] font-semibold uppercase tracking-wider text-dark-500 mb-1.5">Activation Gain ($)</label>
+              <label className="block text-[12px] font-semibold uppercase tracking-wider text-dark-500 mb-1.5">Max Commission ($)</label>
               <Input
                 type="number"
                 min="0"
