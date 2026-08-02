@@ -90,7 +90,7 @@ const columns = [
           row.userId?.avatar ||
           `https://ui-avatars.com/api/?name=${encodeURIComponent(
             (row.userId?.firstName || '') + ' ' + (row.userId?.lastName || '')
-          )}&background=2563EB&color=fff&size=40`
+          )}&background=0E3D00&color=fff&size=40`
         }
         alt={row.userId?.firstName}
         className="h-9 w-9 rounded-xl object-cover ring-2 ring-dark-100"
@@ -426,7 +426,7 @@ export default function Wallets() {
                   selectedWallet.userId?.avatar ||
                   `https://ui-avatars.com/api/?name=${encodeURIComponent(
                     (selectedWallet.userId?.firstName || '') + ' ' + (selectedWallet.userId?.lastName || '')
-                  )}&background=2563EB&color=fff&size=64`
+                  )}&background=0E3D00&color=fff&size=64`
                 }
                 alt={selectedWallet.userId?.firstName}
                 className="h-14 w-14 rounded-2xl object-cover ring-4 ring-primary-50"

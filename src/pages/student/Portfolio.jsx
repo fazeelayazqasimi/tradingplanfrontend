@@ -362,12 +362,12 @@ export default function Portfolio() {
                     >
                       <stop
                         offset="5%"
-                        stopColor="#2563EB"
+                        stopColor="#45F000"
                         stopOpacity={0.3}
                       />
                       <stop
                         offset="95%"
-                        stopColor="#2563EB"
+                        stopColor="#45F000"
                         stopOpacity={0}
                       />
                     </linearGradient>
@@ -393,13 +393,13 @@ export default function Portfolio() {
                   <Area
                     type="monotone"
                     dataKey="equity"
-                    stroke="#2563EB"
+                    stroke="#45F000"
                     strokeWidth={2}
                     fill="url(#equityGradient)"
                     dot={false}
                     activeDot={{
                       r: 5,
-                      fill: "#2563EB",
+                      fill: "#45F000",
                       stroke: "#fff",
                       strokeWidth: 2,
                     }}

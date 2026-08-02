@@ -4,12 +4,11 @@ import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import { FiEye, FiEyeOff } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
-import { useSettings } from '../../context/SettingsContext';
+import BrandLogo from '../../components/shared/BrandLogo';
 
 export default function Login() {
   const { register, handleSubmit, formState: { errors } } = useForm();
   const { login } = useAuth();
-  const { getSetting } = useSettings();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -28,15 +27,11 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12" style={{ background: 'radial-gradient(600px 300px at 50% 20%, rgba(37,99,235,0.04), transparent 60%)' }}>
+    <div className="min-h-screen flex items-center justify-center px-4 py-12" style={{ background: 'radial-gradient(600px 300px at 50% 20%, rgba(69,240,0,0.06), transparent 60%)' }}>
       <div className="w-full max-w-[420px]">
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2.5 mb-5">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-emerald-500 relative flex-shrink-0">
-              <span className="absolute left-[5px] top-[11px] w-[4px] h-[6px] bg-white rounded-[1px]" />
-              <span className="absolute left-[10px] top-[6px] w-[4px] h-[11px] bg-white rounded-[1px]" />
-            </div>
-            <span className="font-extrabold text-lg text-ink" style={{ fontFamily: '"Plus Jakarta Sans"' }}>{getSetting('institute_name', '')}</span>
+            <BrandLogo variant="black" showName imgClassName="h-8" nameClassName="text-lg text-ink" />
           </Link>
           <h1 className="text-[28px] font-extrabold text-ink" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Welcome Back</h1>
           <p className="text-sm text-dark-500 mt-1.5 font-inter">Sign in to your account</p>

@@ -34,7 +34,7 @@ import paymentAccountService from '../../services/paymentAccountService';
 import { formatCurrency, formatDate, copyToClipboard, getAssetUrl } from '../../utils/helpers';
 import usePagination from '../../hooks/usePagination';
 
-const CHART_COLORS = ['#10B981', '#2563EB', '#F59E0B', '#8B5CF6'];
+const CHART_COLORS = ['#10B981', '#45F000', '#F59E0B', '#8B5CF6'];
 
 const INCOME_LABELS = {
   direct_income: 'Direct Income',

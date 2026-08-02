@@ -130,7 +130,7 @@ export default function Deposits() {
       header: 'User',
       render: (_, row) => (
         <div className="flex items-center gap-3">
-          <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent((row.userId?.firstName || 'U') + ' ' + (row.userId?.lastName || ''))}&background=2563EB&color=fff&size=36`} alt="" className="h-9 w-9 rounded-full ring-2 ring-dark-100" />
+          <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent((row.userId?.firstName || 'U') + ' ' + (row.userId?.lastName || ''))}&background=0E3D00&color=fff&size=36`} alt="" className="h-9 w-9 rounded-full ring-2 ring-dark-100" />
           <div>
             <p className="font-semibold text-ink text-sm">{row.userId?.firstName} {row.userId?.lastName}</p>
             <p className="text-xs text-dark-400">{row.userId?.email}</p>
@@ -266,7 +266,7 @@ export default function Deposits() {
         {selected && (
           <div className="space-y-5">
             <div className="flex items-center gap-4">
-              <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent((selected.userId?.firstName || 'U') + ' ' + (selected.userId?.lastName || ''))}&background=2563EB&color=fff&size=64`} alt="" className="h-14 w-14 rounded-2xl ring-4 ring-primary-50" />
+              <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent((selected.userId?.firstName || 'U') + ' ' + (selected.userId?.lastName || ''))}&background=0E3D00&color=fff&size=64`} alt="" className="h-14 w-14 rounded-2xl ring-4 ring-primary-50" />
               <div>
                 <h3 className="text-lg font-bold text-ink">{selected.userId?.firstName} {selected.userId?.lastName}</h3>
                 <p className="text-sm text-dark-400">{selected.userId?.email}</p>

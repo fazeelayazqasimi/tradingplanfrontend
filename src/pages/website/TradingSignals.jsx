@@ -96,7 +96,7 @@ export default function TradingSignals() {
             {content.steps.map((step, i) => (
               <ScrollReveal key={i} delay={i * 120}>
                 <div className="text-center">
-                  <div className="w-16 h-16 rounded-full mx-auto mb-5 flex items-center justify-center text-[22px] font-extrabold text-white" style={{ background: 'linear-gradient(135deg, #2563EB, #1D4ED8)' }}>
+                  <div className="w-16 h-16 rounded-full mx-auto mb-5 flex items-center justify-center text-[22px] font-extrabold text-black" style={{ background: 'linear-gradient(135deg, #45F000, #35D800)' }}>
                     {step.num}
                   </div>
                   <h3 className="text-[20px] font-bold mb-2" style={{ fontFamily: '"Plus Jakarta Sans"' }}>{step.title}</h3>

@@ -8,6 +8,7 @@ import adminService from '../../services/adminService';
 import ThemeToggle from '../ui/ThemeToggle';
 import Modal from '../ui/Modal';
 import Button from '../ui/Button';
+import BrandLogo from '../shared/BrandLogo';
 import toast from 'react-hot-toast';
 
 const sidebarSections = [
@@ -189,19 +190,13 @@ export default function AdminLayout() {
         }`}
       >
         <div className="flex items-center justify-between px-5 h-16 border-b border-dark-100">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-emerald-500 flex items-center justify-center shrink-0">
-              <div className="flex flex-col gap-[3px]">
-                <div className="w-3.5 h-[2px] bg-white rounded-full" />
-                <div className="w-2.5 h-[2px] bg-white/70 rounded-full" />
-                <div className="w-3.5 h-[2px] bg-white rounded-full" />
-              </div>
-            </div>
-            <div>
-              <span className="font-bold text-ink text-sm tracking-tight">{getSetting('institute_name', 'Admin')}</span>
+          <Link to="/" className="flex items-center gap-2.5 min-w-0">
+            <BrandLogo variant="black" imgClassName="h-7" />
+            <div className="min-w-0">
+              <span className="font-bold text-ink text-sm tracking-tight block truncate">{getSetting('institute_name', 'Admin')}</span>
               <p className="text-[10px] text-dark-400 uppercase tracking-widest">Admin</p>
             </div>
-          </div>
+          </Link>
           <button
             onClick={() => setSidebarOpen(false)}
             className="lg:hidden p-2 rounded-xl hover:bg-dark-100 text-dark-500 transition-colors"
@@ -285,9 +280,12 @@ export default function AdminLayout() {
               <FiMenu size={22} />
             </button>
 
-            <h1 className="lg:hidden text-base font-bold text-ink truncate">
-              {getPageTitle()}
-            </h1>
+            <div className="flex items-center gap-2 min-w-0 lg:hidden">
+              <img src="/favicon.jpg" alt="" className="w-6 h-6 rounded-md object-contain shrink-0" />
+              <h1 className="text-base font-bold text-ink truncate">
+                {getPageTitle()}
+              </h1>
+            </div>
 
             <div className="flex items-center gap-3 ml-auto">
               <div className="flex items-center gap-3 pl-3 border-l border-dark-100">

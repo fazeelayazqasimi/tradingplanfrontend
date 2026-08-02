@@ -4,9 +4,9 @@ import websiteService from '../../services/websiteService';
 import { useName } from '../../context/NameContext';
 
 const defaultCourses = [
-  { title: 'Market Structure & Price Action', tag: 'Foundations', lessons: 12, fill: 82, color: '#2563EB' },
+  { title: 'Market Structure & Price Action', tag: 'Foundations', lessons: 12, fill: 82, color: '#45F000' },
   { title: 'Position Sizing & Capital Protection', tag: 'Risk Management', lessons: 9, fill: 45, color: '#10B981' },
-  { title: 'Technical Analysis Deep Dive', tag: 'Strategy', lessons: 15, fill: 18, color: '#2563EB' },
+  { title: 'Technical Analysis Deep Dive', tag: 'Strategy', lessons: 15, fill: 18, color: '#45F000' },
 ];
 
 const schedule = [
@@ -82,7 +82,7 @@ export default function Courses() {
                       <span className="text-[11px] font-semibold text-emerald-500 uppercase tracking-wider">{course.level || 'Course'}</span>
                       <h4 className="text-base font-bold mt-2 mb-3" style={{ fontFamily: '"Plus Jakarta Sans"' }}>{course.title}</h4>
                       <div className="h-1.5 rounded bg-dark-100 overflow-hidden mb-2">
-                        <div className="h-full rounded" style={{ width: `${Math.min(course.progress || 0, 100)}%`, background: 'linear-gradient(90deg,#2563EB,#10B981)' }} />
+                        <div className="h-full rounded" style={{ width: `${Math.min(course.progress || 0, 100)}%`, background: 'linear-gradient(90deg,#45F000,#0E3D00)' }} />
                       </div>
                       <div className="flex justify-between text-xs text-dark-500 font-inter">
                         <span>{course.totalLessons || 0} lessons</span>
@@ -107,7 +107,7 @@ export default function Courses() {
                       <span className="text-[11px] font-semibold text-emerald-500 uppercase tracking-wider">{c.tag}</span>
                       <h4 className="text-base font-bold mt-2 mb-3" style={{ fontFamily: '"Plus Jakarta Sans"' }}>{c.title}</h4>
                       <div className="h-1.5 rounded bg-dark-100 overflow-hidden mb-2">
-                        <div className="h-full rounded" style={{ width: `${c.fill}%`, background: 'linear-gradient(90deg,#2563EB,#10B981)' }} />
+                        <div className="h-full rounded" style={{ width: `${c.fill}%`, background: 'linear-gradient(90deg,#45F000,#0E3D00)' }} />
                       </div>
                       <div className="flex justify-between text-xs text-dark-500 font-inter">
                         <span>{c.lessons} lessons</span>

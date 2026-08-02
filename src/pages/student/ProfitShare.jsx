@@ -18,7 +18,7 @@ import EmptyState from '../../components/ui/EmptyState';
 import walletService from '../../services/walletService';
 import { formatCurrency, formatDate } from '../../utils/helpers';
 
-const CHART_COLORS = ['#10B981', '#2563EB', '#F59E0B', '#8B5CF6'];
+const CHART_COLORS = ['#10B981', '#45F000', '#F59E0B', '#8B5CF6'];
 
 const container = {
   hidden: { opacity: 0 },

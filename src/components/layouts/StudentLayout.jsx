@@ -6,6 +6,7 @@ import { useSettings } from '../../context/SettingsContext';
 import { getInitials } from '../../utils/helpers';
 import ThemeToggle from '../ui/ThemeToggle';
 import NotificationBell from '../NotificationBell';
+import BrandLogo from '../shared/BrandLogo';
 
 const sidebarSections = [
   {
@@ -112,16 +113,10 @@ export default function StudentLayout() {
         }`}
       >
         <div className="flex items-center justify-between px-5 h-16 border-b border-dark-100">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-emerald-500 flex items-center justify-center shrink-0">
-              <div className="flex flex-col gap-[3px]">
-                <div className="w-3.5 h-[2px] bg-white rounded-full" />
-                <div className="w-2.5 h-[2px] bg-white/70 rounded-full" />
-                <div className="w-3.5 h-[2px] bg-white rounded-full" />
-              </div>
-            </div>
-            <span className="font-semibold text-ink text-sm">{getSetting('institute_name', '')}</span>
-          </div>
+          <Link to="/" className="flex items-center gap-2.5 min-w-0">
+            <BrandLogo variant="black" imgClassName="h-7" />
+            <span className="font-semibold text-ink text-sm truncate">{getSetting('institute_name', '')}</span>
+          </Link>
           <button
             onClick={() => setSidebarOpen(false)}
             className="lg:hidden p-2 rounded-xl hover:bg-dark-100 text-dark-500 transition-colors"
@@ -204,9 +199,12 @@ export default function StudentLayout() {
               <FiMenu size={22} />
             </button>
 
-            <h1 className="lg:hidden text-base font-bold text-ink truncate">
-              {getPageTitle()}
-            </h1>
+            <div className="flex items-center gap-2 min-w-0 lg:hidden">
+              <img src="/favicon.jpg" alt="" className="w-6 h-6 rounded-md object-contain shrink-0" />
+              <h1 className="text-base font-bold text-ink truncate">
+                {getPageTitle()}
+              </h1>
+            </div>
 
             <div className="flex items-center gap-3 ml-auto">
               <NotificationBell />

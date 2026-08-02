@@ -159,7 +159,7 @@ export default function CoursePurchases() {
           <img
             src={
               row.userId?.avatar ||
-              `https://ui-avatars.com/api/?name=${encodeURIComponent((row.userId?.firstName || 'U') + ' ' + (row.userId?.lastName || ''))}&background=2563EB&color=fff&size=36`
+              `https://ui-avatars.com/api/?name=${encodeURIComponent((row.userId?.firstName || 'U') + ' ' + (row.userId?.lastName || ''))}&background=0E3D00&color=fff&size=36`
             }
             alt={row.userId?.firstName}
             className="h-9 w-9 rounded-full object-cover ring-2 ring-dark-100"

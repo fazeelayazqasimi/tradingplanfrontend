@@ -179,7 +179,7 @@ export default function Home() {
     <div>
       <style>{`.reveal-element { opacity: 0; transform: translateY(28px); transition: opacity 0.8s ease, transform 0.8s ease; } .reveal-active { opacity: 1 !important; transform: translateY(0) !important; }`}</style>
 
-      <section className="pt-[120px] sm:pt-[140px] lg:pt-[180px] pb-[50px] sm:pb-[80px] lg:pb-[100px] relative overflow-hidden" style={{ background: 'radial-gradient(600px 300px at 85% 10%, rgba(37,99,235,0.06), transparent 60%), radial-gradient(500px 260px at 100% 60%, rgba(16,185,129,0.05), transparent 60%)' }}>
+      <section className="pt-[120px] sm:pt-[140px] lg:pt-[180px] pb-[50px] sm:pb-[80px] lg:pb-[100px] relative overflow-hidden" style={{ background: 'radial-gradient(600px 300px at 85% 10%, rgba(69,240,0,0.06), transparent 60%), radial-gradient(500px 260px at 100% 60%, rgba(16,185,129,0.05), transparent 60%)' }}>
         <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-[1.05fr_0.95fr] gap-8 sm:gap-10 lg:gap-16 items-center">
           <div>
             <p className="eyebrow mb-4 sm:mb-6 text-[11px] sm:text-xs">{instituteName}</p>
@@ -219,7 +219,7 @@ export default function Home() {
               </div>
               <div className="h-[150px] rounded-[14px] bg-dark-50 border border-dark-100 overflow-hidden mb-4">
                 <svg viewBox="0 0 400 150" preserveAspectRatio="none" className="w-full h-full">
-                  <polyline fill="none" stroke="#2563EB" strokeWidth="2.5" points="0,110 40,95 80,100 120,70 160,80 200,55 240,60 280,35 320,45 360,20 400,30" />
+                  <polyline fill="none" stroke="#45F000" strokeWidth="2.5" points="0,110 40,95 80,100 120,70 160,80 200,55 240,60 280,35 320,45 360,20 400,30" />
                   <polyline fill="none" stroke="#10B981" strokeWidth="2" strokeOpacity="0.5" points="0,130 40,120 80,125 120,100 160,110 200,90 240,95 280,75 320,80 360,60 400,65" />
                 </svg>
               </div>

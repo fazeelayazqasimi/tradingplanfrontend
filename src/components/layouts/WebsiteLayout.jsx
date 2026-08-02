@@ -6,6 +6,7 @@ import { useSettings } from '../../context/SettingsContext';
 import ThemeToggle from '../ui/ThemeToggle';
 import NewsletterPopup from '../website/NewsletterPopup';
 import NotificationBell from '../NotificationBell';
+import BrandLogo from '../shared/BrandLogo';
 
 function MarqueeTicker() {
   const tickerRef = useRef(null);
@@ -112,8 +113,6 @@ export default function WebsiteLayout() {
   const { user } = useAuth();
   const { getSetting } = useSettings();
   const instituteName = getSetting('institute_name', '');
-  const instituteLogo = getSetting('institute_logo', '');
-  const footerLogo = getSetting('footer_logo', '');
   const dashboardLink = user?.role === 'admin' ? '/admin/dashboard' : user?.role === 'student' ? '/student/dashboard' : null;
   useEffect(() => { setMobileOpen(false); setOpenSubMenu(null); }, [pathname]);
 
@@ -124,15 +123,7 @@ export default function WebsiteLayout() {
         <div className="max-w-[1240px] mx-auto px-3 sm:px-8">
           <div className="flex items-center justify-between h-[60px] sm:h-[72px] bg-white/80 backdrop-blur-xl rounded-xl sm:rounded-2xl border border-dark-100/50 px-3 sm:px-6 shadow-glass mt-2">
             <Link to="/" className="flex items-center gap-2 flex-shrink-0">
-              {instituteLogo ? (
-                <img src={instituteLogo} alt={instituteName} className="h-[28px] sm:h-[30px] w-auto" />
-              ) : (
-                <div className="w-[28px] h-[28px] sm:w-[30px] sm:h-[30px] rounded-lg bg-gradient-to-br from-primary-500 to-emerald-500 relative flex-shrink-0">
-                  <span className="absolute left-[6px] top-[15px] sm:left-[7px] sm:top-[16px] w-[4px] h-[7px] sm:w-[5px] sm:h-[8px] bg-white rounded-[1px]" />
-                  <span className="absolute left-[13px] top-[8px] sm:left-[14px] sm:top-[9px] w-[4px] h-[14px] sm:w-[5px] sm:h-[15px] bg-white rounded-[1px]" />
-                </div>
-              )}
-              <span className="font-extrabold text-base sm:text-lg text-ink hidden sm:block" style={{ fontFamily: '"Plus Jakarta Sans", sans-serif' }}>{instituteName}</span>
+              <BrandLogo variant="black" showName imgClassName="h-[30px] sm:h-[34px]" nameClassName="text-base sm:text-lg text-ink" />
             </Link>
             <nav className="hidden lg:flex items-center gap-0.5 xl:gap-1 text-[13px] xl:text-[14px] font-medium text-dark-500">
               {mainNav.map((item, i) => (
@@ -207,24 +198,14 @@ export default function WebsiteLayout() {
       </header>
       <main className="flex-1 pt-[86px] sm:pt-[102px]"><Outlet /></main>
       <NewsletterPopup />
-      <footer className="bg-dark-50 border-t border-dark-100 pt-14 sm:pt-20 pb-6 sm:pb-8 mt-12 sm:mt-16">
+      <footer className="bg-dark-900 text-white border-t border-dark-800 pt-14 sm:pt-20 pb-6 sm:pb-8 mt-12 sm:mt-16">
         <div className="max-w-[1240px] mx-auto px-4 sm:px-8">
           <div className="grid grid-cols-2 md:grid-cols-5 gap-8 sm:gap-10 pb-10 sm:pb-14">
             <div className="col-span-2 md:col-span-1">
               <Link to="/" className="flex items-center gap-2.5 mb-3">
-                {footerLogo ? (
-                  <img src={footerLogo} alt={instituteName} className="h-[28px] w-auto" />
-                ) : instituteLogo ? (
-                  <img src={instituteLogo} alt={instituteName} className="h-[28px] w-auto" />
-                ) : (
-                  <div className="w-[28px] h-[28px] rounded-lg bg-gradient-to-br from-primary-500 to-emerald-500 relative flex-shrink-0">
-                    <span className="absolute left-[6px] top-[15px] w-[4px] h-[7px] bg-white rounded-[1px]" />
-                    <span className="absolute left-[13px] top-[8px] w-[4px] h-[14px] bg-white rounded-[1px]" />
-                  </div>
-                )}
-                <span className="font-extrabold text-white text-base" style={{ fontFamily: '"Plus Jakarta Sans", sans-serif' }}>{instituteName}</span>
+                <BrandLogo variant="white" showName imgClassName="h-[30px] sm:h-[34px]" nameClassName="text-base text-white" />
               </Link>
-              <p className="text-[13px] sm:text-[13.8px] text-dark-500 max-w-[260px] leading-relaxed">{getSetting('site_description', 'Professional trading education, signals and community for serious students of the market.')}</p>
+              <p className="text-[13px] sm:text-[13.8px] text-white/55 max-w-[260px] leading-relaxed">{getSetting('site_description', 'Professional trading education, signals and community for serious students of the market.')}</p>
               <div className="flex gap-2.5 mt-4">
                 {[
                   { label: 'in', url: getSetting('social_instagram', '#') },
@@ -232,38 +213,38 @@ export default function WebsiteLayout() {
                   { label: 'yt', url: getSetting('social_youtube', '#') },
                   { label: 'tg', url: getSetting('social_telegram', '#') },
                 ].map(s => (
-                  <a key={s.label} href={s.url} target="_blank" rel="noopener noreferrer" className="w-[32px] h-[32px] rounded-[9px] bg-white border border-dark-200 flex items-center justify-center text-[11px] font-medium text-dark-500 hover:text-primary-500 hover:border-primary-200 transition-colors">{s.label}</a>
+                  <a key={s.label} href={s.url} target="_blank" rel="noopener noreferrer" className="w-[32px] h-[32px] rounded-[9px] bg-white/5 border border-white/15 flex items-center justify-center text-[11px] font-medium text-white/70 hover:text-primary-500 hover:border-primary-500/50 hover:bg-primary-500/10 transition-colors">{s.label}</a>
                 ))}
               </div>
             </div>
             <div>
-              <h5 className="text-[12px] font-bold text-dark-500 mb-3 tracking-wide">COMPANY</h5>
-              <Link to="/about" className="block text-[13px] text-ink opacity-80 hover:opacity-100 hover:text-primary-500 mb-2 transition-colors">About</Link>
-              <Link to="/contact" className="block text-[13px] text-ink opacity-80 hover:opacity-100 hover:text-primary-500 mb-2 transition-colors">Careers</Link>
+              <h5 className="text-[12px] font-bold text-white/40 mb-3 tracking-wide">COMPANY</h5>
+              <Link to="/about" className="block text-[13px] text-white/70 hover:text-primary-500 mb-2 transition-colors">About</Link>
+              <Link to="/contact" className="block text-[13px] text-white/70 hover:text-primary-500 mb-2 transition-colors">Careers</Link>
             </div>
             <div>
-              <h5 className="text-[12px] font-bold text-dark-500 mb-3 tracking-wide">EDUCATION</h5>
-              <Link to="/courses" className="block text-[13px] text-ink opacity-80 hover:opacity-100 hover:text-primary-500 mb-2 transition-colors">Online Education</Link>
-              <Link to="/onsite-training" className="block text-[13px] text-ink opacity-80 hover:opacity-100 hover:text-primary-500 mb-2 transition-colors">Onsite Training</Link>
-              <Link to="/trading-signals" className="block text-[13px] text-ink opacity-80 hover:opacity-100 hover:text-primary-500 mb-2 transition-colors">Trading Signals</Link>
-              <Link to="/copy-trading" className="block text-[13px] text-ink opacity-80 hover:opacity-100 hover:text-primary-500 mb-2 transition-colors">Copy Trading</Link>
+              <h5 className="text-[12px] font-bold text-white/40 mb-3 tracking-wide">EDUCATION</h5>
+              <Link to="/courses" className="block text-[13px] text-white/70 hover:text-primary-500 mb-2 transition-colors">Online Education</Link>
+              <Link to="/onsite-training" className="block text-[13px] text-white/70 hover:text-primary-500 mb-2 transition-colors">Onsite Training</Link>
+              <Link to="/trading-signals" className="block text-[13px] text-white/70 hover:text-primary-500 mb-2 transition-colors">Trading Signals</Link>
+              <Link to="/copy-trading" className="block text-[13px] text-white/70 hover:text-primary-500 mb-2 transition-colors">Copy Trading</Link>
             </div>
             <div>
-              <h5 className="text-[12px] font-bold text-dark-500 mb-3 tracking-wide">TOOLS</h5>
-              <Link to="/calculators" className="block text-[13px] text-ink opacity-80 hover:opacity-100 hover:text-primary-500 mb-2 transition-colors">Trading Calculators</Link>
-              <Link to="/tools" className="block text-[13px] text-ink opacity-80 hover:opacity-100 hover:text-primary-500 mb-2 transition-colors">Market Tools</Link>
-              <Link to="/referral-program" className="block text-[13px] text-ink opacity-80 hover:opacity-100 hover:text-primary-500 mb-2 transition-colors">Affiliate Program</Link>
-              <Link to="/brokers" className="block text-[13px] text-ink opacity-80 hover:opacity-100 hover:text-primary-500 mb-2 transition-colors">Brokers</Link>
+              <h5 className="text-[12px] font-bold text-white/40 mb-3 tracking-wide">TOOLS</h5>
+              <Link to="/calculators" className="block text-[13px] text-white/70 hover:text-primary-500 mb-2 transition-colors">Trading Calculators</Link>
+              <Link to="/tools" className="block text-[13px] text-white/70 hover:text-primary-500 mb-2 transition-colors">Market Tools</Link>
+              <Link to="/referral-program" className="block text-[13px] text-white/70 hover:text-primary-500 mb-2 transition-colors">Affiliate Program</Link>
+              <Link to="/brokers" className="block text-[13px] text-white/70 hover:text-primary-500 mb-2 transition-colors">Brokers</Link>
             </div>
             <div>
-              <h5 className="text-[12px] font-bold text-dark-500 mb-3 tracking-wide">SUPPORT</h5>
-              <Link to="/contact" className="block text-[13px] text-ink opacity-80 hover:opacity-100 hover:text-primary-500 mb-2 transition-colors">Contact</Link>
-              <Link to="/faq" className="block text-[13px] text-ink opacity-80 hover:opacity-100 hover:text-primary-500 mb-2 transition-colors">FAQs</Link>
-              <Link to="/privacy" className="block text-[13px] text-ink opacity-80 hover:opacity-100 hover:text-primary-500 mb-2 transition-colors">Privacy</Link>
-              <Link to="/terms" className="block text-[13px] text-ink opacity-80 hover:opacity-100 hover:text-primary-500 mb-2 transition-colors">Terms</Link>
+              <h5 className="text-[12px] font-bold text-white/40 mb-3 tracking-wide">SUPPORT</h5>
+              <Link to="/contact" className="block text-[13px] text-white/70 hover:text-primary-500 mb-2 transition-colors">Contact</Link>
+              <Link to="/faq" className="block text-[13px] text-white/70 hover:text-primary-500 mb-2 transition-colors">FAQs</Link>
+              <Link to="/privacy" className="block text-[13px] text-white/70 hover:text-primary-500 mb-2 transition-colors">Privacy</Link>
+              <Link to="/terms" className="block text-[13px] text-white/70 hover:text-primary-500 mb-2 transition-colors">Terms</Link>
             </div>
           </div>
-          <div className="flex flex-col sm:flex-row justify-between items-center pt-6 sm:pt-7 border-t border-dark-100 text-[12px] text-dark-500 gap-2">
+          <div className="flex flex-col sm:flex-row justify-between items-center pt-6 sm:pt-7 border-t border-white/10 text-[12px] text-white/40 gap-2">
             <span>&copy; {new Date().getFullYear()} {instituteName}. All rights reserved.</span>
             <span className="text-center sm:text-right">Trading involves risk. Past performance is not indicative of future results.</span>
           </div>

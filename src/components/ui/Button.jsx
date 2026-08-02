@@ -1,13 +1,13 @@
 import { motion } from 'framer-motion';
 
 const variants = {
-  primary: 'bg-primary-500 text-white hover:bg-primary-600 focus:ring-primary-500 shadow-[0_8px_20px_rgba(37,99,235,0.25)] hover:shadow-[0_10px_26px_rgba(37,99,235,0.35)]',
+  primary: 'bg-primary-500 text-black hover:bg-primary-600 focus:ring-primary-500 shadow-neon hover:shadow-neon-lg',
   secondary: 'bg-ink text-white hover:bg-dark-800 focus:ring-ink shadow-sm',
   outline: 'bg-transparent text-ink border border-dark-200 hover:border-ink focus:ring-dark-300',
   danger: 'bg-red-500 text-white hover:bg-red-600 focus:ring-red-500 shadow-sm',
-  success: 'bg-emerald-500 text-white hover:bg-emerald-600 focus:ring-emerald-500 shadow-sm',
+  success: 'bg-emerald-500 text-black hover:bg-emerald-600 focus:ring-emerald-500 shadow-sm',
   ghost: 'text-dark-500 hover:bg-dark-50 focus:ring-dark-300',
-  white: 'bg-white text-primary-600 hover:bg-white/90 focus:ring-white shadow-lg',
+  white: 'bg-white text-primary-700 hover:bg-white/90 focus:ring-white shadow-lg',
   'outline-white': 'bg-transparent text-white border border-white/40 hover:bg-white/10 hover:border-white focus:ring-white',
 };
 

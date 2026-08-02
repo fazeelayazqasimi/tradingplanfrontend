@@ -208,7 +208,7 @@ export default function Reports() {
                   contentStyle={{ borderRadius: 11, border: '1px solid #e5e7eb', fontSize: 13 }}
                   formatter={(value) => [formatCurrency(value), 'Revenue']}
                 />
-                <Bar dataKey="revenue" fill="#2563eb" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="revenue" fill="#45F000" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           )}

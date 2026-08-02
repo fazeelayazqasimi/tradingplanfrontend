@@ -108,7 +108,7 @@ export default function CopyTrading() {
               <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
               <div className="absolute bottom-0 left-0 right-0 h-[100px] flex items-end px-8 gap-1.5 pb-0">
                 {[55,70,40,85,50,65,30,90,45,75,60,35,80,48,72,58,38,92,42,88,68,52,78,44].map((h, i) => (
-                  <div key={i} className="flex-1 rounded-t-[2px]" style={{ height: `${h}%`, background: [0,2,5,7,9,12,14,17,19,21,23].includes(i) ? '#10B981' : i % 3 === 0 ? '#F87171' : '#3B82F6', opacity: 0.85 }} />
+                  <div key={i} className="flex-1 rounded-t-[2px]" style={{ height: `${h}%`, background: [0,2,5,7,9,12,14,17,19,21,23].includes(i) ? '#10B981' : i % 3 === 0 ? '#F87171' : '#45F000', opacity: 0.85 }} />
                 ))}
               </div>
             </div>

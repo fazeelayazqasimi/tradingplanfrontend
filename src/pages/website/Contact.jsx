@@ -71,7 +71,7 @@ export default function Contact() {
             </form>
           </div>
           <div>
-            <div className="rounded-[20px] h-full min-h-[200px] sm:min-h-[280px] bg-dark-50 border border-dark-100 relative overflow-hidden mb-5" style={{ backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 12px, rgba(37,99,235,0.04) 12px, rgba(37,99,235,0.04) 24px)' }}>
+            <div className="rounded-[20px] h-full min-h-[200px] sm:min-h-[280px] bg-dark-50 border border-dark-100 relative overflow-hidden mb-5" style={{ backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 12px, rgba(69,240,0,0.04) 12px, rgba(69,240,0,0.04) 24px)' }}>
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-full w-[30px] h-[30px] rounded-[50%_50%_50%_0] bg-primary-500 -rotate-45 shadow-card-md" />
             </div>
             <div className="flex gap-3.5 items-start mb-5">

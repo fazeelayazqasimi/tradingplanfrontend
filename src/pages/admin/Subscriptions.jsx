@@ -64,7 +64,7 @@ const columns = [
           <img
             src={
               s.avatar ||
-              `https://ui-avatars.com/api/?name=${encodeURIComponent((s.firstName || 'U') + ' ' + (s.lastName || ''))}&background=2563EB&color=fff&size=36`
+              `https://ui-avatars.com/api/?name=${encodeURIComponent((s.firstName || 'U') + ' ' + (s.lastName || ''))}&background=0E3D00&color=fff&size=36`
             }
             alt={s.firstName}
             className="h-9 w-9 rounded-full object-cover ring-2 ring-dark-100"

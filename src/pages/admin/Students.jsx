@@ -37,7 +37,7 @@ const columns = [
     width: 'w-10',
     render: (_, row) => (
       <img
-        src={row.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(row.firstName + ' ' + row.lastName)}&background=2563EB&color=fff&size=40`}
+        src={row.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(row.firstName + ' ' + row.lastName)}&background=0E3D00&color=fff&size=40`}
         alt={row.firstName}
         className="h-9 w-9 rounded-xl object-cover ring-2 ring-dark-100"
       />
@@ -400,7 +400,7 @@ export default function Students() {
               <img
                 src={
                   selectedStudent.avatar ||
-                  `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedStudent.firstName + ' ' + selectedStudent.lastName)}&background=2563EB&color=fff&size=64`
+                  `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedStudent.firstName + ' ' + selectedStudent.lastName)}&background=0E3D00&color=fff&size=64`
                 }
                 alt={selectedStudent.firstName}
                 className="h-16 w-16 rounded-2xl object-cover ring-4 ring-primary-50"

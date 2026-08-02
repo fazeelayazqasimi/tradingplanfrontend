@@ -4,8 +4,8 @@ import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import { FiEye, FiEyeOff, FiCheck, FiX } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
-import { useSettings } from '../../context/SettingsContext';
 import authService from '../../services/authService';
+import BrandLogo from '../../components/shared/BrandLogo';
 
 const COUNTRY_CODES = [
   { code: '+92', country: 'PK', label: 'PK (+92)' },
@@ -28,7 +28,6 @@ export default function Register() {
   const referralCode = searchParams.get('ref') || '';
   const form = useForm({ defaultValues: { referralCode, phoneCode: '+92', country: 'PK' } });
   const { register: authRegister } = useAuth();
-  const { getSetting } = useSettings();
   const navigate = useNavigate();
 
   const [step, setStep] = useState('form');
@@ -181,15 +180,11 @@ export default function Register() {
 
   if (step === 'otp') {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4 py-8" style={{ background: 'radial-gradient(600px 300px at 50% 20%, rgba(37,99,235,0.04), transparent 60%)' }}>
+      <div className="min-h-screen flex items-center justify-center px-4 py-8" style={{ background: 'radial-gradient(600px 300px at 50% 20%, rgba(69,240,0,0.06), transparent 60%)' }}>
         <div className="w-full max-w-[400px]">
           <div className="text-center mb-6">
             <Link to="/" className="inline-flex items-center gap-2 mb-4">
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary-500 to-emerald-500 relative flex-shrink-0">
-                <span className="absolute left-[4px] top-[9px] w-[3px] h-[5px] bg-white rounded-[1px]" />
-                <span className="absolute left-[8px] top-[5px] w-[3px] h-[9px] bg-white rounded-[1px]" />
-              </div>
-              <span className="font-extrabold text-base text-ink">{getSetting('institute_name', '')}</span>
+              <BrandLogo variant="black" showName imgClassName="h-7" nameClassName="text-base text-ink" />
             </Link>
             <h1 className="text-xl font-extrabold text-ink">Check your email</h1>
             <p className="text-sm text-dark-500 mt-1 px-2">
@@ -271,15 +266,11 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-8" style={{ background: 'radial-gradient(600px 300px at 50% 20%, rgba(37,99,235,0.04), transparent 60%)' }}>
+    <div className="min-h-screen flex items-center justify-center px-4 py-8" style={{ background: 'radial-gradient(600px 300px at 50% 20%, rgba(69,240,0,0.06), transparent 60%)' }}>
       <div className="w-full max-w-[400px]">
         <div className="text-center mb-6">
           <Link to="/" className="inline-flex items-center gap-2 mb-4">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary-500 to-emerald-500 relative flex-shrink-0">
-              <span className="absolute left-[4px] top-[9px] w-[3px] h-[5px] bg-white rounded-[1px]" />
-              <span className="absolute left-[8px] top-[5px] w-[3px] h-[9px] bg-white rounded-[1px]" />
-            </div>
-            <span className="font-extrabold text-base text-ink">{getSetting('institute_name', '')}</span>
+            <BrandLogo variant="black" showName imgClassName="h-7" nameClassName="text-base text-ink" />
           </Link>
           <h1 className="text-xl font-extrabold text-ink">Create Account</h1>
           <p className="text-sm text-dark-500 mt-1">Start your trading journey today</p>
