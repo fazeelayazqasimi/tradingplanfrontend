@@ -13,7 +13,7 @@ export default function Activation() {
   const { user, refreshUser } = useAuth();
   const [mainBalance, setMainBalance] = useState(0);
   const [fundingBalance, setFundingBalance] = useState(0);
-  const [activationInfo, setActivationInfo] = useState({ membershipPrice: 120, uplineActivationDiscount: 20, fundingPercent: 20 });
+  const [activationInfo, setActivationInfo] = useState({ membershipPrice: 120, uplineActivationDiscount: 0, discountAmount: 0, finalAmount: 120, fundingPercent: 20 });
 
   const [pinCode, setPinCode] = useState('');
   const [pinLoading, setPinLoading] = useState(false);
@@ -26,7 +26,9 @@ export default function Activation() {
   const [loading, setLoading] = useState(false);
 
   const isActivated = user?.isApproved && user?.subscriptionStatus === 'active';
-  const price = activationInfo.membershipPrice;
+  const price = activationInfo.finalAmount || activationInfo.membershipPrice;
+  const discountAmount = activationInfo.discountAmount || 0;
+  const discountPercent = activationInfo.uplineActivationDiscount || 0;
   const fundingPercent = activationInfo.fundingPercent || 20;
   const fundingPart = parseFloat((price * fundingPercent / 100).toFixed(2));
   const fundingUsed = Math.min(fundingBalance, fundingPart);
@@ -213,9 +215,10 @@ export default function Activation() {
               </div>
               <span className="font-semibold text-ink">Activate Downline Member</span>
             </div>
-            <p className="text-sm text-dark-500">
-              Enter your downline member's email to activate them. {fundingPercent}% of the <strong>${price}</strong> price is taken from your funding wallet (if available), the rest from your main wallet.
-            </p>
+<p className="text-sm text-dark-500">
+               Enter your downline member's email to activate them. {fundingPercent}% of the <strong>${price}</strong> price is taken from your funding wallet (if available), the rest from your main wallet.
+               {discountAmount > 0 && <span className="block mt-1 text-emerald-600 font-medium">Upline discount applied: -{discountPercent}% (-${discountAmount.toFixed(2)})</span>}
+             </p>
             <Input
               value={email}
               onChange={e => { setEmail(e.target.value); setError(''); }}

@@ -204,7 +204,7 @@ export default function MarketUpdates() {
                       <Badge color={cat.color}>{cat.label}</Badge>
                       {update.pinned && <Badge color="amber">Pinned</Badge>}
                     </div>
-                    {update.summary && <p className="text-xs text-dark-500 line-clamp-1 mb-2">{update.summary}</p>}
+                    {update.summary && <p className="text-xs text-dark-500 line-clamp-3 mb-2">{update.summary}</p>}
                     <div className="flex items-center gap-4 text-xs text-dark-500">
                       <span className="flex items-center gap-1"><FiCalendar size={12} /> {formatDate(update.createdAt)}</span>
                       <span className="flex items-center gap-1"><FiTag size={12} /> {update.type || 'text'}</span>

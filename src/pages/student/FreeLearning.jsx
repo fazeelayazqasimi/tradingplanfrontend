@@ -292,7 +292,7 @@ export default function FreeLearning() {
                     </div>
                     <h3 className="text-sm font-bold text-ink line-clamp-2 leading-snug">{item.title}</h3>
                     {item.summary && (
-                      <p className="text-xs text-dark-500 line-clamp-2">{item.summary}</p>
+                      <p className="text-xs text-dark-500 line-clamp-3">{item.summary}</p>
                     )}
                     {item.instructorName && (
                       <div className="flex items-center gap-2">

@@ -22,7 +22,7 @@ const columns = [
         <div>
           <p className="font-semibold text-ink text-sm">{row.title}</p>
           {row.description && (
-            <p className="text-xs text-dark-400 mt-0.5 line-clamp-1">{row.description}</p>
+            <p className="text-xs text-dark-400 mt-0.5 line-clamp-3">{row.description}</p>
           )}
         </div>
       </div>

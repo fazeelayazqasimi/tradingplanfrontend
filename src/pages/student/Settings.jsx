@@ -14,6 +14,7 @@ import {
   FiKey,
   FiCheck,
   FiSend,
+  FiUsers,
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Card from '../../components/ui/Card';
@@ -261,6 +262,45 @@ export default function Settings() {
       </div>
 
       <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
+        <motion.div variants={item}>
+          <Card className="p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-[42px] h-[42px] rounded-[11px] bg-blue-50 text-blue-500 flex items-center justify-center">
+                <FiUsers size={20} />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-ink">Account & Network</h2>
+                <p className="text-sm text-dark-500">Your referral details and upline information</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <p className="text-xs font-medium text-dark-400 uppercase tracking-wider mb-1.5">My Referral Code</p>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 rounded-[11px] bg-dark-50 px-4 py-3 font-mono text-sm font-bold text-ink">
+                    {user?.referralCode || '—'}
+                  </div>
+                </div>
+              </div>
+              <div>
+                <p className="text-xs font-medium text-dark-400 uppercase tracking-wider mb-1.5">My Upline (Referrer)</p>
+                {user?.referredBy ? (
+                  <div className="rounded-[11px] bg-blue-50 border border-blue-100 px-4 py-3">
+                    <p className="text-sm font-bold text-ink">{user.referredBy.firstName} {user.referredBy.lastName}</p>
+                    <p className="text-xs text-dark-500 mt-0.5">{user.referredBy.email || ''}{user.referredBy.referralCode ? ` | Code: ${user.referredBy.referralCode}` : ''}</p>
+                  </div>
+                ) : (
+                  <div className="rounded-[11px] bg-dark-50 px-4 py-3">
+                    <p className="text-sm font-medium text-ink">Direct Member</p>
+                    <p className="text-xs text-dark-400 mt-0.5">You joined without an upline.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </Card>
+        </motion.div>
+
         <motion.div variants={item}>
           <Card className="p-6">
             <div className="flex items-center gap-3 mb-6">

@@ -17,6 +17,7 @@ import {
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import { QRCodeSVG } from 'qrcode.react';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
@@ -111,6 +112,7 @@ export default function Wallet() {
   const [depositHistory, setDepositHistory] = useState([]);
   const [depositScreenshot, setDepositScreenshot] = useState(null);
   const [depositSubmitted, setDepositSubmitted] = useState(null);
+  const [qrBroken, setQrBroken] = useState(false);
   const [withdrawFeeInfo, setWithdrawFeeInfo] = useState({ feeType: 'percent', feePercent: 10, feeFixed: 0, processingHours: 24 });
 
   const { page, limit, nextPage, prevPage, goToPage } = usePagination(1, 10);
@@ -267,6 +269,7 @@ export default function Wallet() {
   const depositQrUrl = activePaymentAccount?.qrCodeUrl
     ? getAssetUrl(activePaymentAccount.qrCodeUrl)
     : (activePaymentAccount?.qrDataUrl || '');
+  const showGeneratedQr = !depositQrUrl || qrBroken;
   const chartData = stats
     ? [
         { name: 'Direct Income', value: byCategory.direct_income ?? byCategory.directIncome ?? 0 },
@@ -414,7 +417,7 @@ export default function Wallet() {
             <FiRefreshCw size={16} className={loading || loadingTx ? 'animate-spin' : ''} />
             Refresh
           </Button>
-          <Button variant="outline" size="sm" onClick={() => { setDepositForm({ amount: '' }); setDepositScreenshot(null); setDepositSubmitted(null); setDepositErrors({}); setShowDeposit(true); }}>
+          <Button variant="outline" size="sm" onClick={() => { setDepositForm({ amount: '' }); setDepositScreenshot(null); setDepositSubmitted(null); setDepositErrors({}); setQrBroken(false); setShowDeposit(true); }}>
             <FiPlus size={16} />
             Deposit
           </Button>
@@ -680,7 +683,7 @@ export default function Wallet() {
         </Card>
       </motion.div>
 
-      <Modal isOpen={showDeposit} onClose={() => { setShowDeposit(false); setDepositErrors({}); setDepositScreenshot(null); setDepositSubmitted(null); setSubmitting(false); }} title={depositSubmitted ? 'Deposit Submitted' : `Deposit to ${WALLET_TABS.find(t => t.key === walletTab)?.label || 'Wallet'}`} size="sm">
+      <Modal isOpen={showDeposit} onClose={() => { setShowDeposit(false); setDepositErrors({}); setDepositScreenshot(null); setDepositSubmitted(null); setQrBroken(false); setSubmitting(false); }} title={depositSubmitted ? 'Deposit Submitted' : `Deposit to ${WALLET_TABS.find(t => t.key === walletTab)?.label || 'Wallet'}`} size="sm">
           {depositSubmitted ? (
             <div className="space-y-4">
               <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200">
@@ -745,8 +748,10 @@ export default function Wallet() {
                 <div className="space-y-3">
                   <div className="p-4 rounded-xl bg-dark-50 border border-dark-200">
                     <p className="text-xs font-medium text-dark-500 mb-2">USDT BEP20 Deposit Address</p>
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm font-mono text-ink break-all flex-1">{activePaymentAccount.walletAddress}</p>
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="flex-1 min-w-0 overflow-x-auto whitespace-nowrap rounded-lg bg-white border border-dark-100 px-3 py-2">
+                        <p className="text-sm font-mono text-ink">{activePaymentAccount.walletAddress}</p>
+                      </div>
                       <button
                         onClick={() => { copyToClipboard(activePaymentAccount.walletAddress); toast.success('Address copied!'); }}
                         className="shrink-0 p-2 rounded-lg bg-white border border-dark-100 hover:bg-primary-50 transition-colors"
@@ -757,11 +762,21 @@ export default function Wallet() {
                     </div>
                     <p className="text-xs text-dark-400 mt-2">Network: <span className="font-semibold text-ink">{activePaymentAccount.network || 'BEP20'}</span></p>
                   </div>
-                  {depositQrUrl && (
-                    <div className="flex justify-center">
-                      <img src={depositQrUrl} alt="Deposit QR Code" className="w-44 h-44 border border-dark-200 rounded-xl object-contain bg-white" />
-                    </div>
-                  )}
+                  <div className="flex flex-col items-center gap-2">
+                    {showGeneratedQr ? (
+                      <div className="p-3 bg-white border border-dark-200 rounded-xl">
+                        <QRCodeSVG value={activePaymentAccount.walletAddress} size={176} marginSize={1} />
+                      </div>
+                    ) : (
+                      <img
+                        src={depositQrUrl}
+                        alt="Deposit QR Code"
+                        onError={() => setQrBroken(true)}
+                        className="w-44 h-44 border border-dark-200 rounded-xl object-contain bg-white"
+                      />
+                    )}
+                    <p className="text-xs text-dark-400">Scan to send USDT (BEP20)</p>
+                  </div>
 
                   <div>
                     <label className="block text-[13px] font-semibold text-ink mb-1.5">Payment Screenshot (Proof)</label>

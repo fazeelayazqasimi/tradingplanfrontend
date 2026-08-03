@@ -180,7 +180,7 @@ export default function FAQs() {
           <div className="min-w-0">
             <p className="font-medium text-ink truncate max-w-xs">{row.question}</p>
             {row.answer && (
-              <p className="text-xs text-dark-500 mt-0.5 truncate max-w-sm">{row.answer}</p>
+              <p className="text-xs text-dark-500 mt-0.5 line-clamp-3">{row.answer}</p>
             )}
           </div>
         </div>

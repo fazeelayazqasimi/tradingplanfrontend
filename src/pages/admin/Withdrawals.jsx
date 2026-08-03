@@ -149,23 +149,30 @@ export default function Withdrawals() {
       ),
     },
     {
-      key: 'amount',
-      header: 'Amount',
+      key: 'total',
+      header: 'Total',
       render: (_, row) => (
         <span className="font-semibold text-ink">{formatCurrency(row.amount || 0)}</span>
       ),
     },
     {
-      key: 'net',
-      header: 'To Send (Net)',
+      key: 'fee',
+      header: 'Fee',
+      render: (_, row) => (
+        <span className="font-medium text-red-500">{formatCurrency(row.fee || 0)}</span>
+      ),
+    },
+    {
+      key: 'final',
+      header: 'Final (Net)',
       render: (_, row) => {
         const net = row.netAmount ?? (row.amount - (row.fee || 0));
-        return <span className="font-semibold text-emerald-600">{formatCurrency(net)}</span>;
+        return <span className="font-bold text-emerald-600">{formatCurrency(net)}</span>;
       },
     },
     {
       key: 'method',
-      header: 'Payment Method',
+      header: 'Method',
       render: (_, row) => (
         <span className="text-dark-500 capitalize">{row.paymentMethod || row.method || '—'}</span>
       ),
@@ -301,50 +308,50 @@ export default function Withdrawals() {
       >
         {detailModal && (
           <div className="space-y-6">
-            <div className="grid grid-cols-2 gap-5">
-              <div>
-                <p className="text-[12px] font-semibold uppercase tracking-wider text-dark-500">Student</p>
-                <p className="text-[15px] font-medium text-ink mt-1">
-                  {detailModal.userId?.firstName ? `${detailModal.userId.firstName} ${detailModal.userId.lastName}` : '—'}
-                </p>
-              </div>
-              <div>
-                <p className="text-[12px] font-semibold uppercase tracking-wider text-dark-500">Amount</p>
-                <p className="text-[15px] font-semibold text-ink mt-1">
-                  {formatCurrency(detailModal.amount || 0)}
-                </p>
-              </div>
-              <div>
-                <p className="text-[12px] font-semibold uppercase tracking-wider text-dark-500">Withdrawal Fee</p>
-                <p className="text-[15px] font-medium text-ink mt-1">
-                  {formatCurrency(detailModal.fee || 0)}
-                </p>
-              </div>
-              <div>
-                <p className="text-[12px] font-semibold uppercase tracking-wider text-dark-500">To Send (Net)</p>
-                <p className="text-[15px] font-bold text-emerald-600 mt-1">
-                  {formatCurrency(detailModal.netAmount ?? (detailModal.amount - (detailModal.fee || 0)))}
-                </p>
-              </div>
-              <div>
-                <p className="text-[12px] font-semibold uppercase tracking-wider text-dark-500">Status</p>
-                <div className="mt-1.5">
-                  <Badge color={(STATUS_CONFIG[detailModal.status] || STATUS_CONFIG.pending).color}>
-                    {(STATUS_CONFIG[detailModal.status] || STATUS_CONFIG.pending).label}
-                  </Badge>
-                </div>
-              </div>
-              <div>
-                <p className="text-[12px] font-semibold uppercase tracking-wider text-dark-500">Payment Method</p>
-                <p className="text-[15px] text-ink mt-1 capitalize">
-                  {detailModal.paymentMethod || detailModal.method || '—'}
-                </p>
-              </div>
-              <div className="col-span-2">
-                <p className="text-[12px] font-semibold uppercase tracking-wider text-dark-500">Request Date</p>
-                <p className="text-[15px] text-ink mt-1">{formatDate(detailModal.createdAt)}</p>
-              </div>
-            </div>
+<div className="grid grid-cols-2 gap-5">
+               <div>
+                 <p className="text-[12px] font-semibold uppercase tracking-wider text-dark-500">Student</p>
+                 <p className="text-[15px] font-medium text-ink mt-1">
+                   {detailModal.userId?.firstName ? `${detailModal.userId.firstName} ${detailModal.userId.lastName}` : '—'}
+                 </p>
+               </div>
+               <div>
+                 <p className="text-[12px] font-semibold uppercase tracking-wider text-dark-500">Status</p>
+                 <div className="mt-1.5">
+                   <Badge color={(STATUS_CONFIG[detailModal.status] || STATUS_CONFIG.pending).color}>
+                     {(STATUS_CONFIG[detailModal.status] || STATUS_CONFIG.pending).label}
+                   </Badge>
+                 </div>
+               </div>
+               <div>
+                 <p className="text-[12px] font-semibold uppercase tracking-wider text-dark-500">Total (Gross)</p>
+                 <p className="text-[15px] font-semibold text-ink mt-1">
+                   {formatCurrency(detailModal.amount || 0)}
+                 </p>
+               </div>
+               <div>
+                 <p className="text-[12px] font-semibold uppercase tracking-wider text-dark-500">Withdrawal Fee</p>
+                 <p className="text-[15px] font-medium text-red-500 mt-1">
+                   -{formatCurrency(detailModal.fee || 0)}
+                 </p>
+               </div>
+               <div className="col-span-2">
+                 <p className="text-[12px] font-semibold uppercase tracking-wider text-dark-500">Final Amount (After Fee)</p>
+                 <p className="text-[18px] font-extrabold text-emerald-600 mt-1">
+                   {formatCurrency(detailModal.netAmount ?? (detailModal.amount - (detailModal.fee || 0)))}
+                 </p>
+               </div>
+               <div>
+                 <p className="text-[12px] font-semibold uppercase tracking-wider text-dark-500">Payment Method</p>
+                 <p className="text-[15px] text-ink mt-1 capitalize">
+                   {detailModal.paymentMethod || detailModal.method || '—'}
+                 </p>
+               </div>
+               <div>
+                 <p className="text-[12px] font-semibold uppercase tracking-wider text-dark-500">Request Date</p>
+                 <p className="text-[15px] text-ink mt-1">{formatDate(detailModal.createdAt)}</p>
+               </div>
+             </div>
 
             <div className="pt-4 border-t border-dark-100">
               <div className="flex items-center gap-2 mb-4">

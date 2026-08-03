@@ -124,7 +124,7 @@ export default function Announcements() {
           <div className="min-w-0">
             <p className="font-medium text-ink truncate">{row.title}</p>
             {row.content && (
-              <p className="text-xs text-dark-500 mt-0.5 truncate max-w-xs">{row.content}</p>
+              <p className="text-xs text-dark-500 mt-0.5 line-clamp-3">{row.content}</p>
             )}
           </div>
         </div>

@@ -373,6 +373,15 @@ export default function Referrals() {
                         <span className="text-dark-600 w-16 text-right">{rankData.totalTeam ?? 0}/{rankData.nextRank.minTeamMembers}</span>
                       </div>
                     )}
+                    {(rankData.qualifiedLegsRequired > 0 && rankData.requiredRankName) && (
+                      <div className="flex items-center gap-2 text-xs">
+                        <span className="text-dark-400 w-28">Qualified:</span>
+                        <div className="flex-1 h-2 bg-dark-100 rounded-full overflow-hidden">
+                          <div className="h-full bg-amber-500 rounded-full transition-all" style={{ width: `${Math.min(100, ((rankData.qualifiedLegs ?? 0) / rankData.qualifiedLegsRequired) * 100)}%` }} />
+                        </div>
+                        <span className="text-dark-600 w-16 text-right">{rankData.qualifiedLegs ?? 0}/{rankData.qualifiedLegsRequired}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

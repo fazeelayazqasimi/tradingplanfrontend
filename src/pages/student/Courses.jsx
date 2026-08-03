@@ -307,7 +307,7 @@ export default function Courses() {
                         </h3>
 
                         {course.description && (
-                          <p className="text-xs text-dark-500 line-clamp-2 mb-2.5 flex-1">
+                          <p className="text-xs text-dark-500 line-clamp-4 mb-2.5 flex-1">
                             {course.description}
                           </p>
                         )}

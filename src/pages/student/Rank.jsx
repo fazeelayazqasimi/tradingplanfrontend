@@ -228,11 +228,13 @@ export default function Rank() {
                         initial={{ width: 0 }}
                         animate={{ width: `${directPct}%` }}
                         transition={{ duration: 1, delay: 0.3 }}
-                        className="h-full rounded bg-gradient-to-r from-primary-500 to-emerald-500"
+                        className={`h-full rounded ${directNeeded === 0 ? 'bg-emerald-500' : 'bg-gradient-to-r from-primary-500 to-emerald-500'}`}
                       />
                     </div>
-                    {directNeeded > 0 && (
+                    {directNeeded > 0 ? (
                       <p className="mt-1.5 text-xs text-dark-500">{directNeeded} more direct referral{directNeeded !== 1 ? 's' : ''} needed</p>
+                    ) : (
+                      <p className="mt-1.5 text-xs text-emerald-600 flex items-center gap-1"><FiCheck size={12} /> Condition completed</p>
                     )}
                   </div>
 
@@ -251,20 +253,22 @@ export default function Rank() {
                         initial={{ width: 0 }}
                         animate={{ width: `${teamPct}%` }}
                         transition={{ duration: 1, delay: 0.5 }}
-                        className="h-full rounded bg-gradient-to-r from-primary-500 to-emerald-500"
+                        className={`h-full rounded ${teamNeeded === 0 ? 'bg-emerald-500' : 'bg-gradient-to-r from-primary-500 to-emerald-500'}`}
                       />
                     </div>
-                    {teamNeeded > 0 && (
+                    {teamNeeded > 0 ? (
                       <p className="mt-1.5 text-xs text-dark-500">{teamNeeded} more team member{teamNeeded !== 1 ? 's' : ''} needed</p>
+                    ) : (
+                      <p className="mt-1.5 text-xs text-emerald-600 flex items-center gap-1"><FiCheck size={14} /> Condition completed</p>
                     )}
                   </div>
 
-                  {qualifiedLegsRequired > 0 && requiredLegRankName && (
+                  {qualifiedLegsRequired > 0 && (
                     <div>
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm text-dark-600 flex items-center gap-1.5">
                           <FiAward size={14} />
-                          Qualified Legs ({requiredLegRankName}+)
+                          {requiredLegRankName ? `Qualified Legs (${requiredLegRankName}+)` : 'Qualified Legs'}
                         </span>
                         <span className="text-sm font-semibold text-ink">
                           {qualifiedLegs} / {qualifiedLegsRequired}
@@ -275,13 +279,15 @@ export default function Rank() {
                           initial={{ width: 0 }}
                           animate={{ width: `${legsPct}%` }}
                           transition={{ duration: 1, delay: 0.6 }}
-                          className="h-full rounded bg-gradient-to-r from-primary-500 to-emerald-500"
+                          className={`h-full rounded ${legsNeeded === 0 ? 'bg-emerald-500' : 'bg-gradient-to-r from-primary-500 to-emerald-500'}`}
                         />
                       </div>
-                      {legsNeeded > 0 && (
+                      {legsNeeded > 0 ? (
                         <p className="mt-1.5 text-xs text-dark-500">
-                          {legsNeeded} more qualified leg{legsNeeded !== 1 ? 's' : ''} with a {requiredLegRankName}+ member needed
+                          {legsNeeded} more qualified leg{legsNeeded !== 1 ? 's' : ''}{requiredLegRankName ? ` with a ${requiredLegRankName}+ member` : ''} needed
                         </p>
+                      ) : (
+                        <p className="mt-1.5 text-xs text-emerald-600 flex items-center gap-1"><FiCheck size={14} /> Condition completed</p>
                       )}
                     </div>
                   )}

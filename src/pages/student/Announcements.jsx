@@ -162,9 +162,9 @@ export default function Announcements() {
                           {title}
                         </h3>
                         {!isExpanded && content && (
-                          <p className="mt-1 text-sm text-dark-500 line-clamp-2">
-                            {content}
-                          </p>
+<p className="mt-1 text-sm text-dark-500 line-clamp-3">
+                              {content}
+                            </p>
                         )}
                       </div>
 

@@ -151,6 +151,19 @@ export default function Withdrawals() {
       ),
     },
     {
+      header: 'Fee',
+      render: (_, row) => (
+        <span className="text-red-500 text-sm">{formatCurrency(row.fee || 0)}</span>
+      ),
+    },
+    {
+      header: 'Final (Net)',
+      render: (_, row) => {
+        const net = row.netAmount ?? (row.amount - (row.fee || 0));
+        return <span className="font-semibold text-emerald-600">{formatCurrency(net)}</span>;
+      },
+    },
+    {
       header: 'Payment Method',
       render: (_, row) => (
         <span className="text-dark-600 capitalize">{(row.paymentMethod || row.payment_method || '').replace(/_/g, ' ')}</span>

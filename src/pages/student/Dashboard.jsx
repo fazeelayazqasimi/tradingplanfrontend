@@ -30,7 +30,7 @@ const item = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transiti
 const walletStatsData = [
   { label: "Wallet Balance", icon: FiCreditCard, gradient: "from-blue-500 to-blue-700", textColor: "text-blue-600", badge: "blue" },
   { label: "Reward Credits", icon: FiGift, gradient: "from-amber-500 to-orange-600", textColor: "text-amber-600", badge: "amber" },
-  { label: "Affiliate Earnings", icon: FiTrendingUp, gradient: "from-emerald-500 to-emerald-700", textColor: "text-emerald-600", badge: "emerald" },
+  { label: "All Incomes", icon: FiTrendingUp, gradient: "from-emerald-500 to-emerald-700", textColor: "text-emerald-600", badge: "emerald" },
   { label: "Pending Earnings", icon: FiClock, gradient: "from-violet-500 to-violet-700", textColor: "text-violet-600", badge: "violet" },
 ];
 
@@ -39,6 +39,7 @@ export default function Dashboard() {
   const [enrolled, setEnrolled] = useState([]);
   const [signals, setSignals] = useState([]);
   const [walletData, setWalletData] = useState(null);
+  const [fundingWalletData, setFundingWalletData] = useState(null);
   const [walletStats, setWalletStats] = useState(null);
   const [rank, setRank] = useState(null);
   const [nextRank, setNextRank] = useState(null);
@@ -60,7 +61,7 @@ export default function Dashboard() {
   const [activateLoading, setActivateLoading] = useState(false);
   const [activateError, setActivateError] = useState("");
   const [fundingBalance, setFundingBalance] = useState(0);
-  const [activationInfo, setActivationInfo] = useState({ membershipPrice: 120, fundingPercent: 20 });
+  const [activationInfo, setActivationInfo] = useState({ membershipPrice: 120, fundingPercent: 20, uplineActivationDiscount: 0, discountAmount: 0, finalAmount: 120 });
 
   useEffect(() => {
     let cancelled = false;
@@ -70,28 +71,30 @@ export default function Dashboard() {
         setLoading(true);
         const isPremium = user?.subscriptionStatus === "active";
         setIsFreeUser(!isPremium);
-        const results = await Promise.allSettled([
-          courseService.getEnrolled(),
-          signalService.getSignals({ perPage: 5, sort: "-createdAt" }),
-          walletService.getWallet("main"),
-          walletService.getStats(),
-          studentService.getMyRank(),
-          marketOverviewService.getMarketOverview(),
-          signalService.getSignals({ status: "open", isPublished: true, perPage: 1 }),
-          referralService.getStats(),
-          referralService.getReferralCode(),
-        ]);
-        if (!mounted || cancelled) return;
-        if (results[0].status === "fulfilled") {
-          const d = results[0].value.data || {};
-          setEnrolled(Array.isArray(d.data?.courses || d.data) ? (d.data?.courses || d.data).slice(0, 3) : []);
-        }
-        if (results[1].status === "fulfilled") {
-          const d = results[1].value.data || {};
-          setSignals(Array.isArray(d.data?.data || d.data?.signals || d.data) ? (d.data?.data || d.data?.signals || d.data).slice(0, 5) : []);
-        }
-        if (results[2].status === "fulfilled" && results[2].value) setWalletData(results[2].value.data?.data || results[2].value.data);
-        if (results[3].status === "fulfilled" && results[3].value) setWalletStats(results[3].value.data?.data || results[3].value.data);
+const results = await Promise.allSettled([
+           courseService.getEnrolled(),
+           signalService.getSignals({ perPage: 5, sort: "-createdAt" }),
+           walletService.getWallet("main"),
+           walletService.getWallet("funding"),
+           walletService.getStats(),
+           studentService.getMyRank(),
+           marketOverviewService.getMarketOverview(),
+           signalService.getSignals({ status: "open", isPublished: true, perPage: 1 }),
+           referralService.getStats(),
+           referralService.getReferralCode(),
+         ]);
+         if (!mounted || cancelled) return;
+         if (results[0].status === "fulfilled") {
+           const d = results[0].value.data || {};
+           setEnrolled(Array.isArray(d.data?.courses || d.data) ? (d.data?.courses || d.data).slice(0, 3) : []);
+         }
+         if (results[1].status === "fulfilled") {
+           const d = results[1].value.data || {};
+           setSignals(Array.isArray(d.data?.data || d.data?.signals || d.data) ? (d.data?.data || d.data?.signals || d.data).slice(0, 5) : []);
+         }
+         if (results[2].status === "fulfilled" && results[2].value) setWalletData(results[2].value.data?.data || results[2].value.data);
+         if (results[3].status === "fulfilled" && results[3].value) setFundingWalletData(results[3].value.data?.data || results[3].value.data);
+         if (results[4].status === "fulfilled" && results[4].value) setWalletStats(results[4].value.data?.data || results[4].value.data);
         if (results[4].status === "fulfilled" && results[4].value) {
           const rd = results[4].value.data?.data || results[4].value.data;
           setRank(rd?.userRank?.currentRankId || null);
@@ -145,7 +148,7 @@ export default function Dashboard() {
   const availableBalance = walletStats?.available ?? walletData?.availableBalance ?? walletData?.balance ?? 0;
   const pendingEarnings = walletStats?.pending ?? walletData?.pendingBalance ?? 0;
   const totalEarnings = walletStats?.totalEarned ?? walletData?.totalEarned ?? 0;
-  const rewardCredits = referralStats?.totalEarnings || 0;
+  const rewardCredits = fundingWalletData?.availableBalance ?? fundingWalletData?.available ?? 0;
   const directReferrals = referralStats?.directReferrals || 0;
   const indirectReferrals = referralStats?.indirectReferrals || 0;
   const activeMembers = referralStats?.activeMembers || referralStats?.activeReferrals || 0;
@@ -225,7 +228,9 @@ export default function Dashboard() {
     }
   };
 
-  const membershipPrice = activationInfo.membershipPrice || 120;
+  const membershipPrice = activationInfo.finalAmount || activationInfo.membershipPrice || 120;
+  const discountAmount = activationInfo.discountAmount || 0;
+  const discountPercent = activationInfo.uplineActivationDiscount || 0;
   const fundingPercent = activationInfo.fundingPercent || 20;
   const fundingPart = parseFloat((membershipPrice * fundingPercent / 100).toFixed(2));
   const fundingUsed = Math.min(fundingBalance, fundingPart);
@@ -238,6 +243,9 @@ export default function Dashboard() {
     if (ok) { setReferralCopied(true); toast.success("Referral link copied!"); setTimeout(() => setReferralCopied(false), 2500); }
     else toast.error("Failed to copy");
   };
+
+  const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(" ") || "Trader";
+  const upline = user?.referredBy && typeof user.referredBy === 'object' ? user.referredBy : null;
 
   if (loading) {
     return (
@@ -269,7 +277,7 @@ export default function Dashboard() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold mb-1">
-                  Hey, {user?.firstName || "Trader"}! 👋
+                  Hey, {fullName}! 👋
                 </h1>
                 <p className="text-white/70 text-sm sm:text-base max-w-lg">
                   {isFreeUser
@@ -340,6 +348,34 @@ export default function Dashboard() {
               <span><strong className="text-ink">{directReferrals}</strong> Direct</span>
               <span><strong className="text-ink">{indirectReferrals}</strong> Indirect</span>
               <span><strong className="text-ink">{formatCurrency(totalEarnings)}</strong> Earned</span>
+            </div>
+          </div>
+        </Card>
+      </motion.div>
+
+      {/* My Upline */}
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.09 }}>
+        <Card className="p-5 sm:p-6 relative overflow-hidden border-0 bg-gradient-to-r from-blue-50 via-cyan-50 to-emerald-50">
+          <div className="absolute top-0 right-0 w-40 h-40 bg-cyan-200/20 rounded-full blur-3xl" />
+          <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white shadow-lg">
+                <FiUserPlus size={20} />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-dark-400 uppercase tracking-wider mb-1">My Upline</p>
+                {upline ? (
+                  <>
+                    <p className="text-base font-extrabold text-ink">{upline.firstName} {upline.lastName}</p>
+                    <p className="text-xs text-dark-500">{upline.email || ''}{upline.referralCode ? ` | Code: ${upline.referralCode}` : ''}</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-base font-extrabold text-ink">Direct Member</p>
+                    <p className="text-xs text-dark-500">You joined without an upline. Use your referral link below to build your team.</p>
+                  </>
+                )}
+              </div>
             </div>
           </div>
         </Card>
@@ -451,7 +487,7 @@ export default function Dashboard() {
                         <p className="text-xs text-dark-400">{item.date || item.createdAt ? new Date(item.date || item.createdAt).toLocaleDateString() : ''}</p>
                       </div>
                     </div>
-                    <p className="text-xs text-dark-500 line-clamp-2 mb-3">{item.summary || item.description || ''}</p>
+                    <p className="text-xs text-dark-500 line-clamp-3 mb-3">{item.summary || item.description || ''}</p>
                     <Link to="/student/free-learning"><Button variant="outline" size="sm" className="w-full">View</Button></Link>
                   </div>
                 </Card>
@@ -687,9 +723,10 @@ export default function Dashboard() {
       <Modal isOpen={showActivateModal} onClose={() => setShowActivateModal(false)} title="Activate Now" size="sm">
         <div className="space-y-5">
           <div className="p-4 rounded-xl bg-primary-50 border border-primary-100">
-            <p className="text-sm text-primary-700">
-              Activate your premium membership for <strong>${membershipPrice}</strong>. {fundingPercent}% ($<strong>{fundingPart}</strong>) is taken from your funding wallet if available, the rest from your main wallet.
-            </p>
+<p className="text-sm text-primary-700">
+               Activate your premium membership for <strong>${membershipPrice}</strong>. {fundingPercent}% ($<strong>{fundingPart.toFixed(2)}</strong>) is taken from your funding wallet if available, the rest from your main wallet.
+               {discountAmount > 0 && <span className="block mt-1 text-emerald-600 font-medium">Upline discount applied: -{discountPercent}% (-${discountAmount.toFixed(2)})</span>}
+             </p>
           </div>
 
           <div>

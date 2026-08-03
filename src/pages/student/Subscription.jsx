@@ -9,6 +9,9 @@ import {
   FiDollarSign,
   FiShield,
   FiInfo,
+  FiKey,
+  FiUserPlus,
+  FiArrowUpRight,
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Card from '../../components/ui/Card';
@@ -38,6 +41,18 @@ const STATUS_MAP = {
   expired: 'warning',
 };
 
+const PAYMENT_METHOD_MAP = {
+  pin: { label: 'PIN Code', icon: FiKey, color: 'bg-violet-50 text-violet-500' },
+  wallet: { label: 'Wallet Balance', icon: FiDollarSign, color: 'bg-emerald-50 text-emerald-500' },
+  upline: { label: 'Activated by Upline', icon: FiUserPlus, color: 'bg-blue-50 text-blue-500' },
+  admin: { label: 'Activated by Admin', icon: FiShield, color: 'bg-amber-50 text-amber-500' },
+  stripe: { label: 'Card Payment', icon: FiCreditCard, color: 'bg-indigo-50 text-indigo-500' },
+  paypal: { label: 'PayPal', icon: FiCreditCard, color: 'bg-sky-50 text-sky-500' },
+  bank_transfer: { label: 'Bank Transfer', icon: FiCreditCard, color: 'bg-cyan-50 text-cyan-500' },
+  crypto: { label: 'Crypto', icon: FiCreditCard, color: 'bg-orange-50 text-orange-500' },
+  other: { label: 'Other', icon: FiCreditCard, color: 'bg-dark-50 text-dark-500' },
+};
+
 export default function Subscription() {
   const { refreshUser } = useAuth();
   const [subscription, setSubscription] = useState(null);
@@ -46,7 +61,7 @@ export default function Subscription() {
   const [subscribing, setSubscribing] = useState(null);
   const [wallet, setWallet] = useState(null);
   const [walletBalances, setWalletBalances] = useState({ main: 0, funding: 0 });
-  const [activationInfo, setActivationInfo] = useState({ membershipPrice: 120, uplineActivationDiscount: 20, fundingPercent: 20 });
+  const [activationInfo, setActivationInfo] = useState({ membershipPrice: 120, uplineActivationDiscount: 0, discountAmount: 0, finalAmount: 120, fundingPercent: 20 });
   const [confirmPlan, setConfirmPlan] = useState(null);
   const [showConfirm, setShowConfirm] = useState(false);
 
@@ -106,8 +121,10 @@ export default function Subscription() {
     } catch { /* silent */ }
   }, []);
 
+  const price = activationInfo.finalAmount || activationInfo.membershipPrice;
+  const discountAmount = activationInfo.discountAmount || 0;
+  const discountPercent = activationInfo.uplineActivationDiscount || 0;
   const fundingPercent = activationInfo.fundingPercent || 20;
-  const price = activationInfo.membershipPrice;
   const maxFunding = Math.round((price * fundingPercent) / 100);
   const remainder = price - maxFunding;
 
@@ -158,6 +175,11 @@ export default function Subscription() {
   const isActive = subscription?.status === 'active';
   const hasSubscription = subscription && subscription.plan;
   const statusColor = STATUS_MAP[subscription?.status] || 'neutral';
+  const paymentMethod = subscription?.paymentMethod || '';
+  const paymentMeta = PAYMENT_METHOD_MAP[paymentMethod] || { label: paymentMethod || 'Subscription', icon: FiShield, color: 'bg-dark-50 text-dark-500' };
+  const PaymentIcon = paymentMeta.icon;
+  const displayAmount = Number(subscription?.amount) > 0 ? subscription.amount : (activationInfo.membershipPrice || 120);
+  const metadata = subscription?.metadata || {};
 
   return (
     <div className="space-y-6">
@@ -229,8 +251,26 @@ export default function Subscription() {
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-dark-500">Amount</p>
                   <p className="mt-1 text-2xl font-bold text-ink">
-                    {formatCurrency(subscription.amount)}
+                    {formatCurrency(displayAmount)}
                   </p>
+                </div>
+              </div>
+            </Card>
+          </motion.div>
+          <motion.div key="method" variants={item}>
+            <Card className="p-5">
+              <div className="flex items-center gap-4">
+                <div className={`flex h-12 w-12 items-center justify-center rounded-[11px] ${paymentMeta.color}`}>
+                  <PaymentIcon className="h-6 w-6" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-dark-500">Payment Method</p>
+                  <p className="mt-1 text-lg font-bold text-ink capitalize">
+                    {paymentMeta.label}
+                  </p>
+                  {metadata.couponCode && (
+                    <p className="mt-0.5 truncate text-xs text-dark-400">PIN: {metadata.couponCode}</p>
+                  )}
                 </div>
               </div>
             </Card>
@@ -277,6 +317,29 @@ export default function Subscription() {
                     <span className="text-sm text-dark-500">End Date:</span>
                     <span className="text-sm font-medium text-ink">{formatDate(subscription.endDate)}</span>
                   </div>
+                  <div className="flex items-center gap-2">
+                    <FiInfo size={14} className="text-dark-400" />
+                    <span className="text-sm text-dark-500">Activated Via:</span>
+                    <span className="text-sm font-medium text-ink">{paymentMeta.label}</span>
+                  </div>
+                  {metadata.activatedByName && (
+                    <div className="flex items-center gap-2">
+                      <FiUserPlus size={14} className="text-blue-500" />
+                      <span className="text-sm text-dark-500">Activated By (Upline):</span>
+                      <span className="text-sm font-medium text-ink">{metadata.activatedByName}</span>
+                    </div>
+                  )}
+                  {(Number(metadata.fundingUsed) > 0 || Number(metadata.mainUsed) > 0) && (
+                    <div className="flex items-center gap-2">
+                      <FiDollarSign size={14} className="text-emerald-500" />
+                      <span className="text-sm text-dark-500">Payment Split:</span>
+                      <span className="text-sm font-medium text-ink">
+                        {Number(metadata.fundingUsed) > 0 && <>${Number(metadata.fundingUsed).toFixed(2)} funding wallet</>}
+                        {Number(metadata.fundingUsed) > 0 && Number(metadata.mainUsed) > 0 && ' + '}
+                        {Number(metadata.mainUsed) > 0 && <>${Number(metadata.mainUsed).toFixed(2)} main wallet</>}
+                      </span>
+                    </div>
+                  )}
                   {subscription.autoRenew !== undefined && (
                     <div className="flex items-center gap-2">
                       <FiRefreshCw size={14} className="text-dark-400" />
@@ -370,6 +433,7 @@ export default function Subscription() {
               <div>
                 <p><strong>Funding Wallet:</strong> ${walletBalances.funding.toFixed(2)} (max {fundingPercent}% = ${maxFunding})</p>
                 <p><strong>Main Wallet:</strong> ${walletBalances.main.toFixed(2)}</p>
+                {discountAmount > 0 && <p className="text-emerald-600 mt-1">Upline discount: -{discountPercent}% (-${discountAmount.toFixed(2)})</p>}
                 {(walletBalances.main + walletBalances.funding) < price && <p className="text-red-500 mt-1">Insufficient balance. You need ${(price - walletBalances.main - walletBalances.funding).toFixed(2)} more.</p>}
               </div>
             </div>
