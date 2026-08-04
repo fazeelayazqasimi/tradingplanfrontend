@@ -91,6 +91,7 @@ export default function Home() {
   const [bottomStats, setBottomStats] = useState(defaultBottomStats);
   const [goldPrice, setGoldPrice] = useState('2,394.10');
   const [goldChange, setGoldChange] = useState('+0.35%');
+  const [forexRates, setForexRates] = useState(null);
   const [featuredVideo, setFeaturedVideo] = useState('');
   const [screenshots, setScreenshots] = useState([]);
   const [reviews, setReviews] = useState([]);
@@ -119,8 +120,17 @@ export default function Home() {
       } catch {}
     };
     fetchGold();
+    const fetchForex = async () => {
+      try {
+        const res = await websiteService.getForexRates();
+        const data = res?.data?.data;
+        if (data) setForexRates(data);
+      } catch {}
+    };
+    fetchForex();
     const i = setInterval(fetchGold, 30000);
-    return () => clearInterval(i);
+    const j = setInterval(fetchForex, 30000);
+    return () => { clearInterval(i); clearInterval(j); };
   }, []);
 
   useEffect(() => {
@@ -203,10 +213,10 @@ export default function Home() {
             </div>
             <div ref={heroRatesRef} className="border-t border-dark-100 pt-4 sm:pt-5">
               <div className="flex gap-3 sm:gap-4 font-mono text-[11px] sm:text-[13px] text-dark-500 flex-wrap items-center mb-2">
-                <span>EUR/USD <b className="text-ink font-semibold">1.0842</b> <span className="text-emerald-500">+0.12%</span></span>
+                <span>EUR/USD <b className="text-ink font-semibold">{forexRates?.['EUR/USD']?.bid || '1.0842'}</b> <span className="text-emerald-500">{forexRates?.['EUR/USD']?.change || '+0.12%'}</span></span>
                 <span className="flex items-center gap-1">XAU/USD <span className="font-bold text-sm">${goldPrice}</span> <span className={`text-xs ${goldChange.startsWith('+') ? 'text-emerald-400' : 'text-red-400'}`}>{goldChange}</span></span>
-                <span>US30 <b className="text-ink font-semibold">39,281</b> <span className="text-emerald-500">+0.34%</span></span>
-                <span>BTC/USD <b className="text-ink font-semibold">61,204</b> <span className="text-emerald-500">+1.02%</span></span>
+                <span>GBP/USD <b className="text-ink font-semibold">{forexRates?.['GBP/USD']?.bid || '1.2650'}</b></span>
+                <span>USD/JPY <b className="text-ink font-semibold">{forexRates?.['USD/JPY']?.bid || '151.80'}</b></span>
               </div>
             </div>
           </div>
@@ -260,11 +270,40 @@ export default function Home() {
             ))}
           </div>
         </div>
+</section>
+
+      {/* Live Rates */}
+      <section className="py-[60px] sm:py-[80px] bg-dark-50">
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-[640px] mx-auto mb-10 sm:mb-12">
+            <p className="eyebrow mb-3 text-[13px] sm:text-sm">Live Rates</p>
+            <h2 className="text-[28px] sm:text-[36px] lg:text-[44px] font-extrabold mb-3 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"', letterSpacing: '-0.02em' }}>Current Gold Rate</h2>
+            <p className="text-dark-500 text-[14px] sm:text-[16px] leading-relaxed font-inter">Real-time forex and commodities prices updated every 30 seconds.</p>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+            {[
+              { pair: 'XAU/USD', label: 'Gold', value: `$${goldPrice}`, change: goldChange, isGold: true },
+              { pair: 'EUR/USD', label: 'EUR/USD', value: forexRates?.['EUR/USD']?.bid || '1.0842', change: forexRates?.['EUR/USD']?.change || '+0.12%', isForex: true },
+              { pair: 'GBP/USD', label: 'GBP/USD', value: forexRates?.['GBP/USD']?.bid || '1.2650', change: forexRates?.['GBP/USD']?.change || '-0.08%', isForex: true },
+              { pair: 'USD/JPY', label: 'USD/JPY', value: forexRates?.['USD/JPY']?.bid || '151.80', change: forexRates?.['USD/JPY']?.change || '+0.25%', isForex: true },
+            ].map((rate, i) => (
+              <ScrollReveal key={i} delay={i * 80}>
+                <div className="bg-white border border-dark-100 rounded-[16px] p-5 sm:p-6 shadow-card hover:shadow-card-md transition-shadow">
+                  <p className="text-[11px] sm:text-[12px] text-dark-400 uppercase tracking-wider mb-1">{rate.pair}</p>
+                  <p className="text-[13px] text-dark-500 mb-2">{rate.label}</p>
+                  <p className="text-xl sm:text-2xl font-extrabold text-ink" style={{ fontFamily: '"Plus Jakarta Sans"' }}>{rate.value}</p>
+                  <p className={`text-sm font-semibold mt-1 ${rate.change.startsWith('+') ? 'text-emerald-500' : 'text-red-500'}`}>{rate.change}</p>
+                </div>
+              </ScrollReveal>
+            ))}
+          </div>
+        </div>
       </section>
 
       <section className="py-[60px] sm:py-[80px] lg:py-[120px] bg-dark-50">
         <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-[640px] mx-auto mb-10 sm:mb-12 lg:mb-16">
+          <div className="text-center max-w-[640px] mx-auto mb-10 sm:mb-12">
             <p className="eyebrow mb-3 text-[13px] sm:text-sm">Features</p>
             <h2 className="text-[28px] sm:text-[36px] lg:text-[44px] font-extrabold mb-3 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"', letterSpacing: '-0.02em' }}>One membership. Every tool you need to trade.</h2>
             <p className="text-dark-500 text-[14px] sm:text-[16px] lg:text-[16.5px] leading-relaxed font-inter">From your first lesson to your first copied trade, everything lives inside a single membership.</p>
