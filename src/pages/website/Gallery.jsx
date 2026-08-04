@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { FiImage, FiVideo, FiX, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { FiImage, FiVideo, FiX, FiChevronLeft, FiChevronRight, FiVolume2, FiVolumeX, FiPlay, FiPause } from 'react-icons/fi';
 import Skeleton from '../../components/ui/Skeleton';
 import EmptyState from '../../components/ui/EmptyState';
 import api from '../../services/api';
@@ -10,6 +10,9 @@ export default function Gallery() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedIdx, setSelectedIdx] = useState(null);
+  const [videoMuted, setVideoMuted] = useState(true);
+  const [videoPlaying, setVideoPlaying] = useState(true);
+  const videoRef = useRef(null);
 
   useEffect(() => {
     (async () => {
@@ -22,11 +25,23 @@ export default function Gallery() {
     })();
   }, []);
 
-  const allMedia = items.flatMap(item => {
-    const imgs = (item.images || []).map(img => ({ type: 'image', url: img.startsWith('http') ? img : `${API_URL}/${img}`, title: item.title }));
-    const vids = (item.videos || []).map(vid => ({ type: 'video', url: vid.startsWith('http') ? vid : `${API_URL}/${vid}`, title: item.title }));
-    return [...imgs, ...vids];
-  });
+  const images = items.flatMap(item =>
+    (item.images || []).map(img => ({
+      type: 'image',
+      url: img.startsWith('http') ? img : `${API_URL}/${img}`,
+      title: item.title,
+    }))
+  );
+
+  const videos = items.flatMap(item =>
+    (item.videos || []).map(vid => ({
+      type: 'video',
+      url: vid.startsWith('http') ? vid : `${API_URL}/${vid}`,
+      title: item.title,
+    }))
+  );
+
+  const allMedia = [...images, ...videos];
 
   const goNext = useCallback(() => {
     setSelectedIdx(prev => prev === null ? null : (prev + 1) % allMedia.length);
@@ -35,6 +50,30 @@ export default function Gallery() {
   const goPrev = useCallback(() => {
     setSelectedIdx(prev => prev === null ? null : (prev - 1 + allMedia.length) % allMedia.length);
   }, [allMedia.length]);
+
+  const toggleMute = useCallback(() => {
+    setVideoMuted(prev => !prev);
+  }, []);
+
+  const togglePlay = useCallback(() => {
+    setVideoPlaying(prev => !prev);
+  }, []);
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.muted = videoMuted;
+      if (videoPlaying) {
+        videoRef.current.play().catch(() => {});
+      } else {
+        videoRef.current.pause();
+      }
+    }
+  }, [videoMuted, videoPlaying]);
+
+  useEffect(() => {
+    setVideoMuted(true);
+    setVideoPlaying(true);
+  }, [selectedIdx]);
 
   useEffect(() => {
     if (selectedIdx === null) return;
@@ -64,35 +103,121 @@ export default function Gallery() {
       ) : allMedia.length === 0 ? (
         <EmptyState icon={FiImage} title="No media yet" message="Gallery content will appear here once uploaded." />
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          {allMedia.map((media, idx) => (
-            <button
-              key={idx}
-              onClick={() => setSelectedIdx(idx)}
-              className="group relative aspect-square overflow-hidden rounded-xl bg-dark-50 focus:outline-none focus:ring-2 focus:ring-primary-500"
-            >
-              {media.type === 'video' ? (
-                <div className="relative w-full h-full">
-                  <video src={media.url} className="w-full h-full object-cover" muted />
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                    <FiVideo size={32} className="text-white" />
+        <>
+          {videos.length > 0 && (
+            <section className="mb-12">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-ink flex items-center gap-2">
+                  <FiVideo size={24} className="text-primary-500" /> Videos
+                </h2>
+              </div>
+              <div className="relative">
+                <div className="overflow-hidden rounded-2xl">
+                  <div
+                    className="flex transition-transform duration-500 ease-out"
+                    style={{ transform: `translateX(-${(selectedIdx !== null && allMedia[selectedIdx]?.type === 'video') ? videos.indexOf(allMedia[selectedIdx]) * 100 : 0}%)` }}
+                  >
+                    {videos.map((video, idx) => (
+                      <div key={`vid-${idx}`} className="w-full flex-shrink-0">
+                        <div className="relative aspect-video bg-dark-900 rounded-2xl overflow-hidden group">
+                          <video
+                            ref={selectedIdx !== null && allMedia[selectedIdx]?.type === 'video' && videos.indexOf(allMedia[selectedIdx]) === idx ? videoRef : null}
+                            src={video.url}
+                            className="w-full h-full object-contain"
+                            muted={videoMuted}
+                            autoPlay
+                            playsInline
+                            onPlay={() => setVideoPlaying(true)}
+                            onPause={() => setVideoPlaying(false)}
+                            onEnded={() => setVideoPlaying(false)}
+                          />
+                          <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
+                          <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
+                            <div className="flex gap-2">
+                              <button
+                                onClick={(e) => { e.stopPropagation(); togglePlay(); }}
+                                className="p-2 rounded-full bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 transition-colors"
+                              >
+                                {videoPlaying ? <FiPause size={18} /> : <FiPlay size={18} />}
+                              </button>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); toggleMute(); }}
+                                className="p-2 rounded-full bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 transition-colors"
+                              >
+                                {videoMuted ? <FiVolumeX size={18} /> : <FiVolume2 size={18} />}
+                              </button>
+                            </div>
+                            <p className="text-white text-sm font-medium bg-black/40 backdrop-blur-sm px-3 py-1 rounded-full">
+                              {video.title}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              ) : (
-                <img
-                  src={media.url}
-                  alt={media.title}
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  loading="lazy"
-                />
-              )}
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
-              <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                <p className="text-white text-xs font-medium truncate">{media.title}</p>
+                {videos.length > 1 && (
+                  <>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); goPrev(); }}
+                      className="absolute left-2 top-1/2 -translate-y-1/2 z-10 p-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
+                    >
+                      <FiChevronLeft size={24} />
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); goNext(); }}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 z-10 p-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
+                    >
+                      <FiChevronRight size={24} />
+                    </button>
+                    <div className="flex justify-center gap-2 mt-4">
+                      {videos.map((_, idx) => (
+                        <button
+                          key={`dot-${idx}`}
+                          onClick={() => {
+                            const globalIdx = images.length + idx;
+                            setSelectedIdx(globalIdx);
+                          }}
+                          className={`w-2 h-2 rounded-full transition-colors ${selectedIdx === images.length + idx ? 'bg-primary-500 w-6' : 'bg-dark-300'}`}
+                        />
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
-            </button>
-          ))}
-        </div>
+            </section>
+          )}
+
+          {images.length > 0 && (
+            <section>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-ink flex items-center gap-2">
+                  <FiImage size={24} className="text-primary-500" /> Photos
+                </h2>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                {images.map((img, idx) => (
+                  <button
+                    key={`img-${idx}`}
+                    onClick={() => setSelectedIdx(idx)}
+                    className="group relative aspect-square overflow-hidden rounded-xl bg-dark-50 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  >
+                    <img
+                      src={img.url}
+                      alt={img.title}
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                    <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                      <p className="text-white text-xs font-medium truncate">{img.title}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
+        </>
       )}
 
       {selectedIdx !== null && (
@@ -123,7 +248,31 @@ export default function Gallery() {
 
           <div className="flex flex-col items-center gap-4 max-w-4xl w-full px-4" onClick={(e) => e.stopPropagation()}>
             {allMedia[selectedIdx].type === 'video' ? (
-              <video src={allMedia[selectedIdx].url} className="max-h-[80vh] w-auto max-w-full rounded-xl" controls autoPlay />
+              <div className="relative">
+                <video
+                  src={allMedia[selectedIdx].url}
+                  className="max-h-[80vh] w-auto max-w-full rounded-xl"
+                  controls
+                  autoPlay
+                  muted={videoMuted}
+                  onPlay={() => setVideoPlaying(true)}
+                  onPause={() => setVideoPlaying(false)}
+                />
+                <div className="absolute bottom-4 left-4 flex gap-2">
+                  <button
+                    onClick={togglePlay}
+                    className="p-2 rounded-full bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 transition-colors"
+                  >
+                    {videoPlaying ? <FiPause size={18} /> : <FiPlay size={18} />}
+                  </button>
+                  <button
+                    onClick={toggleMute}
+                    className="p-2 rounded-full bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 transition-colors"
+                  >
+                    {videoMuted ? <FiVolumeX size={18} /> : <FiVolume2 size={18} />}
+                  </button>
+                </div>
+              </div>
             ) : (
               <img
                 src={allMedia[selectedIdx].url}
