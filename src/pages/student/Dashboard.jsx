@@ -63,7 +63,7 @@ export default function Dashboard() {
   const [fundingBalance, setFundingBalance] = useState(0);
   const [activationInfo, setActivationInfo] = useState({ membershipPrice: 120, fundingPercent: 20, uplineActivationDiscount: 0, discountAmount: 0, finalAmount: 120 });
 
-  useEffect(() => {
+useEffect(() => {
     let cancelled = false;
     let mounted = true;
     async function fetchDashboard() {
@@ -71,78 +71,79 @@ export default function Dashboard() {
         setLoading(true);
         const isPremium = user?.subscriptionStatus === "active";
         setIsFreeUser(!isPremium);
-const results = await Promise.allSettled([
-           courseService.getEnrolled(),
-           signalService.getSignals({ perPage: 5, sort: "-createdAt" }),
-           walletService.getWallet("main"),
-           walletService.getWallet("funding"),
-           walletService.getStats(),
-           studentService.getMyRank(),
-           marketOverviewService.getMarketOverview(),
-           signalService.getSignals({ status: "open", isPublished: true, perPage: 1 }),
-           referralService.getStats(),
-           referralService.getReferralCode(),
-         ]);
-         if (!mounted || cancelled) return;
-         if (results[0].status === "fulfilled") {
-           const d = results[0].value.data || {};
-           setEnrolled(Array.isArray(d.data?.courses || d.data) ? (d.data?.courses || d.data).slice(0, 3) : []);
-         }
-         if (results[1].status === "fulfilled") {
-           const d = results[1].value.data || {};
-           setSignals(Array.isArray(d.data?.data || d.data?.signals || d.data) ? (d.data?.data || d.data?.signals || d.data).slice(0, 5) : []);
-         }
-         if (results[2].status === "fulfilled" && results[2].value) setWalletData(results[2].value.data?.data || results[2].value.data);
-         if (results[3].status === "fulfilled" && results[3].value) setFundingWalletData(results[3].value.data?.data || results[3].value.data);
-         if (results[4].status === "fulfilled" && results[4].value) setWalletStats(results[4].value.data?.data || results[4].value.data);
-        if (results[4].status === "fulfilled" && results[4].value) {
-          const rd = results[4].value.data?.data || results[4].value.data;
+        const criticalResults = await Promise.allSettled([
+          courseService.getEnrolled(),
+          signalService.getSignals({ perPage: 5, sort: "-createdAt" }),
+          walletService.getWallet("main"),
+          walletService.getWallet("funding"),
+          walletService.getStats(),
+          studentService.getMyRank(),
+          referralService.getStats(),
+          referralService.getReferralCode(),
+        ]);
+        if (!mounted || cancelled) return;
+        if (criticalResults[0].status === "fulfilled") {
+          const d = criticalResults[0].value.data || {};
+          setEnrolled(Array.isArray(d.data?.courses || d.data) ? (d.data?.courses || d.data).slice(0, 3) : []);
+        }
+        if (criticalResults[1].status === "fulfilled") {
+          const d = criticalResults[1].value.data || {};
+          setSignals(Array.isArray(d.data?.data || d.data?.signals || d.data) ? (d.data?.data || d.data?.signals || d.data).slice(0, 5) : []);
+        }
+        if (criticalResults[2].status === "fulfilled" && criticalResults[2].value) setWalletData(criticalResults[2].value.data?.data || criticalResults[2].value.data);
+        if (criticalResults[3].status === "fulfilled" && criticalResults[3].value) setFundingWalletData(criticalResults[3].value.data?.data || criticalResults[3].value.data);
+        if (criticalResults[4].status === "fulfilled" && criticalResults[4].value) setWalletStats(criticalResults[4].value.data?.data || criticalResults[4].value.data);
+        if (criticalResults[4].status === "fulfilled" && criticalResults[4].value) setWalletStats(criticalResults[4].value.data?.data || criticalResults[4].value.data);
+        if (criticalResults[5].status === "fulfilled" && criticalResults[5].value) {
+          const rd = criticalResults[5].value.data?.data || criticalResults[5].value.data;
           setRank(rd?.userRank?.currentRankId || null);
           setNextRank(rd?.nextRank || null);
         }
-        if (results[5].status === "fulfilled" && results[5].value) setMarketOverview(results[5].value.data?.data || results[5].value.data);
-        if (results[6].status === "fulfilled" && results[6].value) {
-          const d = results[6].value.data || {};
+        if (criticalResults[6].status === "fulfilled" && criticalResults[6].value) setReferralStats(criticalResults[6].value.data?.data || criticalResults[6].value.data);
+        if (criticalResults[7].status === "fulfilled" && criticalResults[7].value) {
+          const rd = criticalResults[7].value.data?.data || criticalResults[7].value.data;
+          const code = rd?.referralCode || rd?.code || "";
+          setReferralLink(code ? `https://the4xhub.com/register?ref=${code}` : rd?.referralLink || "");
+        }
+        if (criticalResults[7].status === "rejected" || !criticalResults[7].value) {
+          const code = user?.referralCode || "";
+          setReferralLink(code ? `https://the4xhub.com/register?ref=${code}` : "");
+        }
+        const secondaryResults = await Promise.allSettled([
+          marketOverviewService.getMarketOverview(),
+          signalService.getSignals({ status: "open", isPublished: true, perPage: 1 }),
+          webinarService.getWebinars({ isFree: true, limit: 5, sort: "-date" }),
+          zoomSessionService.getZoomSessions({ category: "free-zoom", limit: 5, sort: "-date" }),
+          marketUpdateService.getMarketUpdates({ limit: 5, sort: "-createdAt" }),
+          announcementService.getAnnouncements({ limit: 5, sort: "-createdAt" }),
+          courseService.getCourses({ isFree: true, limit: 5, sort: "-order" }),
+          studentService.getCopyStats(),
+        ]);
+        if (!mounted || cancelled) return;
+        if (secondaryResults[0].status === "fulfilled" && secondaryResults[0].value) setMarketOverview(secondaryResults[0].value.data?.data || secondaryResults[0].value.data);
+        if (secondaryResults[1].status === "fulfilled" && secondaryResults[1].value) {
+          const d = secondaryResults[1].value.data || {};
           const list = d.data?.data || d.data?.signals || d.data || [];
           setOpenSignalsCount(Array.isArray(list) ? list.length : 0);
         }
-        if (results[7].status === "fulfilled" && results[7].value) setReferralStats(results[7].value.data?.data || results[7].value.data);
-        if (results[8].status === "fulfilled" && results[8].value) {
-          const rd = results[8].value.data?.data || results[8].value.data;
-          const code = rd?.referralCode || rd?.code || "";
-          setReferralLink(code ? `https://the4xhub.com/register?ref=${code}` : rd?.referralLink || "");
+        const extractData = (res) => {
+          if (!res?.data) return [];
+          const body = res.data;
+          return body.data?.data || body.data?.webinars || body.data?.sessions || body.data?.updates || body.data?.announcements || body.data?.courses || body.data || [];
+        };
+        if (secondaryResults[2].status === "fulfilled") setFreeWebinars(Array.isArray(secondaryResults[2].value?.data?.data) ? secondaryResults[2].value.data.data : extractData(secondaryResults[2].value));
+        if (secondaryResults[3].status === "fulfilled") setFreeZoomSessions(Array.isArray(secondaryResults[3].value?.data?.data) ? secondaryResults[3].value.data.data : extractData(secondaryResults[3].value));
+        if (secondaryResults[4].status === "fulfilled") setMarketUpdates(Array.isArray(secondaryResults[4].value?.data?.data) ? secondaryResults[4].value.data.data : extractData(secondaryResults[4].value));
+        if (secondaryResults[5].status === "fulfilled") setAnnouncements(Array.isArray(secondaryResults[5].value?.data?.data) ? secondaryResults[5].value.data.data : extractData(secondaryResults[5].value));
+        if (secondaryResults[6].status === "fulfilled") setFreeCourses(Array.isArray(secondaryResults[6].value?.data?.data) ? secondaryResults[6].value.data.data : extractData(secondaryResults[6].value));
+        if (secondaryResults[7].status === "fulfilled" && secondaryResults[7].value) {
+          const cs = secondaryResults[7].value.data?.data || secondaryResults[7].value.data;
+          setCopyStats(cs);
         }
       } catch { if (!cancelled) toast.error("Failed to load dashboard data"); }
       finally { if (!cancelled) setLoading(false); }
     }
     fetchDashboard();
-
-    const timer = setTimeout(async () => {
-      const results = await Promise.allSettled([
-        webinarService.getWebinars({ isFree: true, limit: 5, sort: "-date" }),
-        zoomSessionService.getZoomSessions({ category: "free-zoom", limit: 5, sort: "-date" }),
-        marketUpdateService.getMarketUpdates({ limit: 5, sort: "-createdAt" }),
-        announcementService.getAnnouncements({ limit: 5, sort: "-createdAt" }),
-        courseService.getCourses({ isFree: true, limit: 5, sort: "-order" }),
-        studentService.getCopyStats(),
-      ]);
-      if (!mounted || cancelled) return;
-      const extractData = (res) => {
-        if (!res?.data) return [];
-        const body = res.data;
-        return body.data?.data || body.data?.webinars || body.data?.sessions || body.data?.updates || body.data?.announcements || body.data?.courses || body.data || [];
-      };
-      if (results[0].status === "fulfilled") setFreeWebinars(Array.isArray(results[0].value?.data?.data) ? results[0].value.data.data : extractData(results[0].value));
-      if (results[1].status === "fulfilled") setFreeZoomSessions(Array.isArray(results[1].value?.data?.data) ? results[1].value.data.data : extractData(results[1].value));
-      if (results[2].status === "fulfilled") setMarketUpdates(Array.isArray(results[2].value?.data?.data) ? results[2].value.data.data : extractData(results[2].value));
-      if (results[3].status === "fulfilled") setAnnouncements(Array.isArray(results[3].value?.data?.data) ? results[3].value.data.data : extractData(results[3].value));
-      if (results[4].status === "fulfilled") setFreeCourses(Array.isArray(results[4].value?.data?.data) ? results[4].value.data.data : extractData(results[4].value));
-      if (results[5].status === "fulfilled" && results[5].value) {
-        const cs = results[5].value.data?.data || results[5].value.data;
-        setCopyStats(cs);
-      }
-    }, 400);
-    return () => { mounted = false; cancelled = true; clearTimeout(timer); };
   }, []);
 
   const availableBalance = walletStats?.available ?? walletData?.availableBalance ?? walletData?.balance ?? 0;
