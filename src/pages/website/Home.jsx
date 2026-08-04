@@ -7,15 +7,15 @@ import { useName } from '../../context/NameContext';
 import { useSettings } from '../../context/SettingsContext';
 
 const defaultFeatures = [
-  { icon: 'Γûñ', title: 'Online Education', desc: 'Learn Forex from beginner to advanced through structured online courses, live sessions, practical assignments, and lifetime access.' },
-  { icon: 'ΓùÄ', title: 'Physical Training (Onsite Classes)', desc: 'Attend professional classroom sessions with experienced mentors for practical market training and hands-on learning.' },
-  { icon: 'Γåù', title: 'Premium Trading Signals', desc: 'Receive high-accuracy Forex signals with complete entry, stop loss, take profit, and risk management guidance.' },
-  { icon: 'Γçä', title: 'Copy Trading', desc: 'Copy professional traders automatically and benefit from proven strategies without trading experience.' },
-  { icon: 'Γùê', title: 'Free Referral Rewards', desc: 'Invite friends to register for free and earn $1 Reward Credit for every verified direct referral. Grow your community and use your rewards toward your membership.' },
-  { icon: 'ΓùÉ', title: 'Affiliate Rewards', desc: 'Build your network and earn industry-leading commissions through our transparent rank-based affiliate program.' },
-  { icon: 'Γûú', title: 'Expert Mentorship', desc: 'Get direct support from experienced traders through mentorship sessions, market analysis, and live Q&A.' },
-  { icon: 'Γùê', title: 'Certificates', desc: 'Earn professional course completion certificates after successfully completing your Forex learning journey.' },
-  { icon: 'Γùë', title: 'Lifetime Community', desc: 'Stay connected with our trading community for lifetime support, updates, webinars, and continuous learning.' },
+  { icon: '📚', title: 'Online Education', desc: 'Learn Forex from beginner to advanced through structured online courses, live sessions, practical assignments, and lifetime access.' },
+  { icon: '🏫', title: 'Physical Training (Onsite Classes)', desc: 'Attend professional classroom sessions with experienced mentors for practical market training and hands-on learning.' },
+  { icon: '📊', title: 'Premium Trading Signals', desc: 'Receive high-accuracy Forex signals with complete entry, stop loss, take profit, and risk management guidance.' },
+  { icon: '🔄', title: 'Copy Trading', desc: 'Copy professional traders automatically and benefit from proven strategies without trading experience.' },
+  { icon: '🎁', title: 'Free Referral Rewards', desc: 'Invite friends to register for free and earn $1 Reward Credit for every verified direct referral. Grow your community and use your rewards toward your membership.' },
+  { icon: '🏆', title: 'Affiliate Rewards', desc: 'Build your network and earn industry-leading commissions through our transparent rank-based affiliate program.' },
+  { icon: '👨‍🏫', title: 'Expert Mentorship', desc: 'Get direct support from experienced traders through mentorship sessions, market analysis, and live Q&A.' },
+  { icon: '📜', title: 'Certificates', desc: 'Earn professional course completion certificates after successfully completing your Forex learning journey.' },
+  { icon: '👥', title: 'Lifetime Community', desc: 'Stay connected with our trading community for lifetime support, updates, webinars, and continuous learning.' },
 ];
 
 const defaultTimeline = [
@@ -128,8 +128,8 @@ export default function Home() {
       } catch {}
     };
     fetchForex();
-    const i = setInterval(fetchGold, 30000);
-    const j = setInterval(fetchForex, 30000);
+    const i = setInterval(fetchGold, 15000);
+    const j = setInterval(fetchForex, 15000);
     return () => { clearInterval(i); clearInterval(j); };
   }, []);
 
