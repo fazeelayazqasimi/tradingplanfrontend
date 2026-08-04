@@ -258,6 +258,9 @@ export default function Register() {
               >
                 Change email or go back
               </button>
+              <p className="text-center text-xs text-dark-400 mt-3">
+                Also check your <strong>Spam</strong> folder if you don't see the code.
+              </p>
             </div>
           </div>
         </div>
