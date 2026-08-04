@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { FiImage, FiPlus, FiTrash2, FiRefreshCw, FiUpload } from 'react-icons/fi';
+import { FiImage, FiVideo, FiPlus, FiTrash2, FiRefreshCw, FiUpload } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
@@ -57,25 +57,31 @@ export default function AdminMedia() {
     const selected = Array.from(e.target.files || []);
     setFiles(prev => [...prev, ...selected]);
     selected.forEach(file => {
-      const reader = new FileReader();
-      reader.onload = (ev) => setPreviews(p => [...p, ev.target.result]);
-      reader.readAsDataURL(file);
+      if (file.type.startsWith('video/')) {
+        setPreviews(prev => [...prev, { type: 'video', src: URL.createObjectURL(file), name: file.name }]);
+      } else {
+        const reader = new FileReader();
+        reader.onload = (ev) => setPreviews(p => [...p, { type: 'image', src: ev.target.result, name: file.name }]);
+        reader.readAsDataURL(file);
+      }
     });
   };
 
   const removeFile = (idx) => {
-    setFiles(prev => prev.filter((_, i) => i !== idx));
+    const removed = previews[idx];
+    if (removed?.type === 'video' && removed.src) URL.revokeObjectURL(removed.src);
     setPreviews(prev => prev.filter((_, i) => i !== idx));
+    setFiles(prev => prev.filter((_, i) => i !== idx));
   };
 
   const handleSave = async () => {
     if (!title) { toast.error('Title is required'); return; }
-    if (!editing && files.length === 0) { toast.error('Select at least one image'); return; }
+    if (!editing && files.length === 0) { toast.error('Select at least one image or video'); return; }
     setSubmitting(true);
     try {
       const formData = new FormData();
       formData.append('title', title);
-      files.forEach(f => formData.append('images', f));
+      files.forEach(f => formData.append('media', f));
 
       if (editing) {
         await api.put(`/media/${editing._id}`, formData, {
@@ -110,7 +116,7 @@ export default function AdminMedia() {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-lg font-bold text-ink">Media Library</h1>
-          <p className="text-sm text-dark-500 mt-0.5">Upload and manage images</p>
+          <p className="text-sm text-dark-500 mt-0.5">Upload and manage images and videos</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={fetchItems}><FiRefreshCw size={14} /></Button>
@@ -125,7 +131,7 @@ export default function AdminMedia() {
           ))}
         </div>
       ) : items.length === 0 ? (
-        <EmptyState icon={FiImage} title="No Media" message="Upload images to get started." />
+        <EmptyState icon={FiImage} title="No Media" message="Upload images or videos to get started." />
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {items.map((item) => (
@@ -138,6 +144,13 @@ export default function AdminMedia() {
                     className="w-full h-32 object-cover rounded-lg"
                     onError={(e) => { e.target.src = 'https://via.placeholder.com/200?text=Image'; }}
                   />
+                ) : item.videos?.length > 0 ? (
+                  <video
+                    src={item.videos[0].startsWith('http') ? item.videos[0] : `${API_URL}/${item.videos[0]}`}
+                    className="w-full h-32 object-cover rounded-lg"
+                    muted
+                    playsInline
+                  />
                 ) : (
                   <div className="w-full h-32 rounded-lg bg-dark-50 flex items-center justify-center text-dark-400">
                     <FiImage size={32} />
@@ -149,7 +162,7 @@ export default function AdminMedia() {
                 </div>
               </div>
               <p className="text-xs font-medium text-ink truncate">{item.title}</p>
-              <p className="text-[11px] text-dark-400">{item.images?.length || 0} image{(item.images?.length || 0) !== 1 ? 's' : ''}</p>
+              <p className="text-[11px] text-dark-400">{(item.images?.length || 0)} image{(item.images?.length || 0) !== 1 ? 's' : ''}{(item.videos?.length || 0) > 0 ? `, ${item.videos.length} video${item.videos.length !== 1 ? 's' : ''}` : ''}</p>
               <p className="text-[11px] text-dark-400">{formatDate(item.createdAt)}</p>
             </Card>
           ))}
@@ -161,23 +174,32 @@ export default function AdminMedia() {
           <Input label="Title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Media title" />
 
           <div>
-            <label className="block text-[13px] font-semibold text-ink mb-1.5">Images</label>
+            <label className="block text-[13px] font-semibold text-ink mb-1.5">Images & Videos</label>
             <button
               type="button"
               onClick={() => fileRef.current?.click()}
               className="w-full border-2 border-dashed border-dark-200 rounded-xl p-6 flex flex-col items-center gap-2 text-dark-400 hover:border-primary-400 hover:text-primary-500 transition-colors cursor-pointer"
             >
               <FiUpload size={24} />
-              <span className="text-sm">Click to upload images</span>
-              <span className="text-xs">JPEG, PNG, GIF, WebP (max 10MB each)</span>
+              <span className="text-sm">Click to upload images or videos</span>
+              <span className="text-xs">JPEG, PNG, GIF, WebP, MP4, WebM, MOV (max 100MB each)</span>
             </button>
-            <input ref={fileRef} type="file" multiple accept="image/*" onChange={handleFileChange} className="hidden" />
+            <input ref={fileRef} type="file" multiple accept="image/*,video/*" onChange={handleFileChange} className="hidden" />
 
             {previews.length > 0 && (
               <div className="mt-3 grid grid-cols-4 gap-2">
-                {previews.map((src, idx) => (
+                {previews.map((preview, idx) => (
                   <div key={idx} className="relative group">
-                    <img src={src} alt="" className="w-full h-20 object-cover rounded-lg" />
+                    {preview.type === 'video' ? (
+                      <div className="relative">
+                        <video src={preview.src} className="w-full h-20 object-cover rounded-lg" muted />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-lg">
+                          <FiVideo size={20} className="text-white" />
+                        </div>
+                      </div>
+                    ) : (
+                      <img src={preview.src} alt="" className="w-full h-20 object-cover rounded-lg" />
+                    )}
                     <button
                       onClick={() => removeFile(idx)}
                       className="absolute top-0.5 right-0.5 p-1 rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-opacity"
@@ -189,17 +211,20 @@ export default function AdminMedia() {
               </div>
             )}
 
-            {editing && !editing?.images?.length && previews.length === 0 && (
-              <p className="text-xs text-dark-400 mt-1">No images yet. Upload to add.</p>
+            {editing && !editing?.images?.length && !editing?.videos?.length && previews.length === 0 && (
+              <p className="text-xs text-dark-400 mt-1">No media yet. Upload to add.</p>
             )}
           </div>
 
-          {editing && editing.images?.length > 0 && (
+          {editing && (editing.images?.length > 0 || editing.videos?.length > 0) && (
             <div>
-              <label className="block text-[13px] font-semibold text-ink mb-1.5">Existing Images</label>
+              <label className="block text-[13px] font-semibold text-ink mb-1.5">Existing Media</label>
               <div className="grid grid-cols-4 gap-2">
-                {editing.images.map((img, idx) => (
-                  <img key={idx} src={img.startsWith('http') ? img : `${API_URL}/${img}`} alt="" className="w-full h-20 object-cover rounded-lg" onError={(e) => { e.target.style.display = 'none'; }} />
+                {(editing.images || []).map((img, idx) => (
+                  <img key={`img-${idx}`} src={img.startsWith('http') ? img : `${API_URL}/${img}`} alt="" className="w-full h-20 object-cover rounded-lg" onError={(e) => { e.target.style.display = 'none'; }} />
+                ))}
+                {(editing.videos || []).map((vid, idx) => (
+                  <video key={`vid-${idx}`} src={vid.startsWith('http') ? vid : `${API_URL}/${vid}`} className="w-full h-20 object-cover rounded-lg" muted />
                 ))}
               </div>
             </div>

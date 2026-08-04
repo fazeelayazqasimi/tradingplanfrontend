@@ -93,6 +93,7 @@ const SETTING_FIELDS = {
     ]},
     { key: 'withdrawal_fee_percent', label: 'Withdrawal Fee (%)', icon: FiPercent, type: 'number', placeholder: '5', description: 'Percentage fee on each withdrawal' },
     { key: 'withdrawal_fee_fixed', label: 'Fixed Withdrawal Fee ($)', icon: FiDollarSign, type: 'number', placeholder: '0', description: 'Fixed fee per withdrawal (used when type is Fixed)' },
+    { key: 'withdrawal_max_percent', label: 'Max Withdrawal (% of Balance)', icon: FiPercent, type: 'number', placeholder: '20', description: 'Maximum withdrawal amount as percentage of available balance per request' },
   ],
   funding: [
     { key: 'free_registration_bonus_enabled', label: 'Registration Referral $1 Bonus', type: 'toggle', description: 'When enabled, the direct upline receives a fixed $1 registration referral bonus in their funding wallet when a downline registers via their referral link' },

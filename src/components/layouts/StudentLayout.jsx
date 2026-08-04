@@ -30,6 +30,7 @@ const sidebarSections = [
       { path: '/student/signals', label: 'Signals', icon: FiTrendingUp },
       { path: '/student/copy-trading', label: 'Copy Trading', icon: FiCopy },
       { path: '/student/certificates', label: 'Certificates', icon: FiFileText },
+      { path: '/student/gallery', label: 'Gallery', icon: FiImage },
     ],
   },
   {

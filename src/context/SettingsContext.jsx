@@ -22,6 +22,7 @@ const DEFAULTS = {
   withdrawal_fee_type: 'percent',
   withdrawal_fee_percent: '5',
   withdrawal_fee_fixed: '0',
+  withdrawal_max_percent: '20',
 };
 
 export const SettingsProvider = ({ children }) => {

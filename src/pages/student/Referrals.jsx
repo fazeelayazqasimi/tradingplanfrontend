@@ -17,6 +17,9 @@ import {
   FiTrendingUp,
   FiGift,
   FiUserCheck,
+  FiUser,
+  FiCheckCircle,
+  FiToggleLeft,
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Card from '../../components/ui/Card';
@@ -28,6 +31,7 @@ import referralService from '../../services/referralService';
 import studentService from '../../services/studentService';
 import api from '../../services/api';
 import { formatCurrency, formatDate, copyToClipboard } from '../../utils/helpers';
+import { useAuth } from '../../context/AuthContext';
 
 const container = {
   hidden: { opacity: 0 },
@@ -46,6 +50,7 @@ const TABS = [
 ];
 
 export default function Referrals() {
+  const { user } = useAuth();
   const [code, setCode] = useState('');
   const [referralLink, setReferralLink] = useState('');
   const [stats, setStats] = useState(null);
@@ -224,44 +229,141 @@ export default function Referrals() {
 
   const activeList = activeTab === 'direct' ? directReferrals : activeTab === 'indirect' ? indirectReferrals : [];
 
-  function TreeNode({ node, depth = 0 }) {
-    const [expanded, setExpanded] = useState(true);
-    const u = node.user || {};
-    const name = (u.firstName ? `${u.firstName} ${u.lastName}` : null) || 'Unknown';
-    const initials = name.split(' ').map((n) => n[0]).join('').toUpperCase().substring(0, 2);
+  function UserCard({ node, isRoot }) {
+  const active = node.user?.isApproved && node.user?.subscriptionStatus === 'active';
+  const initials = ((node.user?.firstName?.[0] || '') + (node.user?.lastName?.[0] || '')).toUpperCase() || '?';
 
-    return (
-      <div>
-        <div
-          className="flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-dark-50 cursor-pointer transition-colors"
-          style={{ marginLeft: depth * 24 }}
-        >
-          {node.children?.length > 0 ? (
-            <button onClick={() => setExpanded(!expanded)} className="p-0.5 text-dark-400 hover:text-dark-600">
-              {expanded ? <FiChevronDown size={14} /> : <FiChevronRight size={14} />}
-            </button>
-          ) : (
-            <span className="w-[18px]" />
-          )}
-          <div className="w-7 h-7 rounded-full bg-primary-500 flex items-center justify-center text-white text-[11px] font-bold shrink-0">
-            {initials}
-          </div>
-          <span className="text-sm font-medium text-ink truncate flex-1">{name}</span>
-          <span className="text-[11px] text-dark-400">Lvl {node.level}</span>
-          {node.commission > 0 && (
-            <span className="text-[11px] font-semibold text-emerald-600">+{formatCurrency(node.commission)}</span>
-          )}
+  return (
+    <div className={`
+      bg-white rounded-xl sm:rounded-2xl border transition-all duration-200 relative z-10
+      ${isRoot
+        ? 'px-3 sm:px-6 py-3 sm:py-5 border-primary-300 shadow-[0_4px_20px_-4px_rgba(59,130,246,0.15)] min-w-[160px] sm:min-w-[260px]'
+        : 'px-2.5 sm:px-4 py-2 sm:py-3.5 border-dark-100 hover:border-primary-200 hover:shadow-sm min-w-[120px] sm:min-w-[200px]'
+      }
+    `}>
+      <div className="flex items-start gap-2 sm:gap-3">
+        <div className={`shrink-0 flex items-center justify-center rounded-full font-bold text-white ${
+          isRoot ? 'w-8 sm:w-12 h-8 sm:h-12 text-xs sm:text-base bg-gradient-to-br from-primary-500 to-blue-600' : 'w-7 sm:w-10 h-7 sm:h-10 text-[10px] sm:text-sm bg-gradient-to-br from-primary-400 to-blue-500'
+        }`}>
+          {initials}
         </div>
-        {expanded && node.children?.length > 0 && (
-          <div className="border-l-2 border-dark-200 ml-[22px]">
-            {node.children.map((child, i) => (
-              <TreeNode key={child._id || i} node={child} depth={depth + 1} />
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+            <p className={`font-semibold text-ink truncate ${isRoot ? 'text-xs sm:text-base' : 'text-[11px] sm:text-sm'}`}>
+              {node.user?.firstName} {node.user?.lastName}
+            </p>
+            {isRoot && <Badge color="primary" className="text-[8px] sm:text-[10px] px-1.5 py-0">Root</Badge>}
+          </div>
+          <p className={`text-dark-400 truncate ${isRoot ? 'text-[10px] sm:text-xs' : 'text-[9px] sm:text-xs'} mt-0.5`}>{node.user?.email}</p>
+          <div className="flex items-center gap-1 sm:gap-2 mt-1 sm:mt-2 flex-wrap">
+            <Badge color={active ? 'success' : 'warning'} size="sm" className="text-[8px] sm:text-[10px] px-1.5 py-0">{active ? 'Active' : 'Free'}</Badge>
+            {node.commission > 0 && (
+              <span className="text-[9px] sm:text-xs font-semibold text-emerald-600">+${node.commission}</span>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TreeNode({ node, depth }) {
+  const hasChildren = node.children?.length > 0;
+  const count = node.children?.length || 1;
+  const hLineLeft = `${100 / (count * 2)}%`;
+  const hLineRight = hLineLeft;
+
+  return (
+    <div className="flex flex-col items-center">
+      <UserCard node={node} isRoot={false} />
+
+      {hasChildren && (
+        <div className="flex flex-col items-center w-full">
+          <div className={`relative w-full ${depth < 2 ? 'h-5 sm:h-7' : 'h-4 sm:h-6'}`}>
+            <div className="absolute top-0 left-1/2 w-px sm:w-0.5 h-3/4 -translate-x-1/2 bg-slate-300" />
+            <div
+              className="absolute top-3/4 h-px sm:h-0.5 -translate-y-1/2 bg-slate-300"
+              style={{ left: hLineLeft, right: hLineRight }}
+            />
+          </div>
+
+          <div className="flex justify-center gap-1 sm:gap-3 md:gap-5 relative">
+            {node.children.map((child) => (
+              <div key={child._id} className="relative flex flex-col items-center">
+                <div className={`absolute left-1/2 w-px sm:w-0.5 -translate-x-1/2 bg-slate-300 z-0 ${depth < 2 ? '-top-5 h-5 sm:-top-7 sm:h-7' : '-top-4 h-4 sm:-top-6 sm:h-6'}`} />
+                <TreeNode node={child} depth={depth + 1} />
+              </div>
             ))}
           </div>
-        )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function GenealogyTree({ rootUser, treeNodes, stats, onBack }) {
+  const hasChildren = treeNodes && treeNodes.length > 0;
+  const count = treeNodes?.length || 1;
+  const hLineLeft = `${100 / (count * 2)}%`;
+  const hLineRight = hLineLeft;
+
+  return (
+    <div>
+      <div className="mb-3 sm:mb-4 p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-r from-primary-50 to-blue-50 border border-primary-200">
+        <div className="flex items-center justify-between flex-wrap gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="w-8 sm:w-11 h-8 sm:h-11 rounded-full bg-gradient-to-br from-primary-500 to-blue-600 flex items-center justify-center shadow-sm shrink-0">
+              <FiUser className="text-white" size={14} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs sm:text-base font-semibold text-ink truncate">{rootUser.firstName} {rootUser.lastName}</p>
+              <p className="text-[10px] sm:text-xs text-dark-500 truncate">{rootUser.email}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
+            {stats && (
+              <>
+                <span className="text-[9px] sm:text-xs text-dark-500 bg-white/60 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-primary-100 whitespace-nowrap">T: <strong className="text-ink">{stats.totalDownline}</strong></span>
+                <span className="text-[9px] sm:text-xs text-emerald-600 bg-emerald-50/60 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-emerald-200 whitespace-nowrap">A: <strong>{stats.active}</strong></span>
+                <span className="text-[9px] sm:text-xs text-amber-600 bg-amber-50/60 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-amber-200 whitespace-nowrap">F: <strong>{stats.free}</strong></span>
+              </>
+            )}
+            {onBack && (
+              <Button variant="outline" size="sm" onClick={onBack} className="text-xs !px-2.5 !py-1 sm:!px-3 sm:!py-1.5">Back</Button>
+            )}
+          </div>
+        </div>
       </div>
-    );
-  }
+
+      <div className="overflow-x-auto pb-4 sm:pb-6 -mx-2 sm:-mx-2 px-2 sm:px-2 scroll-smooth" style={{ WebkitOverflowScrolling: 'touch' }}>
+        <div className="flex flex-col items-center min-w-[400px] sm:min-w-[600px]">
+          <UserCard node={{ user: rootUser }} isRoot={true} />
+
+          {hasChildren && (
+            <div className="flex flex-col items-center w-full">
+              <div className="relative w-full h-5 sm:h-7">
+                <div className="absolute top-0 left-1/2 w-px sm:w-0.5 h-3/4 -translate-x-1/2 bg-slate-300" />
+                <div
+                  className="absolute top-3/4 h-px sm:h-0.5 -translate-y-1/2 bg-slate-300"
+                  style={{ left: hLineLeft, right: hLineRight }}
+                />
+              </div>
+
+              <div className="flex justify-center gap-1 sm:gap-3 md:gap-5 relative">
+                {treeNodes.map((child) => (
+                  <div key={child._id} className="relative flex flex-col items-center">
+                    <div className="absolute -top-5 sm:-top-7 left-1/2 w-px sm:w-0.5 h-5 sm:h-7 -translate-x-1/2 bg-slate-300 z-0" />
+                    <TreeNode node={child} depth={1} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
   return (
     <div className="space-y-6">
@@ -496,11 +598,11 @@ export default function Referrals() {
                       description="Start by sharing your referral code. Your tree will grow as people join through your links."
                     />
                   ) : (
-                    <div className="space-y-1">
-                      {referralTree.map((node, i) => (
-                        <TreeNode key={node._id || i} node={node} depth={0} />
-                      ))}
-                    </div>
+                    <GenealogyTree
+                      rootUser={user}
+                      treeNodes={referralTree}
+                      stats={stats}
+                    />
                   )
                 ) : activeList.length === 0 ? (
                   <EmptyState

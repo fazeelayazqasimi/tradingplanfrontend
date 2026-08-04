@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import websiteService from '../../services/websiteService';
+import api from '../../services/api';
 import { useName } from '../../context/NameContext';
 import { useSettings } from '../../context/SettingsContext';
 
@@ -93,6 +94,7 @@ export default function Home() {
   const [featuredVideo, setFeaturedVideo] = useState('');
   const [screenshots, setScreenshots] = useState([]);
   const [reviews, setReviews] = useState([]);
+  const [mediaItems, setMediaItems] = useState([]);
 
   const instituteName = getSetting('institute_name', '');
   const siteTagline = getSetting('site_tagline', 'Master the markets. Trade with confidence.');
@@ -162,6 +164,11 @@ export default function Home() {
             } catch { setReviews([]); }
           }
         }
+        try {
+          const mediaRes = await api.get('/media/published');
+          const mediaData = mediaRes?.data?.data || [];
+          setMediaItems(Array.isArray(mediaData) ? mediaData : []);
+        } catch {}
       } catch (e) {}
     })();
   }, []);
@@ -351,6 +358,33 @@ export default function Home() {
                   </div>
                 </ScrollReveal>
               ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {mediaItems.length > 0 && (
+        <section className="py-[60px] sm:py-[80px] lg:py-[120px] bg-dark-50">
+          <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center max-w-[640px] mx-auto mb-10 sm:mb-12">
+              <p className="eyebrow mb-3 text-[13px] sm:text-sm">Gallery</p>
+              <h2 className="text-[28px] sm:text-[36px] lg:text-[44px] font-extrabold mb-3 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Our community in action</h2>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              {mediaItems.flatMap((item, i) => {
+                const allMedia = [...(item.images || []), ...(item.videos || [])];
+                return allMedia.map((src, idx) => (
+                  <ScrollReveal key={`${i}-${idx}`} delay={(i * 4 + idx) * 60}>
+                    <div className="rounded-[14px] overflow-hidden border border-dark-100 shadow-sm hover:shadow-card-md transition-all duration-300 aspect-square">
+                      {src.startsWith('http') ? (
+                        <img src={src} alt={item.title} className="w-full h-full object-cover" loading="lazy" />
+                      ) : (
+                        <img src={`${API_URL}/${src}`} alt={item.title} className="w-full h-full object-cover" loading="lazy" />
+                      )}
+                    </div>
+                  </ScrollReveal>
+                ));
+              })}
             </div>
           </div>
         </section>

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { FiImage, FiX, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import { FiImage, FiVideo, FiX, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import Skeleton from '../../components/ui/Skeleton';
 import EmptyState from '../../components/ui/EmptyState';
 import api from '../../services/api';
@@ -33,20 +33,19 @@ export default function StudentGallery() {
     })();
   }, []);
 
-  const allImages = items.flatMap(item =>
-    (item.images || []).map(img => ({
-      url: img.startsWith('http') ? img : `${API_URL}/${img}`,
-      title: item.title,
-    }))
-  );
+  const allMedia = items.flatMap(item => {
+    const imgs = (item.images || []).map(img => ({ type: 'image', url: img.startsWith('http') ? img : `${API_URL}/${img}`, title: item.title }));
+    const vids = (item.videos || []).map(vid => ({ type: 'video', url: vid.startsWith('http') ? vid : `${API_URL}/${vid}`, title: item.title }));
+    return [...imgs, ...vids];
+  });
 
   const goNext = useCallback(() => {
-    setSelectedIdx(prev => prev === null ? null : (prev + 1) % allImages.length);
-  }, [allImages.length]);
+    setSelectedIdx(prev => prev === null ? null : (prev + 1) % allMedia.length);
+  }, [allMedia.length]);
 
   const goPrev = useCallback(() => {
-    setSelectedIdx(prev => prev === null ? null : (prev - 1 + allImages.length) % allImages.length);
-  }, [allImages.length]);
+    setSelectedIdx(prev => prev === null ? null : (prev - 1 + allMedia.length) % allMedia.length);
+  }, [allMedia.length]);
 
   useEffect(() => {
     if (selectedIdx === null) return;
@@ -64,7 +63,7 @@ export default function StudentGallery() {
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-5">
       <motion.div variants={item}>
         <h1 className="text-lg font-bold text-ink">Gallery</h1>
-        <p className="text-sm text-dark-500 mt-0.5">Photos and media from our trading community</p>
+        <p className="text-sm text-dark-500 mt-0.5">Photos and videos from our trading community</p>
       </motion.div>
 
       <motion.div variants={item}>
@@ -74,25 +73,34 @@ export default function StudentGallery() {
               <Skeleton key={i} className="aspect-square rounded-xl" />
             ))}
           </div>
-        ) : allImages.length === 0 ? (
-          <EmptyState icon={FiImage} title="No images yet" message="Gallery images will appear here once uploaded." />
+        ) : allMedia.length === 0 ? (
+          <EmptyState icon={FiImage} title="No media yet" message="Gallery content will appear here once uploaded." />
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-            {allImages.map((img, idx) => (
+            {allMedia.map((media, idx) => (
               <button
                 key={idx}
                 onClick={() => setSelectedIdx(idx)}
                 className="group relative aspect-square overflow-hidden rounded-xl bg-dark-50 focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
-                <img
-                  src={img.url}
-                  alt={img.title}
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  loading="lazy"
-                />
+                {media.type === 'video' ? (
+                  <div className="relative w-full h-full">
+                    <video src={media.url} className="w-full h-full object-cover" muted />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                      <FiVideo size={32} className="text-white" />
+                    </div>
+                  </div>
+                ) : (
+                  <img
+                    src={media.url}
+                    alt={media.title}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    loading="lazy"
+                  />
+                )}
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
                 <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                  <p className="text-white text-xs font-medium truncate">{img.title}</p>
+                  <p className="text-white text-xs font-medium truncate">{media.title}</p>
                 </div>
               </button>
             ))}
@@ -127,13 +135,17 @@ export default function StudentGallery() {
           </button>
 
           <div className="flex flex-col items-center gap-4 max-w-4xl w-full px-4" onClick={(e) => e.stopPropagation()}>
-            <img
-              src={allImages[selectedIdx].url}
-              alt={allImages[selectedIdx].title}
-              className="max-h-[80vh] w-auto max-w-full rounded-xl object-contain"
-            />
-            <p className="text-white text-sm font-medium text-center">{allImages[selectedIdx].title}</p>
-            <p className="text-white/50 text-xs">{selectedIdx + 1} / {allImages.length}</p>
+            {allMedia[selectedIdx].type === 'video' ? (
+              <video src={allMedia[selectedIdx].url} className="max-h-[80vh] w-auto max-w-full rounded-xl" controls autoPlay />
+            ) : (
+              <img
+                src={allMedia[selectedIdx].url}
+                alt={allMedia[selectedIdx].title}
+                className="max-h-[80vh] w-auto max-w-full rounded-xl object-contain"
+              />
+            )}
+            <p className="text-white text-sm font-medium text-center">{allMedia[selectedIdx].title}</p>
+            <p className="text-white/50 text-xs">{selectedIdx + 1} / {allMedia.length}</p>
           </div>
         </div>
       )}

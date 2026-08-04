@@ -62,7 +62,7 @@ export default function Withdrawals() {
     cryptocurrency: 'USDT',
   });
   const [formErrors, setFormErrors] = useState({});
-  const [withdrawFeeInfo, setWithdrawFeeInfo] = useState({ feeType: 'percent', feePercent: 10, feeFixed: 0, processingHours: 24 });
+  const [withdrawFeeInfo, setWithdrawFeeInfo] = useState({ feeType: 'percent', feePercent: 10, feeFixed: 0, maxPercent: 20, processingHours: 24 });
 
   const { page, limit, nextPage, prevPage, goToPage } = usePagination(1, 10);
   const [totalPages, setTotalPages] = useState(1);
@@ -354,6 +354,9 @@ export default function Withdrawals() {
                   -{formatCurrency(withdrawFeeInfo.feeType === 'fixed' ? withdrawFeeInfo.feeFixed : (parseFloat(form.amount) * withdrawFeeInfo.feePercent / 100))}
                 </span>
               </div>
+              {withdrawFeeInfo.maxPercent > 0 && (
+                <p className="text-[11px] text-dark-400">Max withdrawal: {withdrawFeeInfo.maxPercent}% of available balance</p>
+              )}
               <div className="flex justify-between">
                 <span>You will receive</span>
                 <span className="font-semibold text-ink">
