@@ -300,6 +300,28 @@ export default function Home() {
         </section>
       )}
 
+      {/* Dream Trader - Official Educational Partner */}
+      <section className="py-[40px] sm:py-[60px] bg-gradient-to-r from-primary-50 to-emerald-50">
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <ScrollReveal>
+            <p className="eyebrow mb-2 text-[11px] sm:text-xs text-primary-500">Official Educational Partner</p>
+            <h2 className="text-[22px] sm:text-[28px] lg:text-[34px] font-extrabold mb-6" style={{ fontFamily: '"Plus Jakarta Sans"' }}>
+              Dream Trader
+            </h2>
+            <div className="flex justify-center">
+              <img
+                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRUZkbggqLzgFH2LzG7v4G3-d3VUe-STMYU3k8tOv5ygQ&amp;s"
+                alt="Dream Trader"
+                className="h-20 sm:h-28 lg:h-36 object-contain"
+              />
+            </div>
+            <p className="text-dark-500 text-[14px] sm:text-[16px] max-w-[600px] mx-auto mt-4 font-inter">
+              Dream Trader is our Official Educational Partner, providing world-class Forex training and mentorship programs.
+            </p>
+          </ScrollReveal>
+        </div>
+      </section>
+
       {/* Featured Video + Screenshots Gallery */}
       {(featuredVideo || screenshots.length > 0) && (
         <section className="py-[60px] sm:py-[80px] bg-dark-50">
