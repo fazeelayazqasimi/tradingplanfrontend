@@ -34,12 +34,13 @@ export default function ReferralProgram() {
     gsap.fromTo(heroRef.current, { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' });
     websiteService.getRanks().then(({ data }) => {
       if (data?.data?.length) {
-        setRanks(data.data.map((r) => ({
-          tier: r.name,
+        setRanks(data.data.map((r, i) => ({
+          tier: `Rank ${i + 1}`,
+          name: r.name,
           direct: r.minDirectReferrals ?? 0,
-          team: r.minTeamMembers ?? 0,
-          commission: `$${r.activationGain ?? 0}`,
-          profitShare: `${r.quantification ?? 0}%`,
+          team: r.minTeamMembers ?? r.minRevenue ?? 0,
+          commission: `${r.commissionPercent ?? 0}%`,
+          amount: r.minRevenue ? `$${r.minRevenue.toLocaleString()}` : `Level ${i + 1}`,
         })));
       }
     }).catch(() => {});
@@ -86,20 +87,20 @@ export default function ReferralProgram() {
               <thead>
                 <tr className="bg-ink text-white">
                   <th className="p-4 text-left font-bold">Rank</th>
+                  <th className="p-4 text-center font-bold">Level</th>
                   <th className="p-4 text-center font-bold">Min Direct</th>
                   <th className="p-4 text-center font-bold">Min Team</th>
-                  <th className="p-4 text-center font-bold">Direct Commission</th>
-                  <th className="p-4 text-center font-bold">Profit Share</th>
+                  <th className="p-4 text-center font-bold">Commission</th>
                 </tr>
               </thead>
               <tbody>
                 {ranks.map((r, i) => (
                   <tr key={i} className="border-b border-dark-100 hover:bg-dark-50/50 transition-colors">
                     <td className="p-4 font-bold text-lg">{r.tier}</td>
+                    <td className="p-4 text-center font-semibold text-ink">{r.amount}</td>
                     <td className="p-4 text-center">{r.direct}</td>
                     <td className="p-4 text-center">{r.team.toLocaleString()}</td>
                     <td className="p-4 text-center font-bold text-emerald-500">{r.commission}</td>
-                    <td className="p-4 text-center font-bold text-primary-500">{r.profitShare}</td>
                   </tr>
                 ))}
               </tbody>

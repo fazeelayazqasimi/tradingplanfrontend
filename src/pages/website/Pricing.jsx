@@ -4,14 +4,14 @@ import websiteService from '../../services/websiteService';
 import { useName } from '../../context/NameContext';
 
 const defaultFeatures = [
-  'Full Online Education Library',
-  'Quarterly Onsite Training Access',
+  'Complete Forex Education',
+  'Physical Classes in Karachi',
+  'Live Online Classes',
   'Daily Trading Signals',
   'Copy Trading Access',
-  'Referral Program & Rank Progression',
-  'Priority Mentor Support',
-  'Resource Library & Templates',
-  'Completion Certificates',
+  'High-Reward Affiliate Program',
+  'Profit Sharing Opportunities',
+  'Members Community & Support',
 ];
 
 function ScrollReveal({ children, className = '', delay = 0 }) {
@@ -92,8 +92,8 @@ export default function Pricing() {
                   </li>
                 ))}
               </ul>
-              <Link to="/register" className="btn-blue btn-lg w-full">Join Now</Link>
-              <div className="text-[12.5px] text-dark-500 mt-4 font-inter">14-day money-back guarantee, no questions asked.</div>
+               <Link to="/register" className="btn-blue btn-lg w-full">Join Now</Link>
+               <div className="text-[12.5px] text-dark-500 mt-4 font-inter">Education • Signals • Copy Trading • Affiliate Rewards • Profit Sharing</div>
             </div>
           </ScrollReveal>
         </div>

@@ -5,16 +5,20 @@ import { useName } from '../../context/NameContext';
 import { useSettings } from '../../context/SettingsContext';
 
 const defaultFeatures = [
-  { title: 'Mentor-led, not video-only', desc: 'Every course is paired with live sessions and direct feedback from active traders.' },
-  { title: 'Signals with full transparency', desc: 'Entry, stop loss and take profit are published before the move, not after.' },
-  { title: 'A real community, not a chatroom', desc: 'Referral and copy-trading tools that reward long-term learning, not recruitment.' },
+  { title: 'Professional Forex Education', desc: 'Structured learning through physical classroom training in Karachi and live online sessions for students across Pakistan.' },
+  { title: 'Live Trading Signals', desc: 'Receive high-accuracy Forex signals with complete entry, stop loss, take profit, and risk management guidance.' },
+  { title: 'Copy Trading Services', desc: 'Follow experienced traders through a transparent copy trading system while continuing your Forex education.' },
+  { title: 'Affiliate Rewards', desc: 'Build your network and earn industry-leading commissions through our transparent rank-based affiliate program.' },
+  { title: 'Profit Sharing', desc: 'Earn a share from the network profit pool based on your rank configuration.' },
+  { title: 'Community Support', desc: 'Stay connected with our trading community for lifetime support, updates, webinars, and continuous learning.' },
 ];
 
 const defaultStats = [
-  { num: '9+', lbl: 'Years Experience' },
-  { num: '18,400+', lbl: 'Students Trained' },
-  { num: '64', lbl: 'Courses Delivered' },
-  { num: '52,000+', lbl: 'Signals Delivered' },
+  { num: '300+', lbl: 'Students' },
+  { num: '14', lbl: 'Courses' },
+  { num: '1,000+', lbl: 'Signals' },
+  { num: '5', lbl: 'Countries' },
+  { num: '$5,000+', lbl: 'Payout' },
 ];
 
 function ScrollReveal({ children, className = '', delay = 0 }) {
@@ -55,45 +59,72 @@ export default function About() {
       `}</style>
 
       <section className="pt-20 pb-0">
-        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-[0.95fr_1.05fr] gap-[72px] items-center">
-          <ScrollReveal>
-            <div className="aspect-[4/5] rounded-[22px] relative overflow-hidden shadow-card-lg" style={{ background: 'linear-gradient(160deg, #0F172A 0%, #1E293B 55%, #0B1220 100%)' }}>
-              <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
-              <div className="absolute bottom-10 left-8 right-8 flex items-end gap-2 h-[45%]">
-                {[40,55,30,65,45,38,70,50,60,35,75,42,58,30,36,90,25,44,28,95,100].map((h, i) => (
-                  <div key={i} className="w-2 rounded-[2px] flex-1" style={{ height: `${h}%`, background: [1,3,4,6,7,9,11,12,15,16,18,20].includes(i) ? '#10B981' : '#F87171' }} />
-                ))}
-              </div>
-            </div>
-          </ScrollReveal>
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-[640px] mx-auto mb-10 sm:mb-12">
+            <p className="eyebrow mb-3 text-[13px] sm:text-sm">About Us</p>
+            <h1 className="text-[28px] sm:text-[36px] lg:text-[44px] font-extrabold mb-3 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"', letterSpacing: '-0.02em' }}>
+              {visitorName ? `Welcome, ${visitorName}.` : 'Learn. Trade Smarter. Earn Together.'}
+            </h1>
+          </div>
+        </div>
+      </section>
 
-          <div>
-            <p className="eyebrow mb-3.5">About Us</p>
-            <h2 className="text-[24px] sm:text-[32px] lg:text-[34px] font-extrabold mb-4.5 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"', letterSpacing: '-0.02em' }}>
-              {visitorName ? `Welcome, ${visitorName}. Built by traders who wanted the education they never had.` : 'Built by traders who wanted the education they never had.'}
-            </h2>
-            <p className="text-dark-500 text-[15.5px] leading-[1.7] font-inter">
-              {getSetting('institute_name', 'Our platform')} was founded on a simple mission: give retail traders the same structured, mentor-led path that institutional desks give their own analysts. Our vision is a global community where discipline and process - not hype - define success.
+      <section className="py-[60px] sm:py-[80px] lg:py-[100px]">
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-[800px] mx-auto text-center mb-10 sm:mb-12">
+            <p className="text-dark-500 text-[14px] sm:text-[16px] leading-relaxed font-inter">
+              The 4X Hub is a complete Forex Education & Community Platform created to help individuals learn Forex trading through professional education, expert guidance, and practical market support. We are not a trading broker or exchange. Our goal is to educate, develop skilled traders, and build a strong community where members can learn, improve their trading abilities, and grow together.
             </p>
-            <div className="flex flex-col gap-4 mt-7">
-              {defaultFeatures.map((item, i) => (
-                <div key={i} className="flex gap-3.5 items-start">
-                  <div className="w-[22px] h-[22px] rounded-[7px] bg-primary-50 text-primary-500 flex-shrink-0 flex items-center justify-center text-xs font-bold mt-0.5">&#10003;</div>
-                  <div>
-                    <strong className="block mb-0.5 text-[15.5px] text-ink" style={{ fontFamily: '"Plus Jakarta Sans"' }}>{item.title}</strong>
-                    <p className="text-dark-500 text-[15px] leading-relaxed font-inter">{item.desc}</p>
-                  </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {defaultFeatures.map((f, i) => (
+              <ScrollReveal key={i} delay={i * 60}>
+                <div className="bg-white border border-dark-100 rounded-[18px] p-6 sm:p-7 shadow-card hover:shadow-card-md hover:border-primary-200 transition-all h-full">
+                  <h4 className="font-bold text-[15px] sm:text-[16px] mb-2" style={{ fontFamily: '"Plus Jakarta Sans"' }}>{f.title}</h4>
+                  <p className="text-dark-500 text-[13px] sm:text-[14px] leading-relaxed font-inter">{f.desc}</p>
                 </div>
-              ))}
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-5.5 mt-10 pt-9 border-t border-dark-100">
-              {stats.map((s, i) => (
-                <ScrollReveal key={i} delay={i * 100}>
-                  <div className="text-[24px] sm:text-[30px] font-extrabold" style={{ fontFamily: '"Plus Jakarta Sans"' }}>{s.num}</div>
-                  <div className="text-[13px] text-dark-500 mt-0.5 font-inter">{s.lbl}</div>
-                </ScrollReveal>
-              ))}
-            </div>
+              </ScrollReveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="py-[60px] sm:py-[80px] lg:py-[100px] bg-dark-50">
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-[640px] mx-auto mb-10 sm:mb-12">
+            <p className="eyebrow mb-3 text-[13px] sm:text-sm">Our Mission & Vision</p>
+          </div>
+          <div className="grid md:grid-cols-2 gap-8">
+            <ScrollReveal>
+              <div className="bg-white border border-dark-100 rounded-[18px] p-6 sm:p-8 shadow-card">
+                <h3 className="text-[20px] font-bold mb-3" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Mission</h3>
+                <p className="text-dark-500 text-[14px] sm:text-[15px] leading-relaxed font-inter">To make quality Forex education accessible, practical, and affordable while helping individuals build real trading skills.</p>
+              </div>
+            </ScrollReveal>
+            <ScrollReveal>
+              <div className="bg-white border border-dark-100 rounded-[18px] p-6 sm:p-8 shadow-card">
+                <h3 className="text-[20px] font-bold mb-3" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Vision</h3>
+                <p className="text-dark-500 text-[14px] sm:text-[15px] leading-relaxed font-inter">To become one of the most trusted Forex education communities by empowering learners with knowledge, discipline, and long-term growth opportunities.</p>
+              </div>
+            </ScrollReveal>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-[60px] sm:py-[80px] lg:py-[100px]">
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-[640px] mx-auto mb-10 sm:mb-12">
+            <p className="eyebrow mb-3 text-[13px] sm:text-sm">Our Impact</p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 sm:gap-6 text-center">
+            {stats.map((s, i) => (
+              <ScrollReveal key={i} delay={i * 80}>
+                <div>
+                  <div className="text-[26px] sm:text-[30px] lg:text-[34px] font-extrabold text-ink" style={{ fontFamily: '"Plus Jakarta Sans"' }}>{s.num}</div>
+                  <div className="text-[12px] sm:text-[13px] text-dark-500 mt-0.5 sm:mt-1">{s.lbl}</div>
+                </div>
+              </ScrollReveal>
+            ))}
           </div>
         </div>
       </section>

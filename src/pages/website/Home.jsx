@@ -7,15 +7,14 @@ import { useName } from '../../context/NameContext';
 import { useSettings } from '../../context/SettingsContext';
 
 const defaultFeatures = [
-  { icon: '📚', title: 'Online Education', desc: 'Learn Forex from beginner to advanced through structured online courses, live sessions, practical assignments, and lifetime access.' },
-  { icon: '🏫', title: 'Physical Training (Onsite Classes)', desc: 'Attend professional classroom sessions with experienced mentors for practical market training and hands-on learning.' },
-  { icon: '📊', title: 'Premium Trading Signals', desc: 'Receive high-accuracy Forex signals with complete entry, stop loss, take profit, and risk management guidance.' },
-  { icon: '🔄', title: 'Copy Trading', desc: 'Copy professional traders automatically and benefit from proven strategies without trading experience.' },
-  { icon: '🎁', title: 'Free Referral Rewards', desc: 'Invite friends to register for free and earn $1 Reward Credit for every verified direct referral. Grow your community and use your rewards toward your membership.' },
-  { icon: '🏆', title: 'Affiliate Rewards', desc: 'Build your network and earn industry-leading commissions through our transparent rank-based affiliate program.' },
-  { icon: '👨‍🏫', title: 'Expert Mentorship', desc: 'Get direct support from experienced traders through mentorship sessions, market analysis, and live Q&A.' },
-  { icon: '📜', title: 'Certificates', desc: 'Earn professional course completion certificates after successfully completing your Forex learning journey.' },
-  { icon: '👥', title: 'Lifetime Community', desc: 'Stay connected with our trading community for lifetime support, updates, webinars, and continuous learning.' },
+  { icon: '📚', title: 'Complete Forex Education', desc: 'Structured learning from beginner to advanced through professional courses and live sessions.' },
+  { icon: '🏫', title: 'Physical Classes in Karachi', desc: 'Attend professional classroom sessions with experienced mentors for practical market training.' },
+  { icon: '💻', title: 'Live Online Classes', desc: 'Interactive online sessions from anywhere with real-time mentorship and Q&A.' },
+  { icon: '📊', title: 'Daily Trading Signals', desc: 'Receive high-accuracy Forex signals with complete entry, stop loss, take profit, and risk management guidance.' },
+  { icon: '🔄', title: 'Copy Trading Access', desc: 'Copy professional traders automatically and benefit from proven strategies without trading experience.' },
+  { icon: '🎁', title: 'High-Reward Affiliate Program', desc: 'Build your network and earn industry-leading commissions through our transparent rank-based program.' },
+  { icon: '💰', title: 'Profit Sharing Opportunities', desc: 'Earn a share from the network profit pool based on your rank configuration.' },
+  { icon: '👥', title: 'Members Community & Support', desc: 'Stay connected with our trading community for lifetime support, updates, webinars, and continuous learning.' },
 ];
 
 const defaultTimeline = [
@@ -43,21 +42,27 @@ const defaultCopyTradingSteps = [
 ];
 
 const defaultStats = [
-  { num: '18,400+', lbl: 'Students Trained' },
-  { num: '42', lbl: 'Countries Represented' },
-  { num: '91%', lbl: 'Signal Accuracy Tracked' },
-  { num: '6,200+', lbl: 'Active Community Members' },
+  { num: '300+', lbl: 'Students' },
+  { num: '14', lbl: 'Courses' },
+  { num: '1,000+', lbl: 'Signals' },
+  { num: '5', lbl: 'Countries' },
+  { num: '$5,000+', lbl: 'Payout' },
 ];
 
 const defaultPricingFeatures = [
-  'Full Online Education Library', 'Quarterly Onsite Training Access', 'Daily Trading Signals',
-  'Copy Trading Access', 'Referral Program & Rank Progression', 'Priority Mentor Support',
-  'Resource Library & Templates', 'Completion Certificates',
+  'Complete Forex Education',
+  'Physical Classes in Karachi',
+  'Live Online Classes',
+  'Daily Trading Signals',
+  'Copy Trading Access',
+  'High-Reward Affiliate Program',
+  'Profit Sharing Opportunities',
+  'Members Community & Support',
 ];
 
 const defaultBottomStats = [
-  { num: '18,400', lbl: 'Students' }, { num: '64', lbl: 'Courses' },
-  { num: '52,000', lbl: 'Signals' }, { num: '42', lbl: 'Countries' }, { num: '$890K', lbl: 'Referral Payouts' },
+  { num: '300+', lbl: 'Students' }, { num: '14', lbl: 'Courses' },
+  { num: '1,000+', lbl: 'Signals' }, { num: '5', lbl: 'Countries' }, { num: '$5,000+', lbl: 'Payout' },
 ];
 
 function ScrollReveal({ children, className = '', delay = 0 }) {
@@ -97,9 +102,9 @@ export default function Home() {
   const [reviews, setReviews] = useState([]);
   const [mediaItems, setMediaItems] = useState([]);
 
-  const instituteName = getSetting('institute_name', '');
-  const siteTagline = getSetting('site_tagline', 'Master the markets. Trade with confidence.');
-  const siteDescription = getSetting('site_description', '');
+  const instituteName = getSetting('institute_name', 'THE COMPLETE FOREX ECOSYSTEM');
+  const siteTagline = getSetting('site_tagline', 'Learn Forex. Trade with confidence.');
+  const siteDescription = getSetting('site_description', 'Everything you need to succeed in one platform — professional Forex education, live trading signals, automated copy trading, and a rewarding affiliate program, all included in one annual membership.');
 
   useEffect(() => {
     const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
@@ -201,16 +206,17 @@ export default function Home() {
           <div>
             <p className="eyebrow mb-4 sm:mb-6 text-[11px] sm:text-xs">{instituteName}</p>
             <h1 ref={heroTitleRef} className="text-[28px] sm:text-[38px] md:text-[44px] lg:text-[56px] leading-[1.06] font-extrabold text-ink mb-4 sm:mb-6" style={{ fontFamily: '"Plus Jakarta Sans", sans-serif', letterSpacing: '-0.02em' }}>
-              {visitorName ? <>Hello {visitorName}. <span className="text-primary-500">Be a trader.</span></> : <>{siteTagline.split('.')[0]}. <span className="text-primary-500">{siteTagline.split('.')[1] || 'Trade with confidence.'}</span></>}
+              {visitorName ? <>Hello {visitorName}. <span className="text-primary-500">Be a trader.</span></> : <>Learn Forex. <span className="text-primary-500">Trade Smarter.</span> Build Passive Income.</>}
             </h1>
             <p ref={heroTextRef} className="text-base sm:text-lg leading-[1.65] text-dark-500 max-w-[480px] mb-6 sm:mb-9 font-inter">
-              {visitorName ? `Welcome, ${visitorName}! Your journey to financial freedom starts here.` : (siteDescription || 'Structured trading education, live signals, and a guided path - built by professional traders, not marketers.')}
+              {visitorName ? `Welcome, ${visitorName}! Your journey to financial freedom starts here.` : 'Everything you need to succeed in one platform — professional Forex education, live trading signals, automated copy trading, and a rewarding affiliate program, all included in one annual membership.'}
             </p>
             <div ref={heroCtaRef} className="flex flex-col sm:flex-row gap-3 sm:gap-3.5 mb-8 sm:mb-12">
               <Link to="/register" className="btn-blue btn-lg text-center px-6 py-3 sm:px-8 sm:py-4 text-sm sm:text-[15.5px]">Join Now</Link>
               <Link to="/courses" className="btn-outline btn-lg text-center px-6 py-3 sm:px-8 sm:py-4 text-sm sm:text-[15.5px]">Explore Courses</Link>
               <Link to="/calculators" className="btn-outline btn-lg text-center px-6 py-3 sm:px-8 sm:py-4 text-sm sm:text-[15.5px]">Free Tools</Link>
             </div>
+            <p className="text-[11px] sm:text-xs text-dark-400 font-inter tracking-wide uppercase">One Membership. Every Tool You Need to Trade</p>
             <div ref={heroRatesRef} className="border-t border-dark-100 pt-4 sm:pt-5">
               <div className="flex gap-3 sm:gap-4 font-mono text-[11px] sm:text-[13px] text-dark-500 flex-wrap items-center mb-2">
                 <span>EUR/USD <b className="text-ink font-semibold">{forexRates?.['EUR/USD']?.bid || '1.0842'}</b> <span className="text-emerald-500">{forexRates?.['EUR/USD']?.change || '+0.12%'}</span></span>
@@ -270,9 +276,68 @@ export default function Home() {
             ))}
           </div>
         </div>
-</section>
+       </section>
 
-      {/* Live Rates */}
+       {/* Official Education Partner - Right after Hero */}
+       <section className="py-[60px] sm:py-[80px] lg:py-[100px] bg-gradient-to-r from-primary-50 to-emerald-50">
+         <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
+           <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
+             <ScrollReveal>
+               <div className="flex justify-center lg:justify-start">
+                 <img
+                   src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRUZkbggqLzgFH2LzG7v4G3-d3VUe-STMYU3k8tOv5ygQ&amp;s"
+                   alt="Dream Trader Academy"
+                   className="h-24 sm:h-32 lg:h-40 object-contain"
+                 />
+               </div>
+             </ScrollReveal>
+             <ScrollReveal>
+               <p className="eyebrow mb-3 text-[11px] sm:text-xs text-primary-500">Official Education Partner</p>
+               <h2 className="text-[28px] sm:text-[34px] lg:text-[40px] font-extrabold mb-4" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Dream Trader Academy</h2>
+               <p className="text-dark-500 text-[14px] sm:text-[16px] leading-relaxed font-inter mb-6">Professional Forex education delivered in partnership with Dream Trader Academy, offering structured learning through both physical classroom training in Karachi and live online sessions for students across Pakistan.</p>
+               <div className="grid grid-cols-2 gap-4">
+                 <div className="flex items-center gap-2 text-[13px] sm:text-[14px] font-inter"><span className="text-lg">🏫</span> Physical Classes (Karachi)</div>
+                 <div className="flex items-center gap-2 text-[13px] sm:text-[14px] font-inter"><span className="text-lg">💻</span> Live Online Classes</div>
+                 <div className="flex items-center gap-2 text-[13px] sm:text-[14px] font-inter"><span className="text-lg">📅</span> Weekday &amp; Weekend Batches</div>
+                 <div className="flex items-center gap-2 text-[13px] sm:text-[14px] font-inter"><span className="text-lg">🎓</span> Professional Mentors</div>
+               </div>
+             </ScrollReveal>
+           </div>
+         </div>
+       </section>
+
+       {/* Learn From Experienced Professionals */}
+       <section className="py-[60px] sm:py-[80px] lg:py-[100px]">
+         <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
+           <div className="text-center max-w-[640px] mx-auto mb-10 sm:mb-12">
+             <p className="eyebrow mb-3 text-[13px] sm:text-sm">Dedicated Section</p>
+             <h2 className="text-[28px] sm:text-[36px] lg:text-[44px] font-extrabold mb-3 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Learn From Experienced Professionals</h2>
+             <p className="text-dark-500 text-[14px] sm:text-[16px] leading-relaxed font-inter">Powered by Dream Trader Academy</p>
+           </div>
+           <div className="max-w-[800px] mx-auto text-center mb-10 sm:mb-12">
+             <p className="text-dark-500 text-[14px] sm:text-[16px] leading-relaxed font-inter">At <strong>The 4X Hub</strong>, we believe that successful trading starts with quality education. Through our official education partner, <strong>Dream Trader Academy</strong>, members receive structured Forex training designed for beginners and advanced traders alike.</p>
+           </div>
+           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+             {[
+               { title: 'Beginner to Advanced Forex Curriculum', icon: '📚' },
+               { title: 'Live Classroom Sessions', icon: '🏫' },
+               { title: 'Online Interactive Classes', icon: '💻' },
+               { title: 'Practical Market Analysis', icon: '📊' },
+               { title: 'Trading Psychology', icon: '🧠' },
+               { title: 'Risk Management', icon: '🛡️' },
+               { title: 'Weekly Q&A Sessions', icon: '❓' },
+               { title: 'Lifetime Learning Community', icon: '👥' },
+             ].map((item, i) => (
+               <ScrollReveal key={i} delay={i * 60}>
+                 <div className="bg-white border border-dark-100 rounded-[16px] p-5 sm:p-6 shadow-card hover:shadow-card-md hover:border-primary-200 transition-all h-full">
+                   <span className="text-2xl mb-3 block">{item.icon}</span>
+                   <h4 className="font-bold text-[13px] sm:text-[14px]" style={{ fontFamily: '"Plus Jakarta Sans"' }}>{item.title}</h4>
+                 </div>
+               </ScrollReveal>
+             ))}
+           </div>
+         </div>
+       </section>
       <section className="py-[60px] sm:py-[80px] bg-dark-50">
         <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-[640px] mx-auto mb-10 sm:mb-12">
@@ -322,46 +387,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Academy Partner */}
-      {getSetting('institute_name', '') && (
-        <section className="py-[40px] sm:py-[60px] bg-gradient-to-r from-primary-50 to-emerald-50">
-          <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <ScrollReveal>
-              <p className="eyebrow mb-2 text-[11px] sm:text-xs text-primary-500">Education Partner</p>
-              <h2 className="text-[22px] sm:text-[28px] lg:text-[34px] font-extrabold mb-3" style={{ fontFamily: '"Plus Jakarta Sans"' }}>
-                {getSetting('institute_name', '')} Academy
-              </h2>
-              <p className="text-dark-500 text-[14px] sm:text-[16px] max-w-[600px] mx-auto font-inter">
-                {getSetting('institute_name', '')} Academy is our official education partner, providing world-class Forex training and mentorship programs.
-              </p>
-            </ScrollReveal>
-          </div>
-        </section>
-      )}
-
-      {/* Dream Trader - Official Educational Partner */}
-      <section className="py-[40px] sm:py-[60px] bg-gradient-to-r from-primary-50 to-emerald-50">
-        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <ScrollReveal>
-            <p className="eyebrow mb-2 text-[11px] sm:text-xs text-primary-500">Official Educational Partner</p>
-            <h2 className="text-[22px] sm:text-[28px] lg:text-[34px] font-extrabold mb-6" style={{ fontFamily: '"Plus Jakarta Sans"' }}>
-              Dream Trader
-            </h2>
-            <div className="flex justify-center">
-              <img
-                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRUZkbggqLzgFH2LzG7v4G3-d3VUe-STMYU3k8tOv5ygQ&amp;s"
-                alt="Dream Trader"
-                className="h-20 sm:h-28 lg:h-36 object-contain"
-              />
-            </div>
-            <p className="text-dark-500 text-[14px] sm:text-[16px] max-w-[600px] mx-auto mt-4 font-inter">
-              Dream Trader is our Official Educational Partner, providing world-class Forex training and mentorship programs.
-            </p>
-          </ScrollReveal>
-        </div>
-      </section>
-
-      {/* Featured Video + Screenshots Gallery */}
+       {/* Featured Video + Screenshots Gallery */}
       {(featuredVideo || screenshots.length > 0) && (
         <section className="py-[60px] sm:py-[80px] bg-dark-50">
           <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
@@ -507,49 +533,77 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="py-[60px] sm:py-[80px] lg:py-[120px]" id="copytrading">
-        <div className="max-w-[1000px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-[640px] mx-auto mb-10 sm:mb-16">
-            <p className="eyebrow mb-3 text-[13px] sm:text-sm">Copy Trading</p>
-            <h2 className="text-[28px] sm:text-[36px] lg:text-[44px] font-extrabold mb-3 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Follow the institute's trades, automatically.</h2>
-            <p className="text-dark-500 text-[14px] sm:text-[16.5px] leading-relaxed font-inter">A simple, transparent flow - from execution to distribution - so you always know where your capital stands.</p>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            {defaultCopyTradingSteps.map((s, i) => (
-              <ScrollReveal key={i} delay={i * 100}>
-                <div className="text-center bg-white border border-dark-100 rounded-2xl p-5 sm:p-6 shadow-card h-full">
-                  <div className="w-[40px] h-[40px] sm:w-[44px] sm:h-[44px] rounded-xl bg-primary-50 text-primary-500 flex items-center justify-center mx-auto mb-3 text-base sm:text-lg font-mono">{s.step}</div>
-                  <h4 className="text-[14px] sm:text-[14.5px] font-bold mb-1.5" style={{ fontFamily: '"Plus Jakarta Sans"' }}>{s.title}</h4>
-                  <p className="text-[12px] sm:text-[12.5px] text-dark-500 font-inter leading-relaxed">{s.desc}</p>
-                </div>
-              </ScrollReveal>
-            ))}
-          </div>
-        </div>
-      </section>
+       <section className="py-[60px] sm:py-[80px] lg:py-[120px]" id="copytrading">
+         <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
+           <div className="text-center max-w-[640px] mx-auto mb-10 sm:mb-16">
+             <p className="eyebrow mb-3 text-[13px] sm:text-sm">COPY TRADING</p>
+             <h2 className="text-[28px] sm:text-[36px] lg:text-[44px] font-extrabold mb-3 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Copy Professional Traders. Learn While You Earn.</h2>
+             <p className="text-dark-500 text-[14px] sm:text-[16.5px] leading-relaxed font-inter">Follow experienced traders through a transparent copy trading system while continuing your Forex education. Every trade is executed with proper risk management, allowing members to observe, learn and grow with confidence.</p>
+           </div>
+           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+             {[
+               { step: '1', title: 'Connect Your Trading Account', desc: 'Link your trading account securely to start mirroring trades.' },
+               { step: '2', title: 'Professional Trades Are Copied', desc: 'Experienced traders execute trades that are automatically copied to your account.' },
+               { step: '3', title: 'Monitor Performance', desc: 'Track every trade in real time with full transparency and history.' },
+               { step: '4', title: 'Profit Sharing', desc: 'Earn your share of profits credited directly to your wallet.' },
+             ].map((s, i) => (
+               <ScrollReveal key={i} delay={i * 100}>
+                 <div className="text-center bg-white border border-dark-100 rounded-2xl p-5 sm:p-6 shadow-card h-full">
+                   <div className="w-[40px] h-[40px] sm:w-[44px] sm:h-[44px] rounded-xl bg-primary-50 text-primary-500 flex items-center justify-center mx-auto mb-3 text-base sm:text-lg font-mono">{s.step}</div>
+                   <h4 className="text-[14px] sm:text-[14.5px] font-bold mb-1.5" style={{ fontFamily: '"Plus Jakarta Sans"' }}>{s.title}</h4>
+                   <p className="text-[12px] sm:text-[12.5px] text-dark-500 font-inter leading-relaxed">{s.desc}</p>
+                 </div>
+               </ScrollReveal>
+             ))}
+           </div>
+           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 mt-10">
+             {['Professional Traders', 'Transparent Trading History', 'Strict Risk Management', 'Performance Monitoring', 'Beginner Friendly', 'Learn While Following Experts'].map((b, i) => (
+               <ScrollReveal key={i} delay={i * 60}>
+                 <div className="bg-white border border-dark-100 rounded-xl p-3 sm:p-4 text-center shadow-card">
+                   <p className="text-[12px] sm:text-[13px] font-semibold text-ink font-inter">{b}</p>
+                 </div>
+               </ScrollReveal>
+             ))}
+           </div>
+           <div className="mt-8 p-4 sm:p-5 bg-amber-50 border border-amber-200 rounded-xl text-center">
+             <p className="text-[12px] sm:text-[13px] text-amber-800 font-inter"><strong>Notice:</strong> Copy Trading involves market risk. Past performance does not guarantee future results.</p>
+           </div>
+           <div className="text-center mt-6">
+             <Link to="/register" className="btn-blue btn-lg text-sm sm:text-base px-8 py-3 sm:py-4">Ready to Start Copy Trading?</Link>
+           </div>
+           <div className="mt-8 text-center">
+             <p className="text-[12px] sm:text-[13px] text-dark-400 font-inter mb-3">Timeline</p>
+             <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
+               {['Become a Member', 'Complete Verification', 'Connect Trading Account', 'Copy Trading Activated', 'Monitor Performance', 'Profit Sharing'].map((t, i) => (
+                 <span key={i} className="text-[11px] sm:text-[12px] bg-dark-50 border border-dark-100 rounded-full px-3 py-1 text-dark-500 font-inter">{t}</span>
+               ))}
+             </div>
+           </div>
+         </div>
+       </section>
 
-      <section className="py-[60px] sm:py-[80px] lg:py-[120px] bg-dark-50">
-        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-[640px] mx-auto mb-10 sm:mb-16">
-            <p className="eyebrow mb-3 text-[13px] sm:text-sm">Rank Progression</p>
-            <h2 className="text-[28px] sm:text-[36px] lg:text-[44px] font-extrabold mb-3 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Six tiers. Clear requirements at every step.</h2>
-            <p className="text-dark-500 text-[14px] sm:text-[16.5px] leading-relaxed font-inter">Ranks unlock as your direct referrals and team size grow - with commission percentage rising alongside.</p>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-            {ranks.map((r, i) => (
-              <ScrollReveal key={i} delay={i * 80}>
-                <div className="bg-white border border-dark-100 rounded-2xl p-4 sm:p-5 text-center shadow-card transition-all duration-300 hover:-translate-y-[5px] hover:shadow-card-md">
-                  <div className="font-mono font-bold text-primary-500 text-[11px] sm:text-[13px] tracking-wide">{r.tier}</div>
-                  <h4 className="text-lg sm:text-xl font-bold my-1.5 sm:my-2" style={{ fontFamily: '"Plus Jakarta Sans"' }}>{r.name}</h4>
-                  <div className="flex justify-between text-[11px] sm:text-[11.5px] text-dark-500 py-1 sm:py-1.5 border-t border-dark-100"><span>Direct</span><b className="text-ink font-semibold">{r.direct}</b></div>
-                  <div className="flex justify-between text-[11px] sm:text-[11.5px] text-dark-500 py-1 sm:py-1.5 border-t border-dark-100"><span>Team</span><b className="text-ink font-semibold">{r.team.toLocaleString()}</b></div>
-                  <div className="flex justify-between text-[11px] sm:text-[11.5px] text-dark-500 py-1 sm:py-1.5 border-t border-dark-100"><span>Commission</span><b className="text-ink font-semibold">{r.commission}</b></div>
-                </div>
-              </ScrollReveal>
-            ))}
-          </div>
-        </div>
-      </section>
+       <section className="py-[60px] sm:py-[80px] lg:py-[120px] bg-dark-50">
+         <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
+           <div className="text-center max-w-[640px] mx-auto mb-10 sm:mb-16">
+             <p className="eyebrow mb-3 text-[13px] sm:text-sm">Rank Progression</p>
+             <h2 className="text-[28px] sm:text-[36px] lg:text-[44px] font-extrabold mb-3 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Rank 1 to Rank 6. Higher ranks, higher rewards.</h2>
+             <p className="text-dark-500 text-[14px] sm:text-[16.5px] leading-relaxed font-inter">Commission is auto-configured by admin. As your rank grows, so does your earning potential.</p>
+           </div>
+           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+             {ranks.map((r, i) => (
+               <ScrollReveal key={i} delay={i * 80}>
+                 <div className="bg-white border border-dark-100 rounded-2xl p-4 sm:p-5 text-center shadow-card transition-all duration-300 hover:-translate-y-[5px] hover:shadow-card-md">
+                   <div className="font-mono font-bold text-primary-500 text-[11px] sm:text-[13px] tracking-wide">Rank {i + 1}</div>
+                   <h4 className="text-lg sm:text-xl font-bold my-1.5 sm:my-2" style={{ fontFamily: '"Plus Jakarta Sans"' }}>{r.name}</h4>
+                   <div className="flex justify-between text-[11px] sm:text-[11.5px] text-dark-500 py-1 sm:py-1.5 border-t border-dark-100"><span>Direct</span><b className="text-ink font-semibold">{r.direct}</b></div>
+                   <div className="flex justify-between text-[11px] sm:text-[11.5px] text-dark-500 py-1 sm:py-1.5 border-t border-dark-100"><span>Team</span><b className="text-ink font-semibold">{r.team.toLocaleString()}</b></div>
+                   <div className="flex justify-between text-[11px] sm:text-[11.5px] text-dark-500 py-1 sm:py-1.5 border-t border-dark-100"><span>Commission</span><b className="text-ink font-semibold">{r.commission}</b></div>
+                 </div>
+               </ScrollReveal>
+             ))}
+           </div>
+         </div>
+       </section>
 
       <section className="py-[60px] sm:py-[80px] lg:py-[120px]" id="pricing">
         <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
@@ -569,8 +623,8 @@ export default function Home() {
                   <li key={i} className="flex gap-2 items-center text-[13px] sm:text-[14.5px] font-inter"><span className="text-emerald-500 font-bold flex-shrink-0">&#10003;</span> {f}</li>
                 ))}
               </ul>
-              <Link to="/register" className="btn-blue btn-lg w-full text-sm sm:text-base py-3 sm:py-3.5">Join Now</Link>
-              <div className="text-[12px] sm:text-[12.5px] text-dark-500 mt-3 sm:mt-4 font-inter">14-day money-back guarantee, no questions asked.</div>
+               <Link to="/register" className="btn-blue btn-lg w-full text-sm sm:text-base py-3 sm:py-3.5">Join Now</Link>
+               <div className="text-[12px] sm:text-[12.5px] text-dark-500 mt-3 sm:mt-4 font-inter">Education • Signals • Copy Trading • Affiliate Rewards • Profit Sharing</div>
             </div>
           </ScrollReveal>
         </div>

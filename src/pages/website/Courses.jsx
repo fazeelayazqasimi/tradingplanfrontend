@@ -16,6 +16,22 @@ const schedule = [
   { day: 'Mentor Roundtable', time: 'Karachi - Nov 05', badge: 'Open', live: true },
 ];
 
+const educationFeatures = [
+  { title: 'Forex Market Fundamentals', icon: '📚' },
+  { title: 'Technical Analysis', icon: '📊' },
+  { title: 'Risk Management', icon: '🛡️' },
+  { title: 'Trading Psychology', icon: '🧠' },
+  { title: 'Live Market Analysis', icon: '🔍' },
+];
+
+const learningOptions = [
+  { title: 'Physical Classes', desc: 'Classroom learning with experienced mentors in Karachi.', icon: '🏫' },
+  { title: 'Live Online Classes', desc: 'Interactive online sessions from anywhere in Pakistan.', icon: '💻' },
+  { title: 'Weekend Batch', desc: 'Saturday & Sunday | 6:00 PM – 8:00 PM (PKT)', icon: '📅' },
+  { title: 'Weekday Batch', desc: 'Wednesday & Thursday | 7:30 PM – 9:30 PM (PKT)', icon: '🗓️' },
+  { title: 'Online Batch', desc: 'Monday & Tuesday | 8:30 PM – 10:00 PM (PKT)', icon: '🌐' },
+];
+
 function ScrollReveal({ children, className = '', delay = 0 }) {
   const ref = useRef(null);
   useEffect(() => {
@@ -119,6 +135,61 @@ export default function Courses() {
               ))}
             </div>
           )}
+        </div>
+      </section>
+
+      {/* Education Section */}
+      <section className="section">
+        <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-[640px] mx-auto mb-10 sm:mb-16">
+            <p className="eyebrow mb-3 text-[13px] sm:text-sm">EDUCATION</p>
+            <h2 className="text-[28px] sm:text-[36px] lg:text-[44px] font-extrabold mb-3 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Learn Forex the Right Way.</h2>
+            <p className="text-dark-500 text-[14px] sm:text-[16px] leading-relaxed font-inter">The 4X Hub provides structured Forex education through our Educational Partner, Dream Trader Academy. Our goal is to help beginners and aspiring traders build strong trading knowledge, practical skills, and confidence.</p>
+          </div>
+
+          <div className="mb-12">
+            <h3 className="text-[20px] font-bold mb-4 text-ink" style={{ fontFamily: '"Plus Jakarta Sans"' }}>What You'll Learn</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+              {educationFeatures.map((f, i) => (
+                <ScrollReveal key={i} delay={i * 60}>
+                  <div className="bg-white border border-dark-100 rounded-[16px] p-5 text-center shadow-card">
+                    <span className="text-2xl mb-2 block">{f.icon}</span>
+                    <h4 className="text-[13px] sm:text-[14px] font-bold text-ink font-inter">{f.title}</h4>
+                  </div>
+                </ScrollReveal>
+              ))}
+            </div>
+          </div>
+
+          <div className="mb-12">
+            <h3 className="text-[20px] font-bold mb-4 text-ink" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Learning Options</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {learningOptions.map((o, i) => (
+                <ScrollReveal key={i} delay={i * 60}>
+                  <div className="bg-white border border-dark-100 rounded-[16px] p-5 shadow-card hover:shadow-card-md transition-shadow">
+                    <span className="text-xl mr-2">{o.icon}</span>
+                    <h4 className="font-bold text-[14px] text-ink" style={{ fontFamily: '"Plus Jakarta Sans"' }}>{o.title}</h4>
+                    <p className="text-[13px] text-dark-500 mt-1 font-inter">{o.desc}</p>
+                  </div>
+                </ScrollReveal>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-dark-50 border border-dark-100 rounded-[18px] p-6 sm:p-8">
+            <h3 className="text-[18px] font-bold mb-4 text-ink" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Member Benefits</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {['Professional Education', 'Study Materials', 'Class Recordings', 'Mentor Support', 'Live Q&A Sessions', 'Trading Signals', 'Copy Trading Access', 'Certificates', 'Community Support'].map((b, i) => (
+                <div key={i} className="flex items-center gap-2 text-[13px] sm:text-[14px] font-inter text-dark-500">
+                  <span className="text-emerald-500 font-bold flex-shrink-0">&#10003;</span> {b}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="text-center mt-10">
+            <Link to="/register" className="btn-blue btn-lg text-sm sm:text-base px-8 py-3 sm:py-4">Start Learning Today</Link>
+          </div>
         </div>
       </section>
 
