@@ -130,7 +130,6 @@ const adminService = {
 
   // Backup & Restore
   getBackupStats: () => unwrap(api.get('/admin/backup/stats')),
-  downloadBackup: () => unwrap(api.get('/admin/backup', { responseType: 'blob' })),
   importBackup: (data) => unwrap(api.post('/admin/backup/import', data)),
   deleteAllData: () => unwrap(api.delete('/admin/backup/all')),
 };
