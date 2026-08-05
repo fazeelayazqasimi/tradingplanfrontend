@@ -876,16 +876,20 @@ export default function Wallet() {
               error={formErrors.walletAddress}
             />
 
-            {wallet && (
-              <div className="p-3 rounded-[11px] bg-dark-50">
-                <p className="text-xs text-dark-500">Available for withdrawal</p>
-                <p className="text-lg font-bold text-ink">
-                  {formatCurrency(wallet?.availableBalance ?? wallet?.available ?? wallet?.balance ?? 0)}
-                </p>
-              </div>
-            )}
+{wallet && (
+               <div className="p-3 rounded-[11px] bg-dark-50">
+                 <p className="text-xs text-dark-500">Available for withdrawal</p>
+                 <p className="text-lg font-bold text-ink">
+                   {formatCurrency(wallet?.availableBalance ?? wallet?.available ?? wallet?.balance ?? 0)}
+                 </p>
+               </div>
+             )}
 
-            <div className="p-3 rounded-xl bg-amber-50 border border-amber-200">
+             <div className="p-3 rounded-xl bg-green-50 border border-green-200">
+               <p className="text-xs text-green-700">Minimum withdrawal: $30</p>
+             </div>
+
+             <div className="p-3 rounded-xl bg-amber-50 border border-amber-200">
               <p className="text-xs text-amber-700">Withdrawal processing takes up to {withdrawFeeInfo.processingHours || 24} hours. A {withdrawFeeInfo.feeType === 'fixed' ? `$${withdrawFeeInfo.feeFixed} ` : `${withdrawFeeInfo.feePercent}% `}withdrawal fee will be deducted.</p>
             </div>
 
