@@ -222,18 +222,6 @@ export default function TeamMembers() {
     }
   });
 
-  const totalDirect =
-    stats?.totalDirect ??
-    stats?.directCount ??
-    stats?.direct_count ??
-    directReferrals.length;
-  const totalIndirect =
-    stats?.totalIndirect ??
-    stats?.indirectCount ??
-    stats?.indirect_count ??
-    indirectReferrals.length + freeMembers;
-  const totalCommission = stats?.totalCommission ?? stats?.total_earnings ?? stats?.totalEarnings ?? 0;
-
   const allMembers = [...directReferrals, ...indirectReferrals];
   const activeMembers =
     stats?.activeMembers ??
@@ -246,6 +234,18 @@ export default function TeamMembers() {
     stats?.freeMembers ??
     stats?.free_members ??
     allMembers.length - activeMembers;
+
+  const totalDirect =
+    stats?.totalDirect ??
+    stats?.directCount ??
+    stats?.direct_count ??
+    directReferrals.length;
+  const totalIndirect =
+    stats?.totalIndirect ??
+    stats?.indirectCount ??
+    stats?.indirect_count ??
+    indirectReferrals.length + freeMembers;
+  const totalCommission = stats?.totalCommission ?? stats?.total_earnings ?? stats?.totalEarnings ?? 0;
 
   const totalMembers = stats?.totalReferrals ?? totalDirect + totalIndirect + freeMembers;
 
