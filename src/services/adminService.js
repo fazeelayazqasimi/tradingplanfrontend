@@ -127,5 +127,11 @@ const adminService = {
   createMarketUpdate: (data) => unwrap(api.post('/market-updates', data)),
   updateMarketUpdate: (id, data) => unwrap(api.put(`/market-updates/${id}`, data)),
   deleteMarketUpdate: (id) => unwrap(api.delete(`/market-updates/${id}`)),
+
+  // Backup & Restore
+  getBackupStats: () => unwrap(api.get('/admin/backup/stats')),
+  downloadBackup: () => unwrap(api.get('/admin/backup', { responseType: 'blob' })),
+  importBackup: (data) => unwrap(api.post('/admin/backup/import', data)),
+  deleteAllData: () => unwrap(api.delete('/admin/backup/all')),
 };
 export default adminService;

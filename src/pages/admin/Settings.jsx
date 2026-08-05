@@ -22,6 +22,10 @@ import {
   FiEye,
   FiEyeOff,
   FiPercent,
+  FiDownload,
+  FiUploadCloud,
+  FiAlertTriangle,
+  FiDatabase,
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Button from '../../components/ui/Button';
@@ -43,6 +47,7 @@ const SECTIONS = [
   { id: 'funding', label: 'Funding Wallet', icon: FiDollarSign },
   { id: 'trading', label: 'Trading', icon: FiTrendingUp },
   { id: 'smtp', label: 'SMTP', icon: FiMail },
+  { id: 'backup', label: 'Backup & Data', icon: FiDatabase },
 ];
 
 const SETTING_FIELDS = {
@@ -125,6 +130,12 @@ export default function Settings() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPasswords, setShowPasswords] = useState({ current: false, new: false, confirm: false });
   const [changingPassword, setChangingPassword] = useState(false);
+  const [backupStats, setBackupStats] = useState(null);
+  const [backupLoading, setBackupLoading] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [deletingAll, setDeletingAll] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState('');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const fetchSettings = useCallback(async () => {
     try {
@@ -145,9 +156,24 @@ export default function Settings() {
     }
   }, []);
 
+  const fetchBackupStats = useCallback(async () => {
+    try {
+      const res = await adminService.getBackupStats();
+      setBackupStats(res.data || res);
+    } catch {
+      setBackupStats(null);
+    }
+  }, []);
+
   useEffect(() => {
     fetchSettings();
   }, [fetchSettings]);
+
+  useEffect(() => {
+    if (activeSection === 'backup') {
+      fetchBackupStats();
+    }
+  }, [activeSection, fetchBackupStats]);
 
   const handleChange = (key, value) => {
     setEditedSettings((prev) => ({ ...prev, [key]: value }));
@@ -616,6 +642,166 @@ export default function Settings() {
                   SMTP settings are read-only here. To modify them, update the corresponding environment
                   variables on your server and restart the application.
                 </p>
+              </div>
+            )}
+
+            {activeSection === 'backup' && (
+              <div className="space-y-6 mt-4">
+                <Card className="p-6">
+                  <h3 className="text-lg font-semibold text-ink mb-2 flex items-center gap-2">
+                    <FiDatabase className="text-primary-500" /> Database Backup
+                  </h3>
+                  <p className="text-sm text-dark-500 mb-4">
+                    Export all database collections as a JSON file. This includes all users, courses,
+                    transactions, settings, and all other data.
+                  </p>
+                  <div className="flex gap-3 flex-wrap">
+                      <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={async () => {
+                        setBackupLoading(true);
+                        try {
+                          const res = await api.get('/admin/backup', { responseType: 'blob' });
+                          const blob = new Blob([res.data], { type: 'application/json' });
+                          const url = URL.createObjectURL(blob);
+                          const a = document.createElement('a');
+                          a.href = url;
+                          a.download = `backup-${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+                          document.body.appendChild(a);
+                          a.click();
+                          document.body.removeChild(a);
+                          URL.revokeObjectURL(url);
+                          toast.success('Backup downloaded');
+                        } catch (err) {
+                          toast.error('Failed to download backup');
+                        } finally {
+                          setBackupLoading(false);
+                        }
+                      }}
+                      loading={backupLoading}
+                    >
+                      <FiDownload size={14} /> Download Backup
+                    </Button>
+                  </div>
+                </Card>
+
+                <Card className="p-6">
+                  <h3 className="text-lg font-semibold text-ink mb-2 flex items-center gap-2">
+                    <FiUploadCloud className="text-primary-500" /> Restore from Backup
+                  </h3>
+                  <p className="text-sm text-dark-500 mb-4">
+                    Upload a previously exported JSON backup file to restore all data. This will
+                    replace all existing data.
+                  </p>
+                  <div className="flex gap-3 flex-wrap items-center">
+                    <input
+                      type="file"
+                      accept=".json"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        setImporting(true);
+                        try {
+                          const text = await file.text();
+                          const json = JSON.parse(text);
+                          await adminService.importBackup(json);
+                          toast.success('Backup imported successfully');
+                          fetchBackupStats();
+                        } catch (err) {
+                          toast.error(err.response?.data?.message || 'Failed to import backup');
+                        } finally {
+                          setImporting(false);
+                          e.target.value = '';
+                        }
+                      }}
+                      className="text-sm"
+                    />
+                    <Button variant="primary" size="sm" loading={importing} disabled={importing}>
+                      <FiUploadCloud size={14} /> Import Backup
+                    </Button>
+                  </div>
+                </Card>
+
+                <Card className="p-6 border-red-200">
+                  <h3 className="text-lg font-semibold text-red-600 mb-2 flex items-center gap-2">
+                    <FiTrash2 className="text-red-500" /> Delete All Data
+                  </h3>
+                  <p className="text-sm text-dark-500 mb-4">
+                    <strong className="text-red-600">Warning:</strong> This will permanently delete
+                    all data in the database except protected platform settings. This action cannot be
+                    undone.
+                  </p>
+                  {!showDeleteConfirm ? (
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      onClick={() => setShowDeleteConfirm(true)}
+                    >
+                      <FiTrash2 size={14} /> Delete All Data
+                    </Button>
+                  ) : (
+                    <div className="space-y-3">
+                      <p className="text-sm text-dark-600">
+                        Type <strong>delete all</strong> to confirm:
+                      </p>
+                      <Input
+                        placeholder="Type 'delete all' to confirm"
+                        value={deleteConfirm}
+                        onChange={(e) => setDeleteConfirm(e.target.value)}
+                        className="max-w-sm"
+                      />
+                      <div className="flex gap-2">
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          disabled={deleteConfirm !== 'delete all'}
+                          onClick={async () => {
+                            setDeletingAll(true);
+                            try {
+                              await adminService.deleteAllData();
+                              toast.success('All data deleted');
+                              setShowDeleteConfirm(false);
+                              setDeleteConfirm('');
+                              fetchBackupStats();
+                            } catch (err) {
+                              toast.error('Failed to delete data');
+                            } finally {
+                              setDeletingAll(false);
+                            }
+                          }}
+                          loading={deletingAll}
+                        >
+                          <FiTrash2 size={14} /> Confirm Delete
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setShowDeleteConfirm(false);
+                            setDeleteConfirm('');
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </Card>
+
+                {backupStats && (
+                  <Card className="p-6">
+                    <h3 className="text-lg font-semibold text-ink mb-3">Collection Stats</h3>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                      {Object.entries(backupStats).map(([name, count]) => (
+                        <div key={name} className="flex items-center justify-between p-2 rounded-lg bg-dark-50">
+                          <span className="text-xs text-dark-600">{name}</span>
+                          <span className="text-sm font-semibold text-ink">{count}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+                )}
               </div>
             )}
           </Card>
