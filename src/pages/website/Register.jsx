@@ -371,17 +371,30 @@ export default function Register() {
             {form.formState.errors.confirmPassword && <p className="mt-1 text-xs text-red-500">{form.formState.errors.confirmPassword.message}</p>}
           </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-ink mb-1">Referral Code <span className="text-dark-400 font-normal">(optional)</span></label>
-            <input
-              type="text"
-              placeholder="e.g. JOHN2024"
-              className="w-full px-3 py-2.5 text-sm rounded-xl border border-dark-200 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
-              {...form.register('referralCode')}
-            />
-          </div>
+<div>
+             <label className="block text-xs font-semibold text-ink mb-1">Referral Code <span className="text-dark-400 font-normal">(optional)</span></label>
+             <input
+               type="text"
+               placeholder="e.g. JOHN2024"
+               className="w-full px-3 py-2.5 text-sm rounded-xl border border-dark-200 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
+               {...form.register('referralCode')}
+             />
+           </div>
 
-          <button
+           <div className="flex items-start gap-3">
+             <input
+               type="checkbox"
+               id="terms"
+               {...form.register('terms', { required: 'You must agree to the Terms & Conditions' })}
+               className="mt-1 w-4 h-4 accent-primary-500"
+             />
+             <label htmlFor="terms" className="text-[13px] text-dark-500 font-inter">
+               I Agree with the <Link to="/terms" target="_blank" rel="noopener noreferrer" className="text-primary-500 hover:underline font-semibold">Terms &amp; Conditions</Link>, Privacy Policy, and Risk Disclaimer
+             </label>
+           </div>
+           {form.formState.errors.terms && <p className="text-xs text-red-500 mt-1">{form.formState.errors.terms.message}</p>}
+
+           <button
             type="submit"
             disabled={otpLoading}
             className="w-full py-3 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 active:scale-[0.98] transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
