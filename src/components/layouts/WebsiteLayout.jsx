@@ -7,6 +7,62 @@ import ThemeToggle from '../ui/ThemeToggle';
 import NewsletterPopup from '../website/NewsletterPopup';
 import NotificationBell from '../NotificationBell';
 import BrandLogo from '../shared/BrandLogo';
+import websiteService from '../../services/websiteService';
+
+function LiveRatesBar() {
+  const [rates, setRates] = useState({ gold: '2,394.10', goldChange: '+0.35%', eurUsd: '1.0842', eurChange: '+0.12%', gbpUsd: '1.2650', usdJpy: '151.80' });
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    const fetchRates = async () => {
+      try {
+        const [goldRes, forexRes] = await Promise.all([
+          websiteService.getGoldPrice().catch(() => null),
+          websiteService.getForexRates().catch(() => null),
+        ]);
+        const goldData = goldRes?.data?.data;
+        const forexData = forexRes?.data?.data;
+        if (goldData) {
+          setRates(prev => ({
+            ...prev,
+            gold: Number(goldData.price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+            goldChange: goldData.change,
+          }));
+        }
+        if (forexData) {
+          setRates(prev => ({
+            ...prev,
+            eurUsd: forexData['EUR/USD']?.bid || prev.eurUsd,
+            eurChange: forexData['EUR/USD']?.change || prev.eurChange,
+            gbpUsd: forexData['GBP/USD']?.bid || prev.gbpUsd,
+            usdJpy: forexData['USD/JPY']?.bid || prev.usdJpy,
+          }));
+        }
+      } catch {}
+    };
+    fetchRates();
+    const interval = setInterval(fetchRates, 15000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const changeColor = (chg) => chg.startsWith('+') ? 'text-emerald-400' : 'text-red-400';
+
+  return (
+    <div className="bg-ink text-white py-1.5 px-4 overflow-hidden">
+      <div className="max-w-[1240px] mx-auto flex items-center justify-center gap-4 sm:gap-8 text-[11px] sm:text-[12px] font-mono whitespace-nowrap">
+        <span className="flex items-center gap-1.5"><span className="text-gold-400 font-bold">XAU/USD</span> <span>${rates.gold}</span> <span className={changeColor(rates.goldChange)}>{rates.goldChange}</span></span>
+        <span className="text-white/20 hidden sm:inline">|</span>
+        <span className="flex items-center gap-1.5"><span className="text-primary-400 font-bold">EUR/USD</span> <span>{rates.eurUsd}</span> <span className={changeColor(rates.eurChange)}>{rates.eurChange}</span></span>
+        <span className="text-white/20 hidden sm:inline">|</span>
+        <span className="flex items-center gap-1.5"><span className="text-primary-400 font-bold">GBP/USD</span> <span>{rates.gbpUsd}</span></span>
+        <span className="text-white/20 hidden sm:inline">|</span>
+        <span className="flex items-center gap-1.5"><span className="text-primary-400 font-bold">USD/JPY</span> <span>{rates.usdJpy}</span></span>
+        <span className="text-white/20 hidden sm:inline">|</span>
+        <span className="flex items-center gap-1.5"><span className="text-primary-400 font-bold">US30</span> <span>44,250</span></span>
+      </div>
+    </div>
+  );
+}
 
 function MarqueeTicker() {
   const tickerRef = useRef(null);
@@ -118,8 +174,9 @@ export default function WebsiteLayout() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <LiveRatesBar />
       <MarqueeTicker />
-      <header className="fixed top-[26px] sm:top-[30px] left-0 right-0 z-40 bg-transparent transition-all duration-[400ms]" id="nav-header">
+      <header className="fixed top-[52px] sm:top-[56px] left-0 right-0 z-40 bg-transparent transition-all duration-[400ms]" id="nav-header">
         <div className="max-w-[1240px] mx-auto px-3 sm:px-8">
           <div className="flex items-center justify-between h-[60px] sm:h-[72px] bg-white/80 backdrop-blur-xl rounded-xl sm:rounded-2xl border border-dark-100/50 px-3 sm:px-6 shadow-glass mt-2">
             <Link to="/" className="flex items-center gap-2 flex-shrink-0">
@@ -196,7 +253,7 @@ export default function WebsiteLayout() {
           </div>
         </div>
       </header>
-      <main className="flex-1 pt-[86px] sm:pt-[102px]"><Outlet /></main>
+      <main className="flex-1 pt-[112px] sm:pt-[128px]"><Outlet /></main>
       <NewsletterPopup />
       <footer className="bg-dark-900 text-white border-t border-dark-800 pt-14 sm:pt-20 pb-6 sm:pb-8 mt-12 sm:mt-16">
         <div className="max-w-[1240px] mx-auto px-4 sm:px-8">
