@@ -30,7 +30,7 @@ const item = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transiti
 const walletStatsData = [
   { label: "Wallet Balance", icon: FiCreditCard, gradient: "from-blue-500 to-blue-700", textColor: "text-blue-600", badge: "blue" },
   { label: "Reward Credits", icon: FiGift, gradient: "from-amber-500 to-orange-600", textColor: "text-amber-600", badge: "amber" },
-  { label: "All Incomes", icon: FiTrendingUp, gradient: "from-emerald-500 to-emerald-700", textColor: "text-emerald-600", badge: "emerald" },
+  { label: "Affiliate Earnings", icon: FiTrendingUp, gradient: "from-black to-gray-800", textColor: "text-white", badge: "emerald" },
   { label: "Pending Earnings", icon: FiClock, gradient: "from-violet-500 to-violet-700", textColor: "text-violet-600", badge: "violet" },
 ];
 
@@ -560,7 +560,7 @@ useEffect(() => {
             const Icon = stat.icon;
             const value = stat.label === "Wallet Balance" ? availableBalance
                         : stat.label === "Reward Credits" ? rewardCredits
-                        : stat.label === "Affiliate Earnings" ? totalEarnings
+                         : stat.label === "Affiliate Earnings" ? totalEarnings
                         : pendingEarnings;
             return (
               <motion.div key={stat.label} variants={item}>
