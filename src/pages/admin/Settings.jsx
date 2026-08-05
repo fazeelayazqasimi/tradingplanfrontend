@@ -662,8 +662,9 @@ export default function Settings() {
                       onClick={async () => {
                         setBackupLoading(true);
                         try {
-                          const res = await api.get('/admin/backup', { responseType: 'blob' });
-                          const blob = new Blob([res.data], { type: 'application/json' });
+                          const res = await api.get('/admin/backup');
+                          const json = JSON.stringify(res.data || res, null, 2);
+                          const blob = new Blob([json], { type: 'application/json' });
                           const url = URL.createObjectURL(blob);
                           const a = document.createElement('a');
                           a.href = url;
