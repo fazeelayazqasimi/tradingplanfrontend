@@ -358,13 +358,15 @@ export default function Wallet() {
     },
   ];
 
-  const validateWithdraw = () => {
-    const errors = {};
-    const amt = parseFloat(withdrawForm.amount);
-    if (!withdrawForm.amount || isNaN(amt) || amt <= 0) {
-      errors.amount = 'Enter a valid amount';
-    }
-    const available = wallet?.availableBalance ?? wallet?.available ?? wallet?.balance ?? 0;
+const validateWithdraw = () => {
+     const errors = {};
+     const amt = parseFloat(withdrawForm.amount);
+     if (!withdrawForm.amount || isNaN(amt) || amt <= 0) {
+       errors.amount = 'Enter a valid amount';
+     } else if (amt < 30) {
+       errors.amount = 'Minimum withdrawal amount is $30';
+     }
+     const available = wallet?.availableBalance ?? wallet?.available ?? wallet?.balance ?? 0;
     if (amt > available) {
       errors.amount = 'Insufficient balance';
     }
