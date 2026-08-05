@@ -210,7 +210,7 @@ export default function StudentLayout() {
             <div className="flex items-center gap-3 ml-auto">
               <NotificationBell />
               <div className="flex items-center gap-3 pl-3 border-l border-dark-100">
-                <div className="w-8 h-8 lg:w-9 lg:h-9 rounded-full bg-primary-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
+                <div className="w-8 h-8 lg:w-9 lg:h-9 rounded-full bg-primary-500 flex items-center justify-center text-black text-xs font-bold shrink-0">
                   {getInitials(user?.firstName, user?.lastName)}
                 </div>
                 <div className="hidden sm:block">

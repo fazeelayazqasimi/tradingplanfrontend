@@ -30,7 +30,7 @@ const item = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transiti
 const walletStatsData = [
   { label: "Wallet Balance", icon: FiCreditCard, gradient: "from-blue-500 to-blue-700", textColor: "text-blue-600", badge: "blue" },
   { label: "Reward Credits", icon: FiGift, gradient: "from-amber-500 to-orange-600", textColor: "text-amber-600", badge: "amber" },
-  { label: "Affiliate Earnings", icon: FiTrendingUp, gradient: "from-black to-gray-800", textColor: "text-white", badge: "emerald" },
+  { label: "Affiliate Earnings", icon: FiTrendingUp, gradient: "from-primary-500 to-emerald-500", textColor: "text-black", badge: "emerald" },
   { label: "Pending Earnings", icon: FiClock, gradient: "from-violet-500 to-violet-700", textColor: "text-violet-600", badge: "violet" },
 ];
 
@@ -148,12 +148,13 @@ useEffect(() => {
 
   const availableBalance = walletStats?.available ?? walletData?.availableBalance ?? walletData?.balance ?? 0;
   const pendingEarnings = walletStats?.pending ?? walletData?.pendingBalance ?? 0;
-  const totalEarnings = walletStats?.totalEarned ?? walletData?.totalEarned ?? 0;
+  const totalEarnings = (walletStats?.totalEarned || 0) + (referralStats?.totalEarnings || 0);
   const rewardCredits = fundingWalletData?.availableBalance ?? fundingWalletData?.available ?? 0;
   const directReferrals = referralStats?.directReferrals || 0;
   const indirectReferrals = referralStats?.indirectReferrals || 0;
   const activeMembers = referralStats?.activeMembers || referralStats?.activeReferrals || 0;
-  const teamSize = directReferrals + indirectReferrals;
+  const freeMembers = referralStats?.freeMembers || 0;
+  const teamSize = directReferrals + indirectReferrals + freeMembers;
   const currentRankName = rank?.name || "—";
   const nextRankName = nextRank?.name || "—";
 
@@ -246,7 +247,6 @@ useEffect(() => {
   };
 
   const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(" ") || "Trader";
-  const upline = user?.referredBy && typeof user.referredBy === 'object' ? user.referredBy : null;
 
   if (loading) {
     return (
@@ -261,7 +261,7 @@ useEffect(() => {
     <div className="space-y-6">
       {/* Big Hero Welcome */}
       <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-primary-600 via-primary-500 to-emerald-500 text-white p-6 sm:p-8">
+        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-primary-600 via-primary-500 to-emerald-500 text-black p-6 sm:p-8">
           <div className="absolute top-0 right-0 w-72 h-72 bg-white/5 rounded-full blur-3xl -translate-y-1/3 translate-x-1/3" />
           <div className="absolute bottom-0 left-0 w-56 h-56 bg-white/5 rounded-full blur-2xl translate-y-1/2 -translate-x-1/4" />
           <div className="absolute top-1/2 left-1/3 w-32 h-32 bg-yellow-300/10 rounded-full blur-2xl" />
@@ -269,7 +269,7 @@ useEffect(() => {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <FiZap size={24} className="text-yellow-300" />
-                <span className="text-sm font-bold text-white/70 uppercase tracking-wider">Dashboard</span>
+                <span className="text-sm font-bold text-black/70 uppercase tracking-wider">Dashboard</span>
               </div>
               <Badge variant={isFreeUser ? "neutral" : "success"} className="text-xs">
                 {isFreeUser ? "Free Member" : "Premium"}
@@ -280,7 +280,7 @@ useEffect(() => {
                 <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold mb-1">
                   Hey, {fullName}! 👋
                 </h1>
-                <p className="text-white/70 text-sm sm:text-base max-w-lg">
+                <p className="text-black/70 text-sm sm:text-base max-w-lg">
                   {isFreeUser
                     ? "Explore free resources and activate your membership to unlock premium features."
                     : "Your trading empire awaits — here's your overview."}
@@ -352,37 +352,9 @@ useEffect(() => {
             </div>
           </div>
         </Card>
-      </motion.div>
+</motion.div>
 
-      {/* My Upline */}
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.09 }}>
-        <Card className="p-5 sm:p-6 relative overflow-hidden border-0 bg-gradient-to-r from-blue-50 via-cyan-50 to-emerald-50">
-          <div className="absolute top-0 right-0 w-40 h-40 bg-cyan-200/20 rounded-full blur-3xl" />
-          <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white shadow-lg">
-                <FiUserPlus size={20} />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-dark-400 uppercase tracking-wider mb-1">My Upline</p>
-                {upline ? (
-                  <>
-                    <p className="text-base font-extrabold text-ink">{upline.firstName} {upline.lastName}</p>
-                    <p className="text-xs text-dark-500">{upline.email || ''}{upline.referralCode ? ` | Code: ${upline.referralCode}` : ''}</p>
-                  </>
-                ) : (
-                  <>
-                    <p className="text-base font-extrabold text-ink">Direct Member</p>
-                    <p className="text-xs text-dark-500">You joined without an upline. Use your referral link below to build your team.</p>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-        </Card>
-      </motion.div>
-
-      {/* Today's Market Overview */}
+       {/* Today's Market Overview */}
       {(goldTrend || marketNews || nextLiveClass || dailyMarketSummary || openSignalsCount > 0) && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <div className="flex items-center justify-between mb-3">
@@ -666,15 +638,15 @@ useEffect(() => {
 
       {/* Available Balance Highlight */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-        <Card className="p-5 sm:p-6 bg-gradient-to-r from-primary-500 to-emerald-500 text-white border-0 relative overflow-hidden">
+        <Card className="p-5 sm:p-6 bg-gradient-to-r from-primary-500 to-emerald-500 text-black border-0 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4" />
           <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full blur-2xl translate-y-1/2 -translate-x-1/4" />
           <div className="absolute top-1/2 left-1/2 w-24 h-24 bg-yellow-300/10 rounded-full blur-2xl" />
           <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <p className="text-sm font-medium text-white/80 uppercase tracking-widest mb-1">Available Balance</p>
-              <p className="text-3xl sm:text-4xl font-extrabold text-white">{formatCurrency(availableBalance)}</p>
-              <p className="text-xs text-white/60 mt-1">Pending: {formatCurrency(pendingEarnings)}</p>
+              <p className="text-sm font-medium text-black/80 uppercase tracking-widest mb-1">Available Balance</p>
+              <p className="text-3xl sm:text-4xl font-extrabold text-black">{formatCurrency(availableBalance)}</p>
+              <p className="text-xs text-black/60 mt-1">Pending: {formatCurrency(pendingEarnings)}</p>
             </div>
             <div className="flex gap-2">
               <Link to="/student/wallet"><Button variant="white" size="sm">View Wallet</Button></Link>
@@ -695,7 +667,7 @@ useEffect(() => {
           <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             <div className="lg:col-span-2">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary-500 to-emerald-500 flex items-center justify-center text-white shadow-lg">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary-500 to-emerald-500 flex items-center justify-center text-black shadow-lg">
                   <FiGlobe size={22} />
                 </div>
                 <div>
