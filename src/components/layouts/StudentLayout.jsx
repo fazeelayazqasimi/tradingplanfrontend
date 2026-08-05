@@ -78,7 +78,7 @@ const bottomNavLinks = [
 
 export default function StudentLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [openSections, setOpenSections] = useState({ main: true, learning: true, finance: true, network: true, account: false });
+  const [openSections, setOpenSections] = useState({});
   const { pathname } = useLocation();
   const { user, logout } = useAuth();
   const { getSetting } = useSettings();
@@ -109,7 +109,7 @@ export default function StudentLayout() {
       )}
 
       <aside
-        className={`fixed top-0 left-0 z-50 h-full w-72 bg-white border-r border-dark-100 transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+        className={`fixed top-0 left-0 z-50 h-full w-72 bg-white border-r border-dark-100 transition-transform duration-300 ease-in-out ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >

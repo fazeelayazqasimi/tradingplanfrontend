@@ -101,7 +101,7 @@ const bottomNavLinks = [
 
 export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [openSections, setOpenSections] = useState({ main: true, education: true, finance: true, marketing: true, network: true, support: true, settings: true });
+  const [openSections, setOpenSections] = useState({});
   const [pendingCount, setPendingCount] = useState(0);
   const [pendingList, setPendingList] = useState([]);
   const [pendingModalOpen, setPendingModalOpen] = useState(false);
@@ -185,7 +185,7 @@ export default function AdminLayout() {
       )}
 
       <aside
-        className={`fixed top-0 left-0 z-50 h-full w-72 bg-white border-r border-dark-100 transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+        className={`fixed top-0 left-0 z-50 h-full w-72 bg-white border-r border-dark-100 transition-transform duration-300 ease-in-out ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
