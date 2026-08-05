@@ -154,7 +154,7 @@ useEffect(() => {
   const indirectReferrals = referralStats?.indirectReferrals || 0;
   const activeMembers = referralStats?.activeMembers || referralStats?.activeReferrals || 0;
   const freeMembers = referralStats?.freeMembers || 0;
-  const teamSize = directReferrals + indirectReferrals + freeMembers;
+  const teamSize = referralStats?.totalReferrals || (directReferrals + indirectReferrals + freeMembers);
   const currentRankName = rank?.name || "—";
   const nextRankName = nextRank?.name || "—";
 

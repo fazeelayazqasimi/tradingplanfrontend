@@ -232,7 +232,7 @@ export default function TeamMembers() {
     stats?.indirectCount ??
     stats?.indirect_count ??
     indirectReferrals.length;
-  const totalMembers = stats?.totalReferrals ?? totalDirect + totalIndirect;
+  const totalMembers = stats?.totalReferrals ?? totalDirect + totalIndirect + freeMembers;
   const totalCommission = stats?.totalCommission ?? stats?.total_earnings ?? stats?.totalEarnings ?? 0;
 
   const allMembers = [...directReferrals, ...indirectReferrals];
