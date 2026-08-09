@@ -11,8 +11,8 @@ import Input from "../../components/ui/Input";
 import Modal from "../../components/ui/Modal";
 import { useAuth } from "../../context/AuthContext";
 import { formatCurrency, copyToClipboard } from "../../utils/helpers";
-import SystemFlow from "../../components/website/SystemFlow";
 import LiveRatesMarquee from "../../components/shared/LiveRatesMarquee";
+import MarketSessionsWidget from "../../components/shared/MarketSessionsWidget";
 import studentService from "../../services/studentService";
 import walletService from "../../services/walletService";
 import referralService from "../../services/referralService";
@@ -149,7 +149,7 @@ useEffect(() => {
 
   const availableBalance = walletStats?.available ?? walletData?.availableBalance ?? walletData?.balance ?? 0;
   const pendingEarnings = walletStats?.pending ?? walletData?.pendingBalance ?? 0;
-  const totalEarnings = (walletStats?.totalEarned || 0) + (referralStats?.totalEarnings || 0);
+  const totalEarnings = (referralStats?.totalEarnings || 0) + (referralStats?.freeRegistrationEarnings || 0);
   const rewardCredits = fundingWalletData?.availableBalance ?? fundingWalletData?.available ?? 0;
   const directReferrals = referralStats?.directReferrals || 0;
   const indirectReferrals = referralStats?.indirectReferrals || 0;
@@ -701,9 +701,9 @@ useEffect(() => {
         </Card>
       </motion.div>
 
-      {/* System Flow */}
+      {/* Market Sessions */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="mt-4">
-        <Card className="p-5"><SystemFlow compact /></Card>
+        <Card className="p-5"><MarketSessionsWidget /></Card>
       </motion.div>
 
       {/* Activate Now Modal */}

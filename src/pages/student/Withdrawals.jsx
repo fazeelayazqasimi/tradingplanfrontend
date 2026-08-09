@@ -21,6 +21,7 @@ import Select from '../../components/ui/Select';
 import Pagination from '../../components/ui/Pagination';
 import studentService from '../../services/studentService';
 import walletService from '../../services/walletService';
+import { useAuth } from '../../context/AuthContext';
 import { formatCurrency, formatDate } from '../../utils/helpers';
 import usePagination from '../../hooks/usePagination';
 
@@ -46,6 +47,8 @@ const item = {
 };
 
 export default function Withdrawals() {
+  const { user } = useAuth();
+  const isActivated = user?.subscriptionStatus === 'active';
   const [wallet, setWallet] = useState(null);
   const [withdrawals, setWithdrawals] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -255,12 +258,20 @@ const validateForm = () => {
             <FiRefreshCw size={16} className={loading || loadingList ? 'animate-spin' : ''} />
             Refresh
           </Button>
-          <Button size="sm" onClick={() => setShowModal(true)}>
+          <Button size="sm" onClick={() => setShowModal(true)} disabled={!isActivated}>
             <FiCreditCard size={16} />
             Request Withdrawal
           </Button>
         </div>
       </div>
+
+      {!isActivated && (
+        <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200">
+          <p className="text-sm text-amber-700">
+            <strong>Withdrawals are locked.</strong> Activate your membership first to unlock withdrawals. Once your account is activated, you can withdraw your earnings (direct, indirect &amp; free registration bonuses).
+          </p>
+        </div>
+      )}
 
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
