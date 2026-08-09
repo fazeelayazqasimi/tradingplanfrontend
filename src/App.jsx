@@ -34,6 +34,7 @@ import AdminSubscriptions from './pages/admin/Subscriptions';
 import AdminCourses from './pages/admin/Courses';
 import AdminSignals from './pages/admin/Signals';
 import AdminAnnouncements from './pages/admin/Announcements';
+import AdminBusinessProfiles from './pages/admin/BusinessProfiles';
 import AdminReferrals from './pages/admin/Referrals';
 import AdminRanks from './pages/admin/Ranks';
 import AdminWithdrawals from './pages/admin/Withdrawals';
@@ -139,6 +140,7 @@ export const router = createBrowserRouter([
       { path: 'classes', element: <AdminClasses /> },
       { path: 'signals', element: <AdminSignals /> },
       { path: 'announcements', element: <AdminAnnouncements /> },
+      { path: 'business-profiles', element: <AdminBusinessProfiles /> },
       { path: 'referrals', element: <AdminReferrals /> },
       { path: 'crm', element: <AdminCRM /> },
       { path: 'media', element: <AdminMedia /> },

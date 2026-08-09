@@ -14,5 +14,7 @@ const websiteService = {
   getEconomicEvents: () => api.get('/market/economic-events'),
   getMarketSessions: () => api.get('/market/market-sessions'),
   getBrokers: () => api.get('/brokers'),
+  getAnnouncements: (params) => api.get('/announcements', { params }),
+  getBusinessProfiles: () => api.get('/business-profiles/published'),
 };
 export default websiteService;

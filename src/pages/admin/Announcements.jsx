@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { FiPlus, FiTrash2, FiVolume2, FiCalendar } from 'react-icons/fi';
+import { FiPlus, FiTrash2, FiVolume2, FiCalendar, FiImage, FiX } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
@@ -34,6 +34,7 @@ const initialForm = {
   title: '',
   content: '',
   type: '',
+  image: '',
 };
 
 export default function Announcements() {
@@ -46,6 +47,7 @@ export default function Announcements() {
   const [modalOpen, setModalOpen] = useState(false);
   const [form, setForm] = useState(initialForm);
   const [submitting, setSubmitting] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
 
   const fetchAnnouncements = useCallback(async () => {
@@ -71,6 +73,26 @@ export default function Announcements() {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingImage(true);
+    try {
+      const fd = new FormData();
+      fd.append('image', file);
+      const data = await adminService.uploadAnnouncementImage(fd);
+      const url = data?.data?.url || data?.url;
+      if (url) {
+        setForm((prev) => ({ ...prev, image: url }));
+        toast.success('Image uploaded');
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || err.message || 'Failed to upload image');
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
   const openCreateModal = () => {
     setForm(initialForm);
     setModalOpen(true);
@@ -84,6 +106,7 @@ export default function Announcements() {
         title: form.title,
         content: form.content,
         type: form.type,
+        image: form.image || null,
         isPublished: true,
       });
       toast.success('Announcement published successfully');
@@ -233,6 +256,38 @@ export default function Announcements() {
             onChange={(e) => handleChange('type', e.target.value)}
             placeholder="Select announcement type..."
           />
+          <div className="w-full">
+            <label className="block text-[12px] font-semibold uppercase tracking-wider text-dark-500 mb-1.5">
+              Announcement Image (optional — shows on website &amp; student portal)
+            </label>
+            <div className="flex items-center gap-3">
+              {form.image ? (
+                <div className="relative">
+                  <img src={form.image} alt="Announcement preview" className="h-20 w-32 rounded-lg object-cover border border-dark-200" />
+                  <button
+                    type="button"
+                    onClick={() => handleChange('image', '')}
+                    className="absolute -top-2 -right-2 rounded-full bg-red-500 text-white p-1 hover:bg-red-600"
+                    title="Remove image"
+                  >
+                    <FiX size={12} />
+                  </button>
+                </div>
+              ) : (
+                <label className="flex h-20 w-32 cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-dark-200 text-dark-400 hover:border-primary-400 hover:text-primary-500 transition-colors">
+                  {uploadingImage ? (
+                    <span className="text-xs font-medium">Uploading...</span>
+                  ) : (
+                    <span className="flex flex-col items-center gap-1">
+                      <FiImage size={18} />
+                      <span className="text-[11px] font-medium">Upload Image</span>
+                    </span>
+                  )}
+                  <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={uploadingImage} />
+                </label>
+              )}
+            </div>
+          </div>
           <div className="w-full">
             <label className="block text-[12px] font-semibold uppercase tracking-wider text-dark-500 mb-1.5">
               Content

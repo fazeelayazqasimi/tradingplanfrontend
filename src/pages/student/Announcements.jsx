@@ -187,6 +187,9 @@ export default function Announcements() {
                           className="overflow-hidden"
                         >
                           <div className="border-t border-dark-100 bg-dark-50/30 px-5 py-4">
+                            {announcement.image && (
+                              <img src={announcement.image} alt={title} className="w-full max-h-64 object-cover rounded-xl mb-4" />
+                            )}
                             <div className="prose prose-sm max-w-none text-dark-600">
                               {content.split('\n').map((paragraph, pIdx) => (
                                 <p key={pIdx} className="mb-2 last:mb-0">{paragraph}</p>

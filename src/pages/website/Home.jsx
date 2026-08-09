@@ -101,6 +101,8 @@ export default function Home() {
   const [screenshots, setScreenshots] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [mediaItems, setMediaItems] = useState([]);
+  const [announcements, setAnnouncements] = useState([]);
+  const [businessProfiles, setBusinessProfiles] = useState([]);
 
   const instituteName = getSetting('institute_name', 'THE COMPLETE FOREX ECOSYSTEM');
   const siteTagline = getSetting('site_tagline', 'Learn Forex. Trade with confidence.');
@@ -185,6 +187,23 @@ export default function Home() {
           setMediaItems(Array.isArray(mediaData) ? mediaData : []);
         } catch {}
       } catch (e) {}
+    })();
+
+    (async () => {
+      try {
+        const res = await websiteService.getAnnouncements({ limit: 6, sort: '-createdAt' });
+        const d = res?.data?.data;
+        const list = Array.isArray(d?.data || d) ? (d?.data || d) : [];
+        setAnnouncements(list);
+      } catch {}
+    })();
+
+    (async () => {
+      try {
+        const res = await websiteService.getBusinessProfiles();
+        const d = res?.data?.data;
+        setBusinessProfiles(Array.isArray(d) ? d : []);
+      } catch {}
     })();
   }, []);
 
@@ -660,6 +679,71 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {announcements.length > 0 && (
+        <section className="py-[60px] sm:py-[80px] lg:py-[100px]">
+          <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center max-w-[640px] mx-auto mb-10 sm:mb-14">
+              <p className="eyebrow mb-3 text-[13px] sm:text-sm">Announcements</p>
+              <h2 className="text-[28px] sm:text-[36px] lg:text-[44px] font-extrabold mb-3 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Latest updates from the institute</h2>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {announcements.slice(0, 6).map((a, i) => (
+                <ScrollReveal key={a._id || i} delay={i * 60}>
+                  <div className="bg-white border border-dark-100 rounded-2xl overflow-hidden shadow-card transition-all duration-300 hover:-translate-y-[5px] hover:shadow-card-md h-full">
+                    {a.image && (
+                      <div className="h-40 overflow-hidden bg-dark-100">
+                        <img src={a.image} alt={a.title} className="w-full h-full object-cover" />
+                      </div>
+                    )}
+                    <div className="p-5">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-[11px] font-bold uppercase tracking-wide text-primary-500">{a.type || 'General'}</span>
+                        <span className="text-[11px] text-dark-400 font-mono">
+                          {a.publishedAt || a.createdAt ? new Date(a.publishedAt || a.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}
+                        </span>
+                      </div>
+                      <h3 className="text-base font-bold text-ink mb-2 line-clamp-2" style={{ fontFamily: '"Plus Jakarta Sans"' }}>{a.title}</h3>
+                      <p className="text-[13px] text-dark-500 leading-relaxed line-clamp-3 font-inter">{a.content}</p>
+                    </div>
+                  </div>
+                </ScrollReveal>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {businessProfiles.length > 0 && (
+        <section className="py-[60px] sm:py-[80px] lg:py-[100px] bg-dark-50">
+          <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center max-w-[640px] mx-auto mb-10 sm:mb-14">
+              <p className="eyebrow mb-3 text-[13px] sm:text-sm">Business Profile</p>
+              <h2 className="text-[28px] sm:text-[36px] lg:text-[44px] font-extrabold mb-3 leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Company profile &amp; documents</h2>
+              <p className="text-dark-500 text-[14px] sm:text-[16.5px] leading-relaxed font-inter">Download our official company profile and business documents.</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {businessProfiles.map((p, i) => (
+                <ScrollReveal key={p._id || i} delay={i * 60}>
+                  <div className="bg-white border border-dark-100 rounded-2xl p-6 shadow-card transition-all duration-300 hover:-translate-y-[5px] hover:shadow-card-md h-full flex flex-col">
+                    <div className="w-12 h-12 rounded-xl bg-red-50 flex items-center justify-center mb-4">
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    </div>
+                    <h3 className="text-base font-bold text-ink mb-1" style={{ fontFamily: '"Plus Jakarta Sans"' }}>{p.title}</h3>
+                    {p.description && <p className="text-[13px] text-dark-500 leading-relaxed mb-4 font-inter line-clamp-3">{p.description}</p>}
+                    <div className="mt-auto pt-4">
+                      <a href={p.fileUrl} target="_blank" rel="noopener noreferrer" className="btn-primary w-full text-center text-[13px] sm:text-sm inline-flex items-center justify-center gap-2">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Download PDF
+                      </a>
+                    </div>
+                  </div>
+                </ScrollReveal>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="pt-[40px] sm:pt-[60px] lg:pt-[80px] pb-0 lg:pb-0">
         <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">

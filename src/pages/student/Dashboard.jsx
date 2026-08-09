@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { FiBookOpen, FiTrendingUp, FiDollarSign, FiAward, FiArrowRight, FiCreditCard, FiClock, FiCheckCircle, FiCopy, FiLink, FiUsers, FiUserPlus, FiBarChart2, FiStar, FiZap, FiGlobe, FiTrendingDown, FiLock, FiGift, FiShare2, FiCheck, FiExternalLink, FiCalendar, FiMessageSquare, FiKey } from "react-icons/fi";
+import { FiBookOpen, FiTrendingUp, FiDollarSign, FiAward, FiArrowRight, FiCreditCard, FiClock, FiCheckCircle, FiCopy, FiLink, FiUsers, FiUserPlus, FiBarChart2, FiStar, FiZap, FiGlobe, FiTrendingDown, FiLock, FiGift, FiShare2, FiCheck, FiExternalLink, FiCalendar, FiMessageSquare, FiKey, FiFileText, FiDownload } from "react-icons/fi";
 import toast from "react-hot-toast";
 import Card from "../../components/ui/Card";
 import Badge from "../../components/ui/Badge";
@@ -23,6 +23,7 @@ import announcementService from "../../services/announcementService";
 import webinarService from "../../services/webinarService";
 import zoomSessionService from "../../services/zoomSessionService";
 import marketUpdateService from "../../services/marketUpdateService";
+import websiteService from "../../services/websiteService";
 import api from "../../services/api";
 
 const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.04 } } };
@@ -57,6 +58,7 @@ export default function Dashboard() {
   const [marketOverview, setMarketOverview] = useState(null);
   const [openSignalsCount, setOpenSignalsCount] = useState(0);
   const [copyStats, setCopyStats] = useState(null);
+  const [businessProfiles, setBusinessProfiles] = useState([]);
   const [showActivateModal, setShowActivateModal] = useState(false);
   const [activatePin, setActivatePin] = useState("");
   const [activateLoading, setActivateLoading] = useState(false);
@@ -141,6 +143,10 @@ useEffect(() => {
           const cs = secondaryResults[7].value.data?.data || secondaryResults[7].value.data;
           setCopyStats(cs);
         }
+        websiteService.getBusinessProfiles().then((res) => {
+          const d = res?.data?.data;
+          if (!cancelled && Array.isArray(d)) setBusinessProfiles(d);
+        }).catch(() => {});
       } catch { if (!cancelled) toast.error("Failed to load dashboard data"); }
       finally { if (!cancelled) setLoading(false); }
     }
@@ -700,6 +706,33 @@ useEffect(() => {
           </div>
         </Card>
       </motion.div>
+
+      {/* Business Profile Downloads */}
+      {businessProfiles.length > 0 && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.45 }}>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-xs font-bold text-dark-400 uppercase tracking-widest">Business Profile</h3>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {businessProfiles.map((p) => (
+              <Card key={p._id} className="p-4 flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-400 to-rose-600 flex items-center justify-center text-white shadow-md shrink-0">
+                  <FiFileText size={20} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-bold text-ink truncate">{p.title}</p>
+                  {p.fileName && <p className="text-xs text-dark-400 truncate">{p.fileName}</p>}
+                </div>
+                <a href={p.fileUrl} target="_blank" rel="noopener noreferrer">
+                  <Button variant="outline" size="sm">
+                    <FiDownload size={13} className="mr-1" /> Download
+                  </Button>
+                </a>
+              </Card>
+            ))}
+          </div>
+        </motion.div>
+      )}
 
       {/* Market Sessions */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="mt-4">

@@ -57,6 +57,7 @@ const sidebarSections = [
     items: [
       { path: '/admin/media', label: 'Media Library', icon: FiImage },
       { path: '/admin/announcements', label: 'Announcements', icon: FiBell },
+      { path: '/admin/business-profiles', label: 'Business Profiles', icon: FiFileText },
       { path: '/admin/content', label: 'Website Content', icon: FiLayout },
       { path: '/admin/market-updates', label: 'Market Updates', icon: FiCalendar },
       { path: '/admin/brokers', label: 'Trading Brokers', icon: FiServer },

@@ -258,7 +258,13 @@ const validateForm = () => {
             <FiRefreshCw size={16} className={loading || loadingList ? 'animate-spin' : ''} />
             Refresh
           </Button>
-          <Button size="sm" onClick={() => setShowModal(true)} disabled={!isActivated}>
+          <Button size="sm" onClick={() => {
+            if (!isActivated) {
+              toast.error('Pehle apni membership activate karo — withdrawals are locked until activation.');
+              return;
+            }
+            setShowModal(true);
+          }}>
             <FiCreditCard size={16} />
             Request Withdrawal
           </Button>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FiBookOpen, FiVideo, FiRadio, FiTrendingUp, FiClock, FiUsers, FiGlobe, FiPlay, FiLock, FiArrowRight, FiSearch, FiFilter, FiGrid, FiList, FiChevronDown, FiChevronUp, FiCalendar, FiTag, FiAward, FiStar } from 'react-icons/fi';
+import { FiBookOpen, FiVideo, FiRadio, FiTrendingUp, FiClock, FiUsers, FiGlobe, FiPlay, FiLock, FiArrowRight, FiSearch, FiFilter, FiGrid, FiList, FiChevronDown, FiChevronUp, FiCalendar, FiTag, FiAward, FiStar, FiFileText } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import Card from '../../components/ui/Card';
@@ -265,9 +265,9 @@ export default function FreeLearning() {
             return (
               <motion.div key={item._id} variants={item}>
                 <Card className={`p-5 relative overflow-hidden ${isLocked ? 'opacity-75' : ''}`}>
-                  {item.thumbnail && (
+                  {item.thumbnail || item.image ? (
                     <div className="relative h-32 rounded-xl overflow-hidden mb-4 bg-dark-100">
-                      <img src={item.thumbnail} alt={item.title} className="w-full h-full object-cover" />
+                      <img src={item.thumbnail || item.image} alt={item.title} className="w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                       <div className="absolute bottom-3 left-3">
                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold ${badge.color === 'info' ? 'bg-blue-500 text-white' : badge.color === 'success' ? 'bg-emerald-500 text-white' : badge.color === 'warning' ? 'bg-amber-500 text-white' : badge.color === 'primary' ? 'bg-primary-500 text-white' : 'bg-dark-500 text-white'}`}>
@@ -282,7 +282,7 @@ export default function FreeLearning() {
                         </div>
                       )}
                     </div>
-                  )}
+                  ) : null}
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
                       <span className={`w-2 h-2 rounded-full ${isUpcoming ? 'bg-emerald-500' : 'bg-dark-300'}`} />
