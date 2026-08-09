@@ -9,6 +9,7 @@ const websiteService = {
   getCourses: (params) => api.get('/courses', { params }),
   getSignals: (params) => api.get('/signals', { params }),
   getForexRates: (params) => api.get('/market/forex-rates', { params }),
+  getLiveRates: () => api.get('/market/live-rates'),
   getGoldPrice: () => api.get('/market/gold-price'),
   getEconomicEvents: () => api.get('/market/economic-events'),
   getMarketSessions: () => api.get('/market/market-sessions'),

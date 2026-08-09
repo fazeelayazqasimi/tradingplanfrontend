@@ -12,6 +12,7 @@ import Modal from "../../components/ui/Modal";
 import { useAuth } from "../../context/AuthContext";
 import { formatCurrency, copyToClipboard } from "../../utils/helpers";
 import SystemFlow from "../../components/website/SystemFlow";
+import LiveRatesMarquee from "../../components/shared/LiveRatesMarquee";
 import studentService from "../../services/studentService";
 import walletService from "../../services/walletService";
 import referralService from "../../services/referralService";
@@ -259,6 +260,19 @@ useEffect(() => {
 
   return (
     <div className="space-y-6">
+      {/* Live Market Rates */}
+      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+        <Card className="p-0 overflow-hidden">
+          <div className="flex items-center gap-2 px-4 pt-3">
+            <FiGlobe size={14} className="text-primary-500" />
+            <span className="text-xs font-bold text-dark-400 uppercase tracking-widest">Live Market Rates</span>
+          </div>
+          <div className="mt-2 rounded-b-2xl overflow-hidden">
+            <LiveRatesMarquee />
+          </div>
+        </Card>
+      </motion.div>
+
       {/* Big Hero Welcome */}
       <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
         <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-primary-600 via-primary-500 to-emerald-500 text-black p-6 sm:p-8">
@@ -329,7 +343,7 @@ useEffect(() => {
               <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white">
                 <FiShare2 size={15} />
               </div>
-              <h3 className="font-bold text-ink text-sm uppercase tracking-wider">Invite Friends — Earn $1 Registration Bonus</h3>
+              <h3 className="font-bold text-ink text-sm uppercase tracking-wider">Invite Friends — Earn a Registration Bonus</h3>
             </div>
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="flex-1 flex items-center gap-2 bg-white rounded-xl border border-dark-100 px-4 py-2.5 min-w-0">

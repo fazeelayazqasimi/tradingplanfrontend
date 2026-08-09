@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/all';
+import websiteService from '../../services/websiteService';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -214,19 +215,28 @@ function LiveGoldPrice() {
   const [change, setChange] = useState('+8.40');
   const [changePct, setChangePct] = useState('+0.35%');
   const [direction, setDirection] = useState('up');
-  const priceRef = useRef(2394.10);
   useEffect(() => {
-    const i = setInterval(() => {
-      const newP = parseFloat((2385 + Math.random() * 20).toFixed(2));
-      const old = priceRef.current;
-      const diff = newP - old;
-      priceRef.current = newP;
-      setPrice(newP.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
-      setChange((diff >= 0 ? '+' : '') + diff.toFixed(2));
-      setChangePct((diff >= 0 ? '+' : '') + ((diff / old) * 100).toFixed(2) + '%');
-      setDirection(diff >= 0 ? 'up' : 'down');
-    }, 3000);
-    return () => clearInterval(i);
+    let cancelled = false;
+    const fetchPrice = async () => {
+      try {
+        const res = await websiteService.getLiveRates();
+        const data = res?.data?.data;
+        const list = Array.isArray(data?.rates) ? data.rates : [];
+        const gold = list.find(r => r.symbol === 'XAU/USD');
+        if (!cancelled && gold) {
+          const p = Number(gold.price);
+          const diff = Number(gold.change ?? 0);
+          const pc = Number(gold.changePercent ?? 0);
+          setPrice(p.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+          setChange((diff >= 0 ? '+' : '') + diff.toFixed(2));
+          setChangePct((pc >= 0 ? '+' : '') + pc.toFixed(2) + '%');
+          setDirection(diff >= 0 ? 'up' : 'down');
+        }
+      } catch {}
+    };
+    fetchPrice();
+    const interval = setInterval(fetchPrice, 30000);
+    return () => { cancelled = true; clearInterval(interval); };
   }, []);
   return (
     <div className="bg-white border border-dark-100 rounded-2xl p-4 sm:p-6 shadow-card bg-gradient-to-br from-amber-50 to-orange-50/30">
@@ -255,14 +265,33 @@ function LiveGoldPrice() {
 function LiveRatesTicker() {
   const [rates, setRates] = useState(LIVE_RATES_DEFAULT);
   useEffect(() => {
-    const i = setInterval(() => {
-      setRates(prev => prev.map(r => {
-        const dir = Math.random() > 0.5 ? 'up' : 'down';
-        const change = (Math.random() * 0.5).toFixed(2);
-        return { ...r, change: `${dir === 'up' ? '+' : '-'}${change}%`, direction: dir };
-      }));
-    }, 4000);
-    return () => clearInterval(i);
+    let cancelled = false;
+    const fetchRates = async () => {
+      try {
+        const res = await websiteService.getLiveRates();
+        const data = res?.data?.data;
+        const list = Array.isArray(data?.rates) ? data.rates : [];
+        if (!cancelled && list.length > 0) {
+          setRates(list.map(q => {
+            const price = Number(q.price);
+            const ask = price * 1.0002;
+            const pc = Number(q.changePercent ?? 0);
+            const decimals = q.symbol.startsWith('XAU') ? 2 : (q.symbol.startsWith('BTC') || q.symbol.startsWith('ETH')) ? 0 : q.symbol.includes('JPY') ? 3 : 5;
+            return {
+              pair: q.symbol,
+              bid: price.toFixed(decimals),
+              ask: ask.toFixed(decimals),
+              spread: Math.round((ask - price) * 10000) / 10000,
+              change: (pc >= 0 ? '+' : '') + pc.toFixed(2) + '%',
+              direction: pc >= 0 ? 'up' : 'down',
+            };
+          }));
+        }
+      } catch {}
+    };
+    fetchRates();
+    const interval = setInterval(fetchRates, 30000);
+    return () => { cancelled = true; clearInterval(interval); };
   }, []);
   return (
     <div className="bg-white border border-dark-100 rounded-2xl p-4 sm:p-6 shadow-card">
