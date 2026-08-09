@@ -135,7 +135,7 @@ export default function ReferralProgram() {
               <h3 className="font-bold text-xl mb-4">Earning Types</h3>
               <div className="space-y-4">
                 {[
-                  { label: 'Registration Referral Bonus', desc: 'Fixed $1 credited to your funding wallet when a direct referral registers through your link.' },
+                  { label: 'Registration Referral Bonus', desc: 'A bonus credited to your funding wallet when a direct referral registers through your link.' },
                   { label: 'Direct Commission', desc: 'Credited when a direct referral activates their package - amount depends on your current rank.' },
                   { label: 'Indirect Income', desc: 'Earned from deeper levels of your referral network based on the rank configuration.' },
                   { label: 'Profit Sharing', desc: 'Rank-based percentage share from the network profit pool.' },

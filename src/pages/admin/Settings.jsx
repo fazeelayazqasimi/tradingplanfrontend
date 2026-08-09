@@ -101,7 +101,8 @@ const SETTING_FIELDS = {
     { key: 'withdrawal_max_percent', label: 'Max Withdrawal (% of Balance)', icon: FiPercent, type: 'number', placeholder: '20', description: 'Maximum withdrawal amount as percentage of available balance per request' },
   ],
   funding: [
-    { key: 'free_registration_bonus_enabled', label: 'Registration Referral $1 Bonus', type: 'toggle', description: 'When enabled, the direct upline receives a fixed $1 registration referral bonus in their funding wallet when a downline registers via their referral link' },
+    { key: 'free_registration_bonus_enabled', label: 'Registration Referral Bonus', type: 'toggle', description: 'When enabled, the direct upline receives the registration referral bonus (amount set below) in their funding wallet when a downline registers via their referral link' },
+    { key: 'free_registration_bonus_amount', label: 'Registration Referral Bonus ($)', type: 'number', icon: FiDollarSign, placeholder: '1', description: 'Amount credited to the direct upline funding wallet per free registration' },
     { key: 'funding_wallet_usage_percent', label: 'Funding Wallet Usage %', type: 'number', icon: FiDollarSign, placeholder: '20', description: 'Max percentage of membership amount that can be paid from funding wallet' },
   ],
   trading: [

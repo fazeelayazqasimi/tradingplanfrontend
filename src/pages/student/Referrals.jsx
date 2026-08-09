@@ -267,17 +267,73 @@ export default function Referrals() {
   );
 }
 
+function ExpandButton({ count, expanded, loading, onToggle }) {
+  if (!count) return null;
+  return (
+    <button
+      onClick={onToggle}
+      disabled={loading}
+      className="mt-1.5 sm:mt-2 inline-flex items-center gap-1 rounded-full border border-primary-200 bg-primary-50 hover:bg-primary-100 text-primary-600 text-[9px] sm:text-[11px] font-semibold px-2 sm:px-2.5 py-0.5 sm:py-1 transition-colors disabled:opacity-60"
+    >
+      {loading ? (
+        <FiRefreshCw size={10} className="animate-spin" />
+      ) : expanded ? (
+        <FiChevronDown size={10} />
+      ) : (
+        <FiChevronRight size={10} />
+      )}
+      {expanded ? 'Collapse' : `${count} member${count !== 1 ? 's' : ''}`}
+    </button>
+  );
+}
+
 function TreeNode({ node, depth }) {
-  const hasChildren = node.children?.length > 0;
-  const count = node.children?.length || 1;
+  const [expanded, setExpanded] = useState(false);
+  const [children, setChildren] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState(false);
+
+  const inlineChildren = node.children && node.children.length > 0 ? node.children : [];
+  const childNodes = expanded && children.length > 0 ? children : inlineChildren;
+  const count = childNodes.length > 0 ? childNodes.length : node.childCount || 0;
   const hLineLeft = `${100 / (count * 2)}%`;
   const hLineRight = hLineLeft;
 
+  const toggle = async () => {
+    if (expanded) {
+      setExpanded(false);
+      return;
+    }
+    if (children.length > 0) {
+      setExpanded(true);
+      return;
+    }
+    setLoading(true);
+    setLoadError(false);
+    try {
+      const res = await referralService.getTreeChildren(node.user._id);
+      const data = res?.data?.data || res?.data || res;
+      const list = data?.nodes || (Array.isArray(data) ? data : []);
+      setChildren(list);
+      setExpanded(true);
+    } catch {
+      setLoadError(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="flex flex-col items-center">
-      <UserCard node={node} isRoot={false} />
+      <div className="flex flex-col items-center">
+        <UserCard node={node} isRoot={false} />
+        <ExpandButton count={count} expanded={expanded} loading={loading} onToggle={toggle} />
+        {loadError && (
+          <p className="text-[9px] sm:text-[10px] text-rose-500 mt-1">Failed to load. Try again.</p>
+        )}
+      </div>
 
-      {hasChildren && (
+      {childNodes.length > 0 && (
         <div className="flex flex-col items-center w-full">
           <div className={`relative w-full ${depth < 2 ? 'h-5 sm:h-7' : 'h-4 sm:h-6'}`}>
             <div className="absolute top-0 left-1/2 w-px sm:w-0.5 h-3/4 -translate-x-1/2 bg-slate-300" />
@@ -288,7 +344,7 @@ function TreeNode({ node, depth }) {
           </div>
 
           <div className="flex justify-center gap-1 sm:gap-3 md:gap-5 relative">
-            {node.children.map((child) => (
+            {childNodes.map((child) => (
               <div key={child._id} className="relative flex flex-col items-center">
                 <div className={`absolute left-1/2 w-px sm:w-0.5 -translate-x-1/2 bg-slate-300 z-0 ${depth < 2 ? '-top-5 h-5 sm:-top-7 sm:h-7' : '-top-4 h-4 sm:-top-6 sm:h-6'}`} />
                 <TreeNode node={child} depth={depth + 1} />
@@ -323,9 +379,9 @@ function GenealogyTree({ rootUser, treeNodes, stats, onBack }) {
           <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
             {stats && (
               <>
-                <span className="text-[9px] sm:text-xs text-dark-500 bg-white/60 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-primary-100 whitespace-nowrap">T: <strong className="text-ink">{stats.totalDownline}</strong></span>
-                <span className="text-[9px] sm:text-xs text-emerald-600 bg-emerald-50/60 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-emerald-200 whitespace-nowrap">A: <strong>{stats.active}</strong></span>
-                <span className="text-[9px] sm:text-xs text-amber-600 bg-amber-50/60 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-amber-200 whitespace-nowrap">F: <strong>{stats.free}</strong></span>
+                <span className="text-[9px] sm:text-xs text-dark-500 bg-white/60 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-primary-100 whitespace-nowrap">T: <strong className="text-ink">{stats.totalDownline ?? stats.totalReferrals ?? 0}</strong></span>
+                <span className="text-[9px] sm:text-xs text-emerald-600 bg-emerald-50/60 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-emerald-200 whitespace-nowrap">A: <strong>{stats.active ?? stats.activeMembers ?? 0}</strong></span>
+                <span className="text-[9px] sm:text-xs text-amber-600 bg-amber-50/60 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-amber-200 whitespace-nowrap">F: <strong>{stats.free ?? stats.freeMembers ?? 0}</strong></span>
               </>
             )}
             {onBack && (
@@ -335,7 +391,7 @@ function GenealogyTree({ rootUser, treeNodes, stats, onBack }) {
         </div>
       </div>
 
-      <div className="overflow-x-auto pb-4 sm:pb-6 -mx-2 sm:-mx-2 px-2 sm:px-2 scroll-smooth" style={{ WebkitOverflowScrolling: 'touch' }}>
+      <div className="overflow-auto pb-4 sm:pb-6 -mx-2 sm:-mx-2 px-2 sm:px-2 scroll-smooth max-h-[70vh]" style={{ WebkitOverflowScrolling: 'touch' }}>
         <div className="flex flex-col items-center min-w-[400px] sm:min-w-[600px]">
           <UserCard node={{ user: rootUser }} isRoot={true} />
 
@@ -543,7 +599,7 @@ function GenealogyTree({ rootUser, treeNodes, stats, onBack }) {
               Total earned from free registrations: <span className="font-bold text-rose-600">{formatCurrency(stats.freeRegistrationEarnings)}</span>
             </p>
             <p className="text-xs text-dark-400">
-              Each direct registration gives you a fixed $1 registration referral bonus, credited instantly to your funding wallet.
+              Each direct registration gives you a registration referral bonus, credited instantly to your funding wallet.
             </p>
           </Card>
         </motion.div>
