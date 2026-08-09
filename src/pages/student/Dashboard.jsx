@@ -670,7 +670,13 @@ useEffect(() => {
             </div>
             <div className="flex gap-2">
               <Link to="/student/wallet"><Button variant="white" size="sm">View Wallet</Button></Link>
-              <Link to="/student/withdrawals"><Button variant="outline-white" size="sm">Withdraw</Button></Link>
+              {isFreeUser ? (
+                <Button variant="outline-white" size="sm" onClick={() => toast.error('Aapka account activate nahi hai — withdrawal option locked hai. Pehle apni membership activate karein.')}>
+                  <FiLock size={13} className="mr-1" /> Withdraw (Locked)
+                </Button>
+              ) : (
+                <Link to="/student/withdrawals"><Button variant="outline-white" size="sm">Withdraw</Button></Link>
+              )}
             </div>
           </div>
         </Card>

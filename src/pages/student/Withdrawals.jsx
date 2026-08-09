@@ -7,6 +7,7 @@ import {
   FiX,
   FiRefreshCw,
   FiCreditCard,
+  FiLock,
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Card from '../../components/ui/Card';
@@ -260,7 +261,7 @@ const validateForm = () => {
           </Button>
           <Button size="sm" onClick={() => {
             if (!isActivated) {
-              toast.error('Pehle apni membership activate karo — withdrawals are locked until activation.');
+              toast.error('Aapka account activate nahi hai — withdrawal option locked hai. Pehle apni membership activate karein.');
               return;
             }
             setShowModal(true);
@@ -272,10 +273,19 @@ const validateForm = () => {
       </div>
 
       {!isActivated && (
-        <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200">
-          <p className="text-sm text-amber-700">
-            <strong>Withdrawals are locked.</strong> Activate your membership first to unlock withdrawals. Once your account is activated, you can withdraw your earnings (direct, indirect &amp; free registration bonuses).
-          </p>
+        <div className="p-5 rounded-2xl bg-amber-50 border-2 border-amber-300 flex items-start gap-3">
+          <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 shrink-0">
+            <FiLock size={18} />
+          </div>
+          <div>
+            <p className="text-sm font-bold text-amber-800 mb-1">Withdrawal option locked</p>
+            <p className="text-sm text-amber-700">
+              Aapka account activate nahi hai. Withdrawal sirf activated members ke liye hai — pehle apni membership activate karein, phir aap apni earnings (direct, indirect &amp; free registration bonuses) withdraw kar sakte hain.
+            </p>
+            <Button size="sm" variant="outline" className="mt-3" onClick={() => toast('Membership activation dashboard pe available hai.', { icon: '🔑' })}>
+              How to activate?
+            </Button>
+          </div>
         </div>
       )}
 
