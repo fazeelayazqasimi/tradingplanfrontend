@@ -5,6 +5,8 @@ import {
   FiTrash2,
   FiArrowUpCircle,
   FiArrowDownCircle,
+  FiCheckCircle,
+  FiXCircle,
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Button from '../../components/ui/Button';
@@ -76,6 +78,7 @@ export default function Signals() {
   const [form, setForm] = useState(initialForm);
   const [submitting, setSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
+  const [hittingId, setHittingId] = useState(null);
 
   const fetchSignals = useCallback(async () => {
     try {
@@ -176,6 +179,28 @@ export default function Signals() {
     }
   };
 
+  const handleHit = async (signal, outcome) => {
+    const label = outcome === 'tp' ? 'Take Profit (TP)' : 'Stop Loss (SL)';
+    const isTP = outcome === 'tp';
+    if (!window.confirm(
+      isTP
+        ? `Confirm TP hit for ${signal.symbol}? A target-achieved email will be sent to ALL students.`
+        : `Confirm SL hit for ${signal.symbol}? A motivational email will be sent to ALL students.`
+    )) return;
+    const signalId = signal._id || signal.id;
+    try {
+      setHittingId(signalId);
+      if (isTP) await signalService.hitTP(signalId);
+      else await signalService.hitSL(signalId);
+      toast.success(isTP ? 'TP hit! Email sent to all students' : 'SL hit! Motivational email sent to all students');
+      fetchSignals();
+    } catch (err) {
+      toast.error(err.response?.data?.message || err.message || `Failed to mark ${label} hit`);
+    } finally {
+      setHittingId(null);
+    }
+  };
+
   const columns = [
     {
       key: 'symbol',
@@ -229,11 +254,51 @@ export default function Signals() {
     {
       key: 'status',
       header: 'Status',
-      render: (_, row) => (
-        <Badge color={statusColor[row.status] || 'neutral'}>
-          {row.status || 'open'}
-        </Badge>
-      ),
+      render: (_, row) => {
+        if (row.result === 'tp') {
+          return (
+            <Badge color="success">
+              <span className="flex items-center gap-1">
+                <FiCheckCircle className="h-3 w-3" />
+                TP Hit
+              </span>
+            </Badge>
+          );
+        }
+        if (row.result === 'sl') {
+          return (
+            <Badge color="danger">
+              <span className="flex items-center gap-1">
+                <FiXCircle className="h-3 w-3" />
+                SL Hit
+              </span>
+            </Badge>
+          );
+        }
+        return (
+          <Badge color={statusColor[row.status] || 'neutral'}>
+            {row.status || 'open'}
+          </Badge>
+        );
+      },
+    },
+    {
+      key: 'profit',
+      header: 'Result',
+      render: (_, row) =>
+        row.profit !== undefined && row.profit !== null ? (
+          <span
+            className={`text-sm font-semibold font-mono ${
+              row.profit >= 0 ? 'text-emerald-600' : 'text-red-600'
+            }`}
+          >
+            {row.profit >= 0 ? '+' : ''}
+            {Number(row.profit).toFixed(2)}
+            {row.pips ? ` (${row.pips} pips)` : ''}
+          </span>
+        ) : (
+          <span className="text-sm text-dark-400">—</span>
+        ),
     },
     {
       key: 'createdAt',
@@ -247,8 +312,30 @@ export default function Signals() {
       header: '',
       render: (_, row) => {
         const signalId = row._id || row.id;
+        const isOpen = row.status === 'open' || row.status === 'pending';
+        const hitting = hittingId === signalId;
         return (
           <div className="flex items-center justify-end gap-1">
+            {isOpen && !row.result && (
+              <>
+                <button
+                  onClick={() => handleHit(row, 'tp')}
+                  disabled={hitting}
+                  className="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition-colors disabled:opacity-50"
+                  title="Mark Take Profit hit and email all students"
+                >
+                  HIT TP
+                </button>
+                <button
+                  onClick={() => handleHit(row, 'sl')}
+                  disabled={hitting}
+                  className="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-red-700 bg-red-50 hover:bg-red-100 transition-colors disabled:opacity-50"
+                  title="Mark Stop Loss hit and email all students"
+                >
+                  HIT SL
+                </button>
+              </>
+            )}
             <button
               onClick={() => openEditModal(row)}
               className="rounded-xl p-2 text-dark-400 hover:bg-primary-50 hover:text-primary-600 transition-colors"

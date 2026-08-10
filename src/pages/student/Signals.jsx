@@ -61,9 +61,24 @@ function ActionBadge({ action }) {
   );
 }
 
-function StatusBadge({ status }) {
+function StatusBadge({ status, result }) {
+  if (result === "tp") {
+    return (
+      <span className="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700">
+        TP Hit
+      </span>
+    );
+  }
+  if (result === "sl") {
+    return (
+      <span className="inline-flex items-center rounded-full bg-red-50 px-2.5 py-0.5 text-[11px] font-semibold text-red-700">
+        SL Hit
+      </span>
+    );
+  }
   const styles = {
     active: "bg-blue-50 text-blue-700",
+    open: "bg-blue-50 text-blue-700",
     closed: "bg-dark-100 text-dark-600",
     pending: "bg-amber-50 text-amber-700",
     cancelled: "bg-red-50 text-red-700",
@@ -136,7 +151,7 @@ function SignalCard({ signal, isExpanded, onToggle }) {
                 {profit.toFixed(2)}
               </span>
             )}
-            <StatusBadge status={signal.status || "pending"} />
+            <StatusBadge status={signal.status || "pending"} result={signal.result} />
             {isExpanded ? (
               <FiChevronUp className="h-4 w-4 text-dark-400" />
             ) : (

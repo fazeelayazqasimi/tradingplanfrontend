@@ -6,5 +6,8 @@ const signalService = {
   updateSignal: (id, data) => api.put(`/signals/${id}`, data),
   deleteSignal: (id) => api.delete(`/signals/${id}`),
   getStats: () => api.get('/signals/stats'),
+  hitTP: (id, price) => api.post(`/signals/${id}/hit-tp`, { price }),
+  hitSL: (id, price) => api.post(`/signals/${id}/hit-sl`, { price }),
+  runResultCheck: () => api.post('/signals/run-check'),
 };
 export default signalService;
