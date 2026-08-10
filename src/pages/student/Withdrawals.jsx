@@ -8,6 +8,8 @@ import {
   FiRefreshCw,
   FiCreditCard,
   FiLock,
+  FiMail,
+  FiShield,
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Card from '../../components/ui/Card';
@@ -65,6 +67,10 @@ export default function Withdrawals() {
     walletAddress: '',
     cryptocurrency: 'USDT',
   });
+  const [withdrawOtp, setWithdrawOtp] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
+  const [sendingOtp, setSendingOtp] = useState(false);
+  const [otpError, setOtpError] = useState('');
   const [formErrors, setFormErrors] = useState({});
   const [withdrawFeeInfo, setWithdrawFeeInfo] = useState({ feeType: 'percent', feePercent: 10, feeFixed: 0, maxPercent: 20, processingHours: 24 });
 
@@ -216,7 +222,30 @@ const validateForm = () => {
     return Object.keys(errors).length === 0;
   };
 
+  const handleSendOtp = async () => {
+    setSendingOtp(true);
+    setOtpError('');
+    try {
+      await studentService.sendWithdrawalOTP();
+      setOtpSent(true);
+      toast.success('OTP sent to your email. It is valid for 10 minutes.');
+    } catch (err) {
+      setOtpError(err?.response?.data?.message || 'Failed to send OTP');
+      toast.error(err?.response?.data?.message || 'Failed to send OTP');
+    } finally {
+      setSendingOtp(false);
+    }
+  };
+
   const handleSubmit = async () => {
+    if (!otpSent) {
+      toast.error('Pehle OTP send karein aur verify karein — request tabhi proceed hogi.');
+      return;
+    }
+    if (!withdrawOtp.trim()) {
+      setOtpError('OTP required');
+      return;
+    }
     if (!validateForm()) return;
     setSubmitting(true);
     try {
@@ -225,11 +254,15 @@ const validateForm = () => {
         paymentMethod: form.paymentMethod || 'usdt_bep20',
         walletAddress: form.walletAddress.trim(),
         cryptocurrency: 'USDT',
+        otp: withdrawOtp.trim(),
       };
       await studentService.requestWithdrawal(payload);
       toast.success('Withdrawal request submitted. Processing takes up to 24 hours.');
       setShowModal(false);
       setForm({ amount: '', paymentMethod: '', accountNumber: '', accountName: '', bankName: '', walletAddress: '', cryptocurrency: 'USDT' });
+      setWithdrawOtp('');
+      setOtpSent(false);
+      setOtpError('');
       setFormErrors({});
       fetchWallet();
       fetchWithdrawals();
@@ -361,7 +394,7 @@ const validateForm = () => {
         </Card>
       </motion.div>
 
-      <Modal isOpen={showModal} onClose={() => { setShowModal(false); setFormErrors({}); }} title="Request Withdrawal (USDT BEP20)" size="md">
+      <Modal isOpen={showModal} onClose={() => { setShowModal(false); setFormErrors({}); setWithdrawOtp(''); setOtpSent(false); setOtpError(''); }} title="Request Withdrawal (USDT BEP20)" size="md">
         <div className="space-y-4">
           <Input
             label="Amount ($)"
@@ -405,6 +438,40 @@ const validateForm = () => {
             error={formErrors.walletAddress}
           />
 
+          <div className="p-3 rounded-[11px] bg-dark-50">
+            <div className="flex items-center gap-2 mb-1.5">
+              <FiShield size={14} className="text-primary-500" />
+              <p className="text-xs font-semibold text-ink">Email OTP Verification</p>
+            </div>
+            <p className="text-xs text-dark-500 mb-2">
+              Withdrawal request tabhi proceed hogi jab aap apni registered email pe aaya OTP enter karenge.
+            </p>
+            <div className="flex gap-2">
+              <Input
+                placeholder="Enter OTP"
+                value={withdrawOtp}
+                onChange={(e) => { setWithdrawOtp(e.target.value); setOtpError(''); }}
+                disabled={!otpSent}
+                icon={FiMail}
+                inputMode="numeric"
+                maxLength={6}
+                error={otpError}
+              />
+              <Button
+                variant={otpSent ? 'outline' : 'primary'}
+                onClick={handleSendOtp}
+                loading={sendingOtp}
+                disabled={otpSent}
+                className="shrink-0"
+              >
+                {otpSent ? 'Sent' : 'Send OTP'}
+              </Button>
+            </div>
+            {otpSent && (
+              <p className="text-[11px] text-emerald-600 mt-1.5">OTP sent — check your email inbox (spam bhi check karein).</p>
+            )}
+          </div>
+
 {wallet && (
              <div className="p-3 rounded-[11px] bg-dark-50">
                <p className="text-xs text-dark-500">Available for withdrawal</p>
@@ -423,7 +490,7 @@ const validateForm = () => {
           </div>
 
           <div className="flex justify-end gap-3 pt-2">
-            <Button variant="outline" onClick={() => { setShowModal(false); setFormErrors({}); }}>
+            <Button variant="outline" onClick={() => { setShowModal(false); setFormErrors({}); setWithdrawOtp(''); setOtpSent(false); setOtpError(''); }}>
               Cancel
             </Button>
             <Button onClick={handleSubmit} loading={submitting}>

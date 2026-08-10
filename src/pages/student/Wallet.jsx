@@ -14,6 +14,8 @@ import {
   FiCopy,
   FiCheckCircle,
   FiServer,
+  FiMail,
+  FiShield,
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
@@ -42,12 +44,22 @@ const INCOME_LABELS = {
   indirect_income: 'Indirect Income',
   trading_profit: 'Trading Profit',
   bonus: 'Bonus',
+  commission: 'Commission',
   registration: 'Registration Bonus',
   purchase: 'Course Purchase',
   subscription: 'Subscription',
   withdrawal: 'Withdrawal',
   deposit: 'Deposit',
 };
+
+const CHART_CATEGORIES = [
+  { key: 'direct_income', fallback: 'directIncome', label: 'Direct Income', color: '#10B981' },
+  { key: 'indirect_income', fallback: 'indirectIncome', label: 'Indirect Income', color: '#45F000' },
+  { key: 'trading_profit', fallback: 'tradingProfit', label: 'Trading Profit', color: '#F59E0B' },
+  { key: 'bonus', label: 'Bonus', color: '#8B5CF6' },
+  { key: 'commission', label: 'Commission', color: '#EC4899' },
+  { key: 'registration', label: 'Registration Bonus', color: '#06B6D4' },
+];
 
 const container = {
   hidden: { opacity: 0 },
@@ -104,6 +116,10 @@ export default function Wallet() {
     amount: '',
     walletAddress: '',
   });
+  const [withdrawOtp, setWithdrawOtp] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
+  const [sendingOtp, setSendingOtp] = useState(false);
+  const [otpError, setOtpError] = useState('');
   const [formErrors, setFormErrors] = useState({});
 
   const [paymentAccounts, setPaymentAccounts] = useState([]);
@@ -270,13 +286,9 @@ export default function Wallet() {
     ? getAssetUrl(activePaymentAccount.qrCodeUrl)
     : (activePaymentAccount?.qrDataUrl || '');
   const showGeneratedQr = !depositQrUrl || qrBroken;
+  const getCategoryValue = (cat) => byCategory[cat.key] ?? byCategory[cat.fallback] ?? 0;
   const chartData = stats
-    ? [
-        { name: 'Direct Income', value: byCategory.direct_income ?? byCategory.directIncome ?? 0 },
-        { name: 'Indirect Income', value: byCategory.indirect_income ?? byCategory.indirectIncome ?? 0 },
-        { name: 'Trading Profit', value: byCategory.trading_profit ?? byCategory.tradingProfit ?? 0 },
-        { name: 'Bonus', value: byCategory.bonus ?? 0 },
-      ].filter((d) => d.value > 0)
+    ? CHART_CATEGORIES.map((cat) => ({ name: cat.label, value: getCategoryValue(cat), color: cat.color })).filter((d) => d.value > 0)
     : [];
 
   const summaryCards = [
@@ -377,7 +389,30 @@ const validateWithdraw = () => {
     return Object.keys(errors).length === 0;
   };
 
+  const handleSendOtp = async () => {
+    setSendingOtp(true);
+    setOtpError('');
+    try {
+      await studentService.sendWithdrawalOTP();
+      setOtpSent(true);
+      toast.success('OTP sent to your email. It is valid for 10 minutes.');
+    } catch (err) {
+      setOtpError(err?.response?.data?.message || 'Failed to send OTP');
+      toast.error(err?.response?.data?.message || 'Failed to send OTP');
+    } finally {
+      setSendingOtp(false);
+    }
+  };
+
   const handleWithdraw = async () => {
+    if (!otpSent) {
+      toast.error('Pehle OTP send karein aur verify karein — request tabhi proceed hogi.');
+      return;
+    }
+    if (!withdrawOtp.trim()) {
+      setOtpError('OTP required');
+      return;
+    }
     if (!validateWithdraw()) return;
     setSubmitting(true);
     try {
@@ -385,10 +420,14 @@ const validateWithdraw = () => {
         amount: parseFloat(withdrawForm.amount),
         paymentMethod: 'usdt_bep20',
         walletAddress: withdrawForm.walletAddress.trim(),
+        otp: withdrawOtp.trim(),
       });
       toast.success('Withdrawal request submitted. Awaiting admin approval.');
       setShowWithdraw(false);
       setWithdrawForm({ amount: '', walletAddress: '' });
+      setWithdrawOtp('');
+      setOtpSent(false);
+      setOtpError('');
       setFormErrors({});
       fetchWallet();
       fetchStats();
@@ -518,8 +557,8 @@ const validateWithdraw = () => {
                       dataKey="value"
                       stroke="none"
                     >
-                      {chartData.map((_, index) => (
-                        <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                      {chartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
                     <Tooltip
@@ -560,18 +599,13 @@ const validateWithdraw = () => {
               </div>
             ) : (
               <div className="space-y-4">
-                {[
-                  { label: 'Direct Income', value: byCategory.direct_income ?? byCategory.directIncome ?? 0, color: 'bg-emerald-500' },
-                  { label: 'Indirect Income', value: byCategory.indirect_income ?? byCategory.indirectIncome ?? 0, color: 'bg-blue-500' },
-                  { label: 'Trading Profit', value: byCategory.trading_profit ?? byCategory.tradingProfit ?? 0, color: 'bg-amber-500' },
-                  { label: 'Bonus', value: byCategory.bonus ?? 0, color: 'bg-purple-500' },
-                ].map((s) => (
-                  <div key={s.label} className="flex items-center justify-between">
+                {CHART_CATEGORIES.map((s) => (
+                  <div key={s.key} className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className={`w-2.5 h-2.5 rounded-full ${s.color}`} />
+                      <div className={`w-2.5 h-2.5 rounded-full`} style={{ backgroundColor: s.color }} />
                       <span className="text-sm text-dark-600">{s.label}</span>
                     </div>
-                    <span className="text-sm font-semibold text-ink">{formatCurrency(s.value)}</span>
+                    <span className="text-sm font-semibold text-ink">{formatCurrency(getCategoryValue(s))}</span>
                   </div>
                 ))}
                 {Object.keys(expenses).length > 0 && (
@@ -825,7 +859,7 @@ const validateWithdraw = () => {
           )}
         </Modal>
 
-      <Modal isOpen={showWithdraw} onClose={() => { setShowWithdraw(false); setFormErrors({}); }} title="Request Withdrawal (USDT BEP20)" size="sm">
+      <Modal isOpen={showWithdraw} onClose={() => { setShowWithdraw(false); setFormErrors({}); setWithdrawOtp(''); setOtpSent(false); setOtpError(''); }} title="Request Withdrawal (USDT BEP20)" size="sm">
           <div className="space-y-4">
             <div className="p-4 rounded-xl bg-purple-50 border border-purple-200">
               <div className="flex items-center gap-3">
@@ -878,6 +912,40 @@ const validateWithdraw = () => {
               error={formErrors.walletAddress}
             />
 
+            <div className="p-3 rounded-[11px] bg-dark-50">
+              <div className="flex items-center gap-2 mb-1.5">
+                <FiShield size={14} className="text-primary-500" />
+                <p className="text-xs font-semibold text-ink">Email OTP Verification</p>
+              </div>
+              <p className="text-xs text-dark-500 mb-2">
+                Withdrawal request tabhi proceed hogi jab aap apni registered email pe aaya OTP enter karenge.
+              </p>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Enter OTP"
+                  value={withdrawOtp}
+                  onChange={(e) => { setWithdrawOtp(e.target.value); setOtpError(''); }}
+                  disabled={!otpSent}
+                  icon={FiMail}
+                  inputMode="numeric"
+                  maxLength={6}
+                  error={otpError}
+                />
+                <Button
+                  variant={otpSent ? 'outline' : 'primary'}
+                  onClick={handleSendOtp}
+                  loading={sendingOtp}
+                  disabled={otpSent}
+                  className="shrink-0"
+                >
+                  {otpSent ? 'Sent' : 'Send OTP'}
+                </Button>
+              </div>
+              {otpSent && (
+                <p className="text-[11px] text-emerald-600 mt-1.5">OTP sent — check your email inbox (spam bhi check karein).</p>
+              )}
+            </div>
+
 {wallet && (
                <div className="p-3 rounded-[11px] bg-dark-50">
                  <p className="text-xs text-dark-500">Available for withdrawal</p>
@@ -896,7 +964,7 @@ const validateWithdraw = () => {
             </div>
 
             <div className="flex justify-end gap-3 pt-2">
-              <Button variant="outline" onClick={() => { setShowWithdraw(false); setFormErrors({}); }}>
+              <Button variant="outline" onClick={() => { setShowWithdraw(false); setFormErrors({}); setWithdrawOtp(''); setOtpSent(false); setOtpError(''); }}>
                 Cancel
               </Button>
               <Button onClick={handleWithdraw} loading={submitting}>

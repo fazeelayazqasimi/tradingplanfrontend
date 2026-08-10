@@ -9,6 +9,8 @@ import {
   FiCheckCircle,
   FiAlertTriangle,
   FiClock,
+  FiPaperclip,
+  FiDownload,
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Card from '../../components/ui/Card';
@@ -189,6 +191,44 @@ export default function Announcements() {
                           <div className="border-t border-dark-100 bg-dark-50/30 px-5 py-4">
                             {announcement.image && (
                               <img src={announcement.image} alt={title} className="w-full max-h-64 object-cover rounded-xl mb-4" />
+                            )}
+                            {announcement.video && (
+                              <div className="mb-4 rounded-xl overflow-hidden bg-dark-900">
+                                <video
+                                  src={announcement.video}
+                                  controls
+                                  playsInline
+                                  preload="metadata"
+                                  className="w-full max-h-72"
+                                >
+                                  Your browser does not support video playback.
+                                </video>
+                              </div>
+                            )}
+                            {Array.isArray(announcement.attachments) && announcement.attachments.length > 0 && (
+                              <div className="mb-4 space-y-2">
+                                {announcement.attachments.map((att, attIdx) => {
+                                  const attUrl = att.fileUrl || att.url || att;
+                                  const attName = att.fileName || att.name || (typeof att === 'string' ? att.split('/').pop() : 'Download');
+                                  const attSize = att.fileSize ? ` (${(att.fileSize / (1024 * 1024)).toFixed(1)} MB)` : '';
+                                  return (
+                                    <a
+                                      key={attIdx}
+                                      href={attUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      download
+                                      className="flex items-center gap-3 rounded-xl border border-dark-200 bg-white px-4 py-3 hover:border-primary-400 hover:bg-primary-50/50 transition-colors"
+                                    >
+                                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-50 text-red-500">
+                                        <FiPaperclip size={16} />
+                                      </div>
+                                      <span className="min-w-0 flex-1 truncate text-sm font-medium text-ink">{attName}{attSize}</span>
+                                      <FiDownload size={16} className="shrink-0 text-primary-500" />
+                                    </a>
+                                  );
+                                })}
+                              </div>
                             )}
                             <div className="prose prose-sm max-w-none text-dark-600">
                               {content.split('\n').map((paragraph, pIdx) => (

@@ -6,6 +6,7 @@ const studentService = {
   activateWithBalance: () => api.post('/subscriptions/activate-with-balance'),
   activateByUpline: (data) => api.post('/subscriptions/activate-by-upline', data),
   requestWithdrawal: (data) => api.post('/withdrawals', data),
+  sendWithdrawalOTP: () => api.post('/withdrawals/send-otp'),
   getWithdrawalFeeInfo: () => api.get('/withdrawals/fee-info'),
   getMyWithdrawals: (params) => api.get('/withdrawals', { params }),
   getMyCertificates: () => api.get('/certificates'),

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { FiPlus, FiTrash2, FiVolume2, FiCalendar, FiImage, FiX } from 'react-icons/fi';
+import { FiPlus, FiTrash2, FiVolume2, FiCalendar, FiImage, FiFileText, FiVideo, FiX } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
@@ -35,6 +35,8 @@ const initialForm = {
   content: '',
   type: '',
   image: '',
+  video: '',
+  attachment: null,
 };
 
 export default function Announcements() {
@@ -48,6 +50,8 @@ export default function Announcements() {
   const [form, setForm] = useState(initialForm);
   const [submitting, setSubmitting] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadingPdf, setUploadingPdf] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
 
   const fetchAnnouncements = useCallback(async () => {
@@ -93,6 +97,55 @@ export default function Announcements() {
     }
   };
 
+  const handlePdfUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingPdf(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const data = await adminService.uploadAnnouncementPdf(fd);
+      const url = data?.data?.url || data?.url;
+      if (url) {
+        setForm((prev) => ({
+          ...prev,
+          attachment: {
+            fileName: data?.data?.fileName || file.name,
+            fileUrl: url,
+            fileSize: data?.data?.fileSize || file.size,
+          },
+        }));
+        toast.success('Document uploaded');
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || err.message || 'Failed to upload document');
+    } finally {
+      setUploadingPdf(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleVideoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingVideo(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const data = await adminService.uploadAnnouncementVideo(fd);
+      const url = data?.data?.url || data?.url;
+      if (url) {
+        setForm((prev) => ({ ...prev, video: url }));
+        toast.success('Video uploaded');
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || err.message || 'Failed to upload video');
+    } finally {
+      setUploadingVideo(false);
+      e.target.value = '';
+    }
+  };
+
   const openCreateModal = () => {
     setForm(initialForm);
     setModalOpen(true);
@@ -107,6 +160,8 @@ export default function Announcements() {
         content: form.content,
         type: form.type,
         image: form.image || null,
+        video: form.video || null,
+        attachments: form.attachment ? [form.attachment] : [],
         isPublished: true,
       });
       toast.success('Announcement published successfully');
@@ -284,6 +339,72 @@ export default function Announcements() {
                     </span>
                   )}
                   <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={uploadingImage} />
+                </label>
+              )}
+            </div>
+          </div>
+          <div className="w-full">
+            <label className="block text-[12px] font-semibold uppercase tracking-wider text-dark-500 mb-1.5">
+              Attach PDF / Document (optional — students can download it)
+            </label>
+            <div className="flex items-center gap-3">
+              {form.attachment ? (
+                <div className="flex items-center gap-3 rounded-lg border border-dark-200 bg-dark-50 px-3 py-2">
+                  <FiFileText className="h-4 w-4 text-red-500" />
+                  <span className="text-sm text-ink max-w-[180px] truncate">{form.attachment.fileName}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleChange('attachment', null)}
+                    className="rounded-full bg-red-500 text-white p-1 hover:bg-red-600"
+                    title="Remove document"
+                  >
+                    <FiX size={12} />
+                  </button>
+                </div>
+              ) : (
+                <label className="flex h-10 cursor-pointer items-center gap-2 rounded-lg border-2 border-dashed border-dark-200 px-4 text-dark-400 hover:border-primary-400 hover:text-primary-500 transition-colors">
+                  {uploadingPdf ? (
+                    <span className="text-xs font-medium">Uploading...</span>
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      <FiFileText size={16} />
+                      <span className="text-[11px] font-medium">Upload PDF</span>
+                    </span>
+                  )}
+                  <input type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt" className="hidden" onChange={handlePdfUpload} disabled={uploadingPdf} />
+                </label>
+              )}
+            </div>
+          </div>
+          <div className="w-full">
+            <label className="block text-[12px] font-semibold uppercase tracking-wider text-dark-500 mb-1.5">
+              Announcement Video (optional — plays in student portal)
+            </label>
+            <div className="flex items-center gap-3">
+              {form.video ? (
+                <div className="flex items-center gap-3 rounded-lg border border-dark-200 bg-dark-50 px-3 py-2">
+                  <FiVideo className="h-4 w-4 text-purple-500" />
+                  <span className="text-sm text-ink max-w-[180px] truncate">Video attached</span>
+                  <button
+                    type="button"
+                    onClick={() => handleChange('video', '')}
+                    className="rounded-full bg-red-500 text-white p-1 hover:bg-red-600"
+                    title="Remove video"
+                  >
+                    <FiX size={12} />
+                  </button>
+                </div>
+              ) : (
+                <label className="flex h-10 cursor-pointer items-center gap-2 rounded-lg border-2 border-dashed border-dark-200 px-4 text-dark-400 hover:border-primary-400 hover:text-primary-500 transition-colors">
+                  {uploadingVideo ? (
+                    <span className="text-xs font-medium">Uploading...</span>
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      <FiVideo size={16} />
+                      <span className="text-[11px] font-medium">Upload Video</span>
+                    </span>
+                  )}
+                  <input type="file" accept="video/mp4,video/webm,video/quicktime,video/x-msvideo,video/x-matroska" className="hidden" onChange={handleVideoUpload} disabled={uploadingVideo} />
                 </label>
               )}
             </div>
