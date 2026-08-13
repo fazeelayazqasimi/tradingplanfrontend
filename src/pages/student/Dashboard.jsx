@@ -24,6 +24,7 @@ import webinarService from "../../services/webinarService";
 import zoomSessionService from "../../services/zoomSessionService";
 import marketUpdateService from "../../services/marketUpdateService";
 import websiteService from "../../services/websiteService";
+import ContentDetailsModal from "../../components/student/ContentDetailsModal";
 import api from "../../services/api";
 
 const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.04 } } };
@@ -59,6 +60,7 @@ export default function Dashboard() {
   const [openSignalsCount, setOpenSignalsCount] = useState(0);
   const [copyStats, setCopyStats] = useState(null);
   const [businessProfiles, setBusinessProfiles] = useState([]);
+  const [selectedFreeItem, setSelectedFreeItem] = useState(null);
   const [showActivateModal, setShowActivateModal] = useState(false);
   const [activatePin, setActivatePin] = useState("");
   const [activateLoading, setActivateLoading] = useState(false);
@@ -181,7 +183,13 @@ useEffect(() => {
   };
   const trend = trendConfig[goldTrend] || trendConfig.neutral;
 
-  const freeLearningContent = [...freeWebinars, ...freeZoomSessions, ...marketUpdates, ...announcements, ...freeCourses].sort((a, b) => {
+  const freeLearningContent = [
+    ...freeWebinars.map(w => ({ ...w, contentType: 'webinar' })),
+    ...freeZoomSessions.map(z => ({ ...z, contentType: 'zoomSession' })),
+    ...marketUpdates.map(m => ({ ...m, contentType: 'marketUpdate' })),
+    ...announcements.map(a => ({ ...a, contentType: 'announcement' })),
+    ...freeCourses.map(c => ({ ...c, contentType: 'course' })),
+  ].sort((a, b) => {
     const aDate = a.date || a.publishedAt || a.createdAt || "";
     const bDate = b.date || b.publishedAt || b.createdAt || "";
     return new Date(bDate) - new Date(aDate);
@@ -424,16 +432,20 @@ useEffect(() => {
               </Card>
             )}
             {openSignalsCount > 0 && (
-              <Card className="p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center">
-                    <FiTrendingUp size={16} className="text-emerald-500" />
+              <Link to="/student/signals" className="block">
+                <Card className="p-4 transition-all duration-200 hover:border-emerald-300 hover:shadow-card-md group">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center">
+                      <FiTrendingUp size={16} className="text-emerald-500" />
+                    </div>
+                    <span className="text-xs font-medium text-dark-500">Today's Signals</span>
                   </div>
-                  <span className="text-xs font-medium text-dark-500">Today's Signals</span>
-                </div>
-                <p className="text-2xl font-extrabold text-emerald-600">{openSignalsCount}</p>
-                <p className="text-xs text-dark-400">open signals</p>
-              </Card>
+                  <p className="text-2xl font-extrabold text-emerald-600">{openSignalsCount}</p>
+                  <p className="text-xs text-dark-400 flex items-center gap-1 group-hover:text-emerald-600">
+                    open signals <FiArrowRight size={12} className="transition-transform group-hover:translate-x-0.5" />
+                  </p>
+                </Card>
+              </Link>
             )}
           </div>
           {dailyMarketSummary && (
@@ -481,7 +493,7 @@ useEffect(() => {
                       </div>
                     </div>
                     <p className="text-xs text-dark-500 line-clamp-3 mb-3">{item.summary || item.description || ''}</p>
-                    <Link to="/student/free-learning"><Button variant="outline" size="sm" className="w-full">View</Button></Link>
+                    <Button variant="outline" size="sm" className="w-full" onClick={() => setSelectedFreeItem(item)}>View Details</Button>
                   </div>
                 </Card>
               );
@@ -529,16 +541,18 @@ useEffect(() => {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {signals.slice(0, 3).map((signal) => (
-              <Card key={signal._id} className="p-4 flex items-center gap-4">
-                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center text-white shrink-0">
-                  <FiTrendingUp size={18} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-ink truncate">{signal.title || "Signal"}</p>
-                  <p className="text-xs text-dark-400">{signal.symbol || ""} {signal.side && `(${signal.side})`}</p>
-                </div>
-                <Badge variant={signal.isPublished ? "success" : "neutral"}>{signal.isPublished ? "Live" : "Draft"}</Badge>
-              </Card>
+              <Link key={signal._id} to="/student/signals">
+                <Card className="p-4 flex items-center gap-4 transition-all duration-200 hover:border-primary-300 hover:shadow-card-md group">
+                  <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center text-white shrink-0">
+                    <FiTrendingUp size={18} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-ink truncate">{signal.title || "Signal"}</p>
+                    <p className="text-xs text-dark-400">{signal.symbol || ""} {signal.side && `(${signal.side})`}</p>
+                  </div>
+                  <Badge variant={signal.isPublished ? "success" : "neutral"}>{signal.isPublished ? "Live" : "Draft"}</Badge>
+                </Card>
+              </Link>
             ))}
           </div>
         </motion.div>
@@ -671,7 +685,7 @@ useEffect(() => {
             <div className="flex gap-2">
               <Link to="/student/wallet"><Button variant="white" size="sm">View Wallet</Button></Link>
               {isFreeUser ? (
-                <Button variant="outline-white" size="sm" onClick={() => toast.error('Aapka account activate nahi hai — withdrawal option locked hai. Pehle apni membership activate karein.')}>
+                <Button variant="outline-white" size="sm" onClick={() => toast.error('Your account is not activated — withdrawal is locked. Please activate your membership first.')}>
                   <FiLock size={13} className="mr-1" /> Withdraw (Locked)
                 </Button>
               ) : (
@@ -800,6 +814,13 @@ useEffect(() => {
           </div>
         </div>
       </Modal>
+
+      <ContentDetailsModal
+        item={selectedFreeItem}
+        isOpen={!!selectedFreeItem}
+        onClose={() => setSelectedFreeItem(null)}
+        isFreeUser={isFreeUser}
+      />
     </div>
   );
 }

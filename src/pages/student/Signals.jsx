@@ -98,6 +98,12 @@ function StatusBadge({ status, result }) {
 function SignalCard({ signal, isExpanded, onToggle }) {
   const profit = signal.profit ?? signal.currentProfit ?? 0;
   const isProfit = profit >= 0;
+  const openPrices = Array.isArray(signal.openPrices) && signal.openPrices.length
+    ? signal.openPrices
+    : (signal.openPrice != null ? [signal.openPrice] : []);
+  const tps = Array.isArray(signal.takeProfits) && signal.takeProfits.length
+    ? signal.takeProfits
+    : (signal.takeProfit != null ? [{ price: signal.takeProfit }] : []);
 
   return (
     <motion.div
@@ -128,6 +134,11 @@ function SignalCard({ signal, isExpanded, onToggle }) {
               <span>
                 Open: <span className="font-medium text-dark-700">{signal.openPrice}</span>
               </span>
+              {openPrices.length > 1 && (
+                <span>
+                  Open Prices: <span className="font-medium text-dark-700">{openPrices.join(' / ')}</span>
+                </span>
+              )}
               {signal.currentPrice && (
                 <span>
                   Current: <span className="font-medium text-dark-700">{signal.currentPrice}</span>
@@ -177,10 +188,27 @@ function SignalCard({ signal, isExpanded, onToggle }) {
                       <p className="font-medium text-ink">{signal.stopLoss}</p>
                     </div>
                   )}
-                  {signal.takeProfit !== undefined && (
+                  {tps.length > 0 && (
                     <div>
-                      <span className="text-dark-500">Take Profit</span>
-                      <p className="font-medium text-ink">{signal.takeProfit}</p>
+                      <span className="text-dark-500">Take Profit{tps.length > 1 ? 's' : ''}</span>
+                      <div className="mt-1 flex flex-wrap gap-1">
+                        {tps.map((tp, i) => (
+                          <span
+                            key={i}
+                            className={`inline-flex items-center rounded px-1.5 py-0.5 text-xs font-semibold font-mono ${
+                              tp.hit ? 'bg-emerald-50 text-emerald-700' : 'bg-dark-100 text-dark-600'
+                            }`}
+                          >
+                            TP{i + 1}: {tp.price ?? tp}{tp.hit ? ' ✓' : ''}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {openPrices.length > 1 && (
+                    <div>
+                      <span className="text-dark-500">Open Prices</span>
+                      <p className="font-medium text-ink">{openPrices.join(' / ')}</p>
                     </div>
                   )}
                   {signal.lotSize !== undefined && (

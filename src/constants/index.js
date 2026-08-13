@@ -22,7 +22,7 @@ export const COURSE_LEVELS = [
   { value: 'advanced', label: 'Advanced' },
 ];
 
-export const SIGNAL_ACTIONS = ['BUY', 'SELL', 'CLOSE', 'MODIFY'];
+export const SIGNAL_ACTIONS = ['BUY', 'SELL', 'BUY LIMIT', 'SELL LIMIT', 'BUY STOP', 'SELL STOP', 'CLOSE', 'MODIFY'];
 
 export const TICKET_CATEGORIES = ['general', 'technical', 'billing', 'other'];
 export const TICKET_PRIORITIES = ['low', 'medium', 'high', 'urgent'];

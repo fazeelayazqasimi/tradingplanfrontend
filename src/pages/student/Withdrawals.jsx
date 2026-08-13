@@ -239,7 +239,7 @@ const validateForm = () => {
 
   const handleSubmit = async () => {
     if (!otpSent) {
-      toast.error('Pehle OTP send karein aur verify karein — request tabhi proceed hogi.');
+      toast.error('Please send and verify the OTP first — your request will only proceed after verification.');
       return;
     }
     if (!withdrawOtp.trim()) {
@@ -294,7 +294,7 @@ const validateForm = () => {
           </Button>
           <Button size="sm" onClick={() => {
             if (!isActivated) {
-              toast.error('Aapka account activate nahi hai — withdrawal option locked hai. Pehle apni membership activate karein.');
+              toast.error('Your account is not activated — withdrawal is locked. Please activate your membership first.');
               return;
             }
             setShowModal(true);
@@ -313,9 +313,9 @@ const validateForm = () => {
           <div>
             <p className="text-sm font-bold text-amber-800 mb-1">Withdrawal option locked</p>
             <p className="text-sm text-amber-700">
-              Aapka account activate nahi hai. Withdrawal sirf activated members ke liye hai — pehle apni membership activate karein, phir aap apni earnings (direct, indirect &amp; free registration bonuses) withdraw kar sakte hain.
+              Your account is not activated. Withdrawals are only available to activated members — please activate your membership first, then you can withdraw your earnings (direct, indirect &amp; free registration bonuses).
             </p>
-            <Button size="sm" variant="outline" className="mt-3" onClick={() => toast('Membership activation dashboard pe available hai.', { icon: '🔑' })}>
+            <Button size="sm" variant="outline" className="mt-3" onClick={() => toast('Membership activation is available on the dashboard.', { icon: '🔑' })}>
               How to activate?
             </Button>
           </div>
@@ -444,7 +444,7 @@ const validateForm = () => {
               <p className="text-xs font-semibold text-ink">Email OTP Verification</p>
             </div>
             <p className="text-xs text-dark-500 mb-2">
-              Withdrawal request tabhi proceed hogi jab aap apni registered email pe aaya OTP enter karenge.
+              Your withdrawal request will only proceed after you enter the OTP sent to your registered email.
             </p>
             <div className="flex gap-2">
               <Input
@@ -468,7 +468,7 @@ const validateForm = () => {
               </Button>
             </div>
             {otpSent && (
-              <p className="text-[11px] text-emerald-600 mt-1.5">OTP sent — check your email inbox (spam bhi check karein).</p>
+              <p className="text-[11px] text-emerald-600 mt-1.5">OTP sent — check your email inbox (also check spam).</p>
             )}
           </div>
 

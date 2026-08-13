@@ -406,7 +406,7 @@ const validateWithdraw = () => {
 
   const handleWithdraw = async () => {
     if (!otpSent) {
-      toast.error('Pehle OTP send karein aur verify karein — request tabhi proceed hogi.');
+      toast.error('Please send and verify the OTP first — your request will only proceed after verification.');
       return;
     }
     if (!withdrawOtp.trim()) {
@@ -918,7 +918,7 @@ const validateWithdraw = () => {
                 <p className="text-xs font-semibold text-ink">Email OTP Verification</p>
               </div>
               <p className="text-xs text-dark-500 mb-2">
-                Withdrawal request tabhi proceed hogi jab aap apni registered email pe aaya OTP enter karenge.
+                Your withdrawal request will only proceed after you enter the OTP sent to your registered email.
               </p>
               <div className="flex gap-2">
                 <Input
@@ -942,7 +942,7 @@ const validateWithdraw = () => {
                 </Button>
               </div>
               {otpSent && (
-                <p className="text-[11px] text-emerald-600 mt-1.5">OTP sent — check your email inbox (spam bhi check karein).</p>
+                <p className="text-[11px] text-emerald-600 mt-1.5">OTP sent — check your email inbox (also check spam).</p>
               )}
             </div>
 

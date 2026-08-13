@@ -7,8 +7,7 @@ import {
   FiArrowDownCircle,
   FiCheckCircle,
   FiXCircle,
-} from 'react-icons/fi';
-import toast from 'react-hot-toast';
+} from 'react-icons/fi';import toast from 'react-hot-toast';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
@@ -58,8 +57,10 @@ const initialForm = {
   side: '',
   volume: '',
   openPrice: '',
+  openPrices: [''],
   stopLoss: '',
   takeProfit: '',
+  takeProfits: [{ price: '' }],
   openTime: '',
   description: '',
   isPublished: true,
@@ -115,6 +116,12 @@ export default function Signals() {
   };
 
   const openEditModal = (signal) => {
+    const existingOpenPrices = Array.isArray(signal.openPrices) && signal.openPrices.length
+      ? signal.openPrices
+      : [signal.openPrice ?? signal.price ?? ''];
+    const existingTps = Array.isArray(signal.takeProfits) && signal.takeProfits.length
+      ? signal.takeProfits
+      : [{ price: signal.takeProfit ?? '' }];
     setEditingSignal(signal);
     setForm({
       symbol: signal.symbol || '',
@@ -122,8 +129,10 @@ export default function Signals() {
       side: signal.side || '',
       volume: signal.volume?.toString() || '',
       openPrice: signal.openPrice?.toString() || signal.price?.toString() || '',
+      openPrices: existingOpenPrices.map((p) => p?.toString() ?? ''),
       stopLoss: signal.stopLoss?.toString() || '',
       takeProfit: signal.takeProfit?.toString() || '',
+      takeProfits: existingTps.map((tp) => ({ price: (tp?.price ?? tp)?.toString() || '' })),
       openTime: signal.openTime ? new Date(signal.openTime).toISOString().slice(0, 16) : '',
       description: signal.description || '',
       isPublished: signal.isPublished ?? true,
@@ -131,18 +140,64 @@ export default function Signals() {
     setModalOpen(true);
   };
 
+  const setOpenPriceAt = (index, value) => {
+    setForm((prev) => {
+      const list = [...prev.openPrices];
+      list[index] = value;
+      return { ...prev, openPrices: list };
+    });
+  };
+
+  const addOpenPrice = () => {
+    setForm((prev) => ({ ...prev, openPrices: [...prev.openPrices, ''] }));
+  };
+
+  const removeOpenPrice = (index) => {
+    setForm((prev) => {
+      const list = prev.openPrices.filter((_, i) => i !== index);
+      return { ...prev, openPrices: list.length ? list : [''] };
+    });
+  };
+
+  const setTakeProfitAt = (index, value) => {
+    setForm((prev) => {
+      const list = [...prev.takeProfits];
+      list[index] = { ...list[index], price: value };
+      return { ...prev, takeProfits: list };
+    });
+  };
+
+  const addTakeProfit = () => {
+    setForm((prev) => ({ ...prev, takeProfits: [...prev.takeProfits, { price: '' }] }));
+  };
+
+  const removeTakeProfit = (index) => {
+    setForm((prev) => {
+      const list = prev.takeProfits.filter((_, i) => i !== index);
+      return { ...prev, takeProfits: list.length ? list : [{ price: '' }] };
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       setSubmitting(true);
+      const openPrices = form.openPrices
+        .map((p) => parseFloat(p))
+        .filter((p) => !isNaN(p) && p > 0);
+      const takeProfits = form.takeProfits
+        .map((tp) => parseFloat(tp.price))
+        .filter((p) => !isNaN(p) && p > 0);
       const payload = {
         symbol: form.symbol.toUpperCase().trim(),
         action: form.action.toUpperCase(),
         side: form.side.toUpperCase(),
         volume: parseFloat(form.volume) || 0,
-        openPrice: parseFloat(form.openPrice) || 0,
+        openPrice: (openPrices[0] ?? parseFloat(form.openPrice)) || 0,
+        openPrices,
         stopLoss: parseFloat(form.stopLoss) || 0,
-        takeProfit: parseFloat(form.takeProfit) || 0,
+        takeProfit: (takeProfits[0] ?? parseFloat(form.takeProfit)) || 0,
+        takeProfits: takeProfits.map((price) => ({ price })),
         openTime: form.openTime ? new Date(form.openTime).toISOString() : new Date().toISOString(),
         description: form.description,
         isPublished: form.isPublished,
@@ -179,20 +234,28 @@ export default function Signals() {
     }
   };
 
-  const handleHit = async (signal, outcome) => {
-    const label = outcome === 'tp' ? 'Take Profit (TP)' : 'Stop Loss (SL)';
+  const handleHit = async (signal, outcome, tpIndex = null) => {
     const isTP = outcome === 'tp';
+    const label = isTP
+      ? (tpIndex != null ? `Take Profit ${tpIndex + 1} (TP ${tpIndex + 1})` : 'Take Profit (TP)')
+      : 'Stop Loss (SL)';
     if (!window.confirm(
       isTP
-        ? `Confirm TP hit for ${signal.symbol}? A target-achieved email will be sent to ALL students.`
+        ? (tpIndex != null
+          ? `Confirm TP ${tpIndex + 1} hit for ${signal.symbol}? A target-achieved email will be sent to ALL students.`
+          : `Confirm TP hit for ${signal.symbol}? A target-achieved email will be sent to ALL students.`)
         : `Confirm SL hit for ${signal.symbol}? A motivational email will be sent to ALL students.`
     )) return;
     const signalId = signal._id || signal.id;
     try {
       setHittingId(signalId);
-      if (isTP) await signalService.hitTP(signalId);
-      else await signalService.hitSL(signalId);
-      toast.success(isTP ? 'TP hit! Email sent to all students' : 'SL hit! Motivational email sent to all students');
+      if (isTP) {
+        if (tpIndex != null) await signalService.hitTP(signalId, undefined, tpIndex);
+        else await signalService.hitTP(signalId);
+      } else await signalService.hitSL(signalId);
+      toast.success(isTP
+        ? (tpIndex != null ? `TP ${tpIndex + 1} hit! Email sent to all students` : 'TP hit! Email sent to all students')
+        : 'SL hit! Motivational email sent to all students');
       fetchSignals();
     } catch (err) {
       toast.error(err.response?.data?.message || err.message || `Failed to mark ${label} hit`);
@@ -244,12 +307,44 @@ export default function Signals() {
     },
     {
       key: 'openPrice',
-      header: 'Price',
-      render: (_, row) => (
-        <span className="text-sm text-dark-500 font-mono">
-          {row.openPrice ?? row.price ?? '—'}
-        </span>
-      ),
+      header: 'Open Price',
+      render: (_, row) => {
+        const prices = Array.isArray(row.openPrices) && row.openPrices.length
+          ? row.openPrices
+          : [row.openPrice ?? row.price];
+        return (
+          <div className="flex flex-wrap gap-1">
+            {prices.map((p, i) => (
+              <span key={i} className="text-xs font-mono text-dark-600 bg-dark-50 rounded px-1.5 py-0.5">
+                {p}
+              </span>
+            ))}
+          </div>
+        );
+      },
+    },
+    {
+      key: 'tp',
+      header: 'Take Profits',
+      render: (_, row) => {
+        const tps = Array.isArray(row.takeProfits) && row.takeProfits.length
+          ? row.takeProfits
+          : (row.takeProfit != null ? [{ price: row.takeProfit, hit: row.result === 'tp' }] : []);
+        if (!tps.length) return <span className="text-sm text-dark-400">—</span>;
+        return (
+          <div className="flex flex-wrap gap-1">
+            {tps.map((tp, i) => (
+              <span
+                key={i}
+                className={`text-xs font-mono rounded px-1.5 py-0.5 ${tp.hit ? 'bg-emerald-50 text-emerald-700' : 'bg-dark-50 text-dark-600'}`}
+                title={tp.hit ? 'Hit' : 'Not hit'}
+              >
+                TP{i + 1}: {tp.price ?? tp}{tp.hit ? ' ✓' : ''}
+              </span>
+            ))}
+          </div>
+        );
+      },
     },
     {
       key: 'status',
@@ -314,18 +409,33 @@ export default function Signals() {
         const signalId = row._id || row.id;
         const isOpen = row.status === 'open' || row.status === 'pending';
         const hitting = hittingId === signalId;
+        const multiTps = Array.isArray(row.takeProfits) && row.takeProfits.length;
         return (
           <div className="flex items-center justify-end gap-1">
             {isOpen && !row.result && (
               <>
-                <button
-                  onClick={() => handleHit(row, 'tp')}
-                  disabled={hitting}
-                  className="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition-colors disabled:opacity-50"
-                  title="Mark Take Profit hit and email all students"
-                >
-                  HIT TP
-                </button>
+                {multiTps ? (
+                  row.takeProfits.map((tp, i) => !tp.hit && (
+                    <button
+                      key={i}
+                      onClick={() => handleHit(row, 'tp', i)}
+                      disabled={hitting}
+                      className="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition-colors disabled:opacity-50"
+                      title={`Mark Take Profit ${i + 1} hit and email all students`}
+                    >
+                      HIT TP{i + 1}
+                    </button>
+                  ))
+                ) : (
+                  <button
+                    onClick={() => handleHit(row, 'tp')}
+                    disabled={hitting}
+                    className="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition-colors disabled:opacity-50"
+                    title="Mark Take Profit hit and email all students"
+                  >
+                    HIT TP
+                  </button>
+                )}
                 <button
                   onClick={() => handleHit(row, 'sl')}
                   disabled={hitting}
@@ -439,14 +549,41 @@ export default function Signals() {
               value={form.volume}
               onChange={(e) => handleChange('volume', e.target.value)}
             />
-            <Input
-              label="Open Price"
-              type="number"
-              step="0.00001"
-              placeholder="Entry price"
-              value={form.openPrice}
-              onChange={(e) => handleChange('openPrice', e.target.value)}
-            />
+            <div>
+              <label className="block text-sm font-medium text-dark-500 mb-1.5">
+                Open Price{form.openPrices.length > 1 ? 's' : ''}
+              </label>
+              <div className="space-y-2">
+                {form.openPrices.map((price, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <Input
+                      type="number"
+                      step="0.00001"
+                      placeholder={`Entry price ${i + 1}`}
+                      value={price}
+                      onChange={(e) => setOpenPriceAt(i, e.target.value)}
+                    />
+                    {form.openPrices.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeOpenPrice(i)}
+                        className="shrink-0 rounded-lg p-2 text-dark-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                        title="Remove open price"
+                      >
+                        <FiXCircle className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={addOpenPrice}
+                  className="text-xs font-semibold text-primary-600 hover:text-primary-700"
+                >
+                  + Add another open price
+                </button>
+              </div>
+            </div>
             <Input
               label="Stop Loss"
               type="number"
@@ -455,14 +592,41 @@ export default function Signals() {
               value={form.stopLoss}
               onChange={(e) => handleChange('stopLoss', e.target.value)}
             />
-            <Input
-              label="Take Profit"
-              type="number"
-              step="0.00001"
-              placeholder="Take profit level"
-              value={form.takeProfit}
-              onChange={(e) => handleChange('takeProfit', e.target.value)}
-            />
+            <div>
+              <label className="block text-sm font-medium text-dark-500 mb-1.5">
+                Take Profit{form.takeProfits.length > 1 ? 's' : ''}
+              </label>
+              <div className="space-y-2">
+                {form.takeProfits.map((tp, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <Input
+                      type="number"
+                      step="0.00001"
+                      placeholder={`Take profit level ${i + 1}`}
+                      value={tp.price}
+                      onChange={(e) => setTakeProfitAt(i, e.target.value)}
+                    />
+                    {form.takeProfits.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeTakeProfit(i)}
+                        className="shrink-0 rounded-lg p-2 text-dark-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                        title="Remove take profit"
+                      >
+                        <FiXCircle className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={addTakeProfit}
+                  className="text-xs font-semibold text-primary-600 hover:text-primary-700"
+                >
+                  + Add another take profit
+                </button>
+              </div>
+            </div>
             <Input
               label="Open Time"
               type="datetime-local"

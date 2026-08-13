@@ -10,6 +10,7 @@ import Skeleton from '../../components/ui/Skeleton';
 import EmptyState from '../../components/ui/EmptyState';
 import { useAuth } from '../../context/AuthContext';
 import { formatCurrency, formatDate, getInitials } from '../../utils/helpers';
+import ContentDetailsModal from '../../components/student/ContentDetailsModal';
 import webinarService from '../../services/webinarService';
 import zoomSessionService from '../../services/zoomSessionService';
 import marketUpdateService from '../../services/marketUpdateService';
@@ -48,6 +49,7 @@ export default function FreeLearning() {
   const [announcements, setAnnouncements] = useState([]);
   const [freeCourses, setFreeCourses] = useState([]);
   const [filterCategory, setFilterCategory] = useState('all');
+  const [selectedItem, setSelectedItem] = useState(null);
 
   const isFreeUser = user?.subscriptionStatus !== 'active';
 
@@ -312,17 +314,26 @@ export default function FreeLearning() {
                     )}
                     <div className="flex items-center gap-2 pt-2">
                       {isLocked ? (
-                        <Link to="/student/subscription">
+                        <Link to="/student/subscription" className="w-full">
                           <Button variant="primary" size="sm" className="w-full">
                             Upgrade to Unlock
                           </Button>
                         </Link>
-                      ) : (
-                        <Link to={isCourse ? `/student/courses/${item.slug || item._id}` : '#'} className="w-full">
+                      ) : isCourse ? (
+                        <Link to={`/student/courses/${item.slug || item._id}`} className="w-full">
                           <Button variant="primary" size="sm" className="w-full">
-                            {isCourse ? 'Enroll Now' : isZoom ? 'Join Session' : isWebinar ? 'Register' : 'View Details'}
+                            Enroll Now
                           </Button>
                         </Link>
+                      ) : (
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          className="w-full"
+                          onClick={() => setSelectedItem(item)}
+                        >
+                          {isZoom ? 'View Session' : isWebinar ? 'View Webinar' : 'View Details'}
+                        </Button>
                       )}
                     </div>
                   </div>
@@ -332,6 +343,13 @@ export default function FreeLearning() {
           })}
         </motion.div>
       )}
+
+      <ContentDetailsModal
+        item={selectedItem}
+        isOpen={!!selectedItem}
+        onClose={() => setSelectedItem(null)}
+        isFreeUser={isFreeUser}
+      />
     </div>
   );
 }
