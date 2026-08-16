@@ -117,6 +117,7 @@ const adminService = {
   getWebinarStats: () => unwrap(api.get('/webinars/stats')),
   getZoomSessionStats: () => unwrap(api.get('/zoom-sessions/stats')),
   getMarketUpdateStats: () => unwrap(api.get('/market-updates/stats')),
+  getWhatsappStats: (params) => unwrap(api.get('/admin/whatsapp-stats', { params })),
 
   getWebinars: (params) => unwrap(api.get('/webinars', { params })),
   getWebinar: (id) => unwrap(api.get(`/webinars/${id}`)),

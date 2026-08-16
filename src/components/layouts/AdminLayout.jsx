@@ -1,6 +1,6 @@
 import { Link, useLocation, Outlet } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
-import { FiMenu, FiX, FiLayout, FiUsers, FiCreditCard, FiBookOpen, FiTrendingUp, FiBell, FiLink2, FiAward, FiDollarSign, FiSettings, FiLogOut, FiMessageSquare, FiHelpCircle, FiFileText, FiEdit, FiBarChart2, FiHome, FiLayers, FiDownload, FiTag, FiServer, FiImage, FiVideo, FiRadio, FiCalendar, FiChevronDown, FiChevronUp } from 'react-icons/fi';
+import { FiMenu, FiX, FiLayout, FiUsers, FiCreditCard, FiBookOpen, FiTrendingUp, FiBell, FiLink2, FiAward, FiDollarSign, FiSettings, FiLogOut, FiMessageSquare, FiHelpCircle, FiFileText, FiEdit, FiBarChart2, FiHome, FiLayers, FiDownload, FiTag, FiServer, FiImage, FiVideo, FiRadio, FiCalendar, FiChevronDown, FiChevronUp, FiMessageCircle } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
 import { getInitials } from '../../utils/helpers';
@@ -57,6 +57,7 @@ const sidebarSections = [
     items: [
       { path: '/admin/media', label: 'Media Library', icon: FiImage },
       { path: '/admin/announcements', label: 'Announcements', icon: FiBell },
+      { path: '/admin/whatsapp-clicks', label: 'WhatsApp Clicks', icon: FiMessageCircle },
       { path: '/admin/business-profiles', label: 'Business Profiles', icon: FiFileText },
       { path: '/admin/content', label: 'Website Content', icon: FiLayout },
       { path: '/admin/market-updates', label: 'Market Updates', icon: FiCalendar },

@@ -21,6 +21,7 @@ const studentService = {
   getMyRank: () => api.get('/ranks/me'),
   connectMT: (data) => api.post('/users/connect-mt', data),
   disconnectMT: () => api.delete('/users/disconnect-mt'),
+  markWhatsappClick: () => api.post('/users/whatsapp-click'),
   getSettings: () => api.get('/settings/public'),
   getMyPurchases: (params) => api.get('/course-purchases/my', { params }),
   createPurchase: (data) => api.post('/course-purchases', data),

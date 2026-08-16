@@ -58,6 +58,7 @@ import AdminMarketOverview from './pages/admin/MarketOverview';
 import AdminWebinars from './pages/admin/Webinars';
 import AdminZoomSessions from './pages/admin/ZoomSessions';
 import AdminMarketUpdates from './pages/admin/MarketUpdates';
+import AdminWhatsAppClicks from './pages/admin/WhatsAppClicks';
 
 import StudentDashboard from './pages/student/Dashboard';
 import StudentCourses from './pages/student/Courses';
@@ -163,6 +164,7 @@ export const router = createBrowserRouter([
       { path: 'webinars', element: <AdminWebinars /> },
       { path: 'zoom-sessions', element: <AdminZoomSessions /> },
       { path: 'market-updates', element: <AdminMarketUpdates /> },
+      { path: 'whatsapp-clicks', element: <AdminWhatsAppClicks /> },
     ],
   },
   {

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { FiBookOpen, FiTrendingUp, FiDollarSign, FiAward, FiArrowRight, FiCreditCard, FiClock, FiCheckCircle, FiCopy, FiLink, FiUsers, FiUserPlus, FiBarChart2, FiStar, FiZap, FiGlobe, FiTrendingDown, FiLock, FiGift, FiShare2, FiCheck, FiExternalLink, FiCalendar, FiMessageSquare, FiKey, FiFileText, FiDownload } from "react-icons/fi";
+import { FiBookOpen, FiTrendingUp, FiDollarSign, FiAward, FiArrowRight, FiCreditCard, FiClock, FiCheckCircle, FiCopy, FiLink, FiUsers, FiUserPlus, FiBarChart2, FiStar, FiZap, FiGlobe, FiTrendingDown, FiLock, FiGift, FiShare2, FiCheck, FiExternalLink, FiCalendar, FiMessageSquare, FiKey, FiFileText, FiDownload, FiMessageCircle } from "react-icons/fi";
 import toast from "react-hot-toast";
 import Card from "../../components/ui/Card";
 import Badge from "../../components/ui/Badge";
@@ -26,6 +26,7 @@ import marketUpdateService from "../../services/marketUpdateService";
 import websiteService from "../../services/websiteService";
 import ContentDetailsModal from "../../components/student/ContentDetailsModal";
 import api from "../../services/api";
+import { WHATSAPP_CHANNEL_URL } from "../../constants";
 
 const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.04 } } };
 const item = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 280, damping: 22 } } };
@@ -261,6 +262,15 @@ useEffect(() => {
     else toast.error("Failed to copy");
   };
 
+  const handleWhatsappChannel = async () => {
+    try {
+      await studentService.markWhatsappClick();
+    } catch (err) {
+      console.error("Failed to record WhatsApp click", err);
+    }
+    window.open(WHATSAPP_CHANNEL_URL, "_blank", "noopener,noreferrer");
+  };
+
   const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(" ") || "Trader";
 
   if (loading) {
@@ -344,6 +354,28 @@ useEffect(() => {
                 </Button>
               </Link>
             )}
+          </div>
+        </Card>
+      </motion.div>
+
+      {/* WhatsApp Channel */}
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.06 }}>
+        <Card className="p-5 sm:p-6 relative overflow-hidden border-0 bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 text-white">
+          <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 left-10 w-24 h-24 bg-white/5 rounded-full blur-2xl" />
+          <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-11 h-11 shrink-0 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center">
+                <FiMessageCircle size={22} />
+              </div>
+              <div className="min-w-0">
+                <h3 className="font-bold text-white text-sm uppercase tracking-wider">THE4XHUB WhatsApp Channel</h3>
+                <p className="text-white/80 text-xs sm:text-sm mt-0.5">Join our official WhatsApp channel for signals, updates & announcements</p>
+              </div>
+            </div>
+            <Button variant="white" className="font-bold shadow-lg shrink-0" onClick={handleWhatsappChannel}>
+              <FiExternalLink className="mr-2" /> Join Channel
+            </Button>
           </div>
         </Card>
       </motion.div>

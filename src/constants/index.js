@@ -1,5 +1,7 @@
 export const ROLES = { ADMIN: 'admin', STUDENT: 'student' };
 
+export const WHATSAPP_CHANNEL_URL = 'https://whatsapp.com/channel/0029Vb8y94bJkK76RRKam426';
+
 export const RANKS = [];
 export const SUBSCRIPTION_PLANS = [];
 
