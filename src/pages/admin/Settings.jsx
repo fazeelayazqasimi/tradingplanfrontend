@@ -46,7 +46,7 @@ const SECTIONS = [
   { id: 'withdrawal', label: 'Withdrawals', icon: FiDollarSign },
   { id: 'funding', label: 'Funding Wallet', icon: FiDollarSign },
   { id: 'trading', label: 'Trading', icon: FiTrendingUp },
-  { id: 'smtp', label: 'SMTP', icon: FiMail },
+  { id: 'smtp', label: 'Email (Resend)', icon: FiMail },
   { id: 'backup', label: 'Backup & Data', icon: FiDatabase },
 ];
 
@@ -111,10 +111,8 @@ const SETTING_FIELDS = {
     { key: 'network_share_percent', label: 'Network Share (%)', type: 'number', placeholder: '30' },
   ],
   smtp: [
-    { key: 'smtp_host', label: 'SMTP Host', readOnly: true },
-    { key: 'smtp_port', label: 'SMTP Port', readOnly: true },
-    { key: 'smtp_user', label: 'SMTP Username', readOnly: true },
-    { key: 'smtp_from', label: 'From Address', readOnly: true },
+    { key: 'resend_api_key', label: 'Resend API Key', readOnly: true },
+    { key: 'resend_from_email', label: 'From Address', readOnly: true },
   ],
 };
 
@@ -539,7 +537,7 @@ export default function Settings() {
                 </h2>
                 <p className="text-sm text-dark-500 mt-0.5">
                   {activeSection === 'smtp'
-                    ? 'SMTP configuration is managed through environment variables'
+                    ? 'Email delivery is managed through environment variables (Resend API)'
                     : activeSection === 'general'
                       ? 'Basic information about your institute'
                       : activeSection === 'social'
@@ -640,8 +638,8 @@ export default function Settings() {
             {activeSection === 'smtp' && (
               <div className="mt-6 p-4 rounded-xl bg-amber-50 border border-amber-200">
                 <p className="text-sm text-amber-700">
-                  SMTP settings are read-only here. To modify them, update the corresponding environment
-                  variables on your server and restart the application.
+                  Email settings are read-only here. To modify them, update the corresponding environment
+                  variables (RESEND_API_KEY, RESEND_FROM_EMAIL) on your server and restart the application.
                 </p>
               </div>
             )}

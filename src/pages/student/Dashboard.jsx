@@ -72,11 +72,22 @@ export default function Dashboard() {
 useEffect(() => {
     let cancelled = false;
     let mounted = true;
+    const maxWait = setTimeout(() => { if (!cancelled) setLoading(false); }, 2500);
     async function fetchDashboard() {
       try {
         setLoading(true);
         const isPremium = user?.subscriptionStatus === "active";
         setIsFreeUser(!isPremium);
+        const secondaryPromise = Promise.allSettled([
+          marketOverviewService.getMarketOverview(),
+          signalService.getSignals({ status: "open", isPublished: true, perPage: 1 }),
+          webinarService.getWebinars({ isFree: true, limit: 5, sort: "-date" }),
+          zoomSessionService.getZoomSessions({ category: "free-zoom", limit: 5, sort: "-date" }),
+          marketUpdateService.getMarketUpdates({ limit: 5, sort: "-createdAt" }),
+          announcementService.getAnnouncements({ limit: 5, sort: "-createdAt" }),
+          courseService.getCourses({ isFree: true, limit: 5, sort: "-order" }),
+          studentService.getCopyStats(),
+        ]);
         const criticalResults = await Promise.allSettled([
           courseService.getEnrolled(),
           signalService.getSignals({ perPage: 5, sort: "-createdAt" }),
@@ -115,16 +126,7 @@ useEffect(() => {
           const code = user?.referralCode || "";
           setReferralLink(code ? `https://the4xhub.com/register?ref=${code}` : "");
         }
-        const secondaryResults = await Promise.allSettled([
-          marketOverviewService.getMarketOverview(),
-          signalService.getSignals({ status: "open", isPublished: true, perPage: 1 }),
-          webinarService.getWebinars({ isFree: true, limit: 5, sort: "-date" }),
-          zoomSessionService.getZoomSessions({ category: "free-zoom", limit: 5, sort: "-date" }),
-          marketUpdateService.getMarketUpdates({ limit: 5, sort: "-createdAt" }),
-          announcementService.getAnnouncements({ limit: 5, sort: "-createdAt" }),
-          courseService.getCourses({ isFree: true, limit: 5, sort: "-order" }),
-          studentService.getCopyStats(),
-        ]);
+        const secondaryResults = await secondaryPromise;
         if (!mounted || cancelled) return;
         if (secondaryResults[0].status === "fulfilled" && secondaryResults[0].value) setMarketOverview(secondaryResults[0].value.data?.data || secondaryResults[0].value.data);
         if (secondaryResults[1].status === "fulfilled" && secondaryResults[1].value) {
@@ -151,9 +153,10 @@ useEffect(() => {
           if (!cancelled && Array.isArray(d)) setBusinessProfiles(d);
         }).catch(() => {});
       } catch { if (!cancelled) toast.error("Failed to load dashboard data"); }
-      finally { if (!cancelled) setLoading(false); }
+      finally { clearTimeout(maxWait); if (!cancelled) setLoading(false); }
     }
     fetchDashboard();
+    return () => { cancelled = true; mounted = false; clearTimeout(maxWait); };
   }, []);
 
   const availableBalance = walletStats?.available ?? walletData?.availableBalance ?? walletData?.balance ?? 0;
