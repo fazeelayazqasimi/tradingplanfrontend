@@ -40,6 +40,7 @@ import AdminRanks from './pages/admin/Ranks';
 import AdminWithdrawals from './pages/admin/Withdrawals';
 import AdminSettings from './pages/admin/Settings';
 import AdminSupport from './pages/admin/Support';
+import AdminChats from './pages/admin/Chats';
 import AdminFAQs from './pages/admin/FAQs';
 import AdminContent from './pages/admin/Content';
 import AdminAssignments from './pages/admin/Assignments';
@@ -151,6 +152,7 @@ export const router = createBrowserRouter([
       { path: 'content', element: <AdminContent /> },
       { path: 'settings', element: <AdminSettings /> },
       { path: 'support', element: <AdminSupport /> },
+      { path: 'chats', element: <AdminChats /> },
       { path: 'assignments', element: <AdminAssignments /> },
       { path: 'quizzes', element: <AdminQuizzes /> },
       { path: 'certificates', element: <AdminCertificates /> },

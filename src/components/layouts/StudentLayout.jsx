@@ -7,6 +7,7 @@ import { getInitials } from '../../utils/helpers';
 import ThemeToggle from '../ui/ThemeToggle';
 import NotificationBell from '../NotificationBell';
 import BrandLogo from '../shared/BrandLogo';
+import ChatWidget from '../chat/ChatWidget';
 
 const sidebarSections = [
   {
@@ -253,6 +254,7 @@ export default function StudentLayout() {
       </nav>
 
       <ThemeToggle />
+      <ChatWidget />
     </div>
   );
 }

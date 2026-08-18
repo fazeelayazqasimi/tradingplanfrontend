@@ -79,7 +79,8 @@ const sidebarSections = [
     title: 'Support',
     icon: FiMessageSquare,
     items: [
-      { path: '/admin/support', label: 'Support', icon: FiMessageSquare },
+      { path: '/admin/chats', label: 'Student Chats', icon: FiMessageCircle },
+      { path: '/admin/support', label: 'Support Tickets', icon: FiMessageSquare },
       { path: '/admin/reports', label: 'Reports', icon: FiBarChart2 },
     ],
   },
