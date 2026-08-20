@@ -15,6 +15,7 @@ import Contact from './pages/website/Contact';
 import Login from './pages/website/Login';
 import Register from './pages/website/Register';
 import ForgotPassword from './pages/website/ForgotPassword';
+import VerifyResetOTP from './pages/website/VerifyResetOTP';
 import ResetPassword from './pages/website/ResetPassword';
 import VerifyEmail from './pages/website/VerifyEmail';
 import Privacy from './pages/website/Privacy';
@@ -128,7 +129,8 @@ export const router = createBrowserRouter([
   { path: '/login', element: <GuestRoute><Login /></GuestRoute> },
   { path: '/register', element: <GuestRoute><Register /></GuestRoute> },
   { path: '/forgot-password', element: <GuestRoute><ForgotPassword /></GuestRoute> },
-  { path: '/reset-password/:token', element: <GuestRoute><ResetPassword /></GuestRoute> },
+  { path: '/forgot-password/verify', element: <GuestRoute><VerifyResetOTP /></GuestRoute> },
+  { path: '/forgot-password/reset', element: <GuestRoute><ResetPassword /></GuestRoute> },
   { path: '/verify-email/:token', element: <VerifyEmail /> },
   {
     path: '/admin',
