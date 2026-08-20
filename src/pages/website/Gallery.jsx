@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { FiImage, FiVideo, FiX, FiChevronLeft, FiChevronRight, FiVolume2, FiVolumeX, FiPlay, FiPause } from 'react-icons/fi';
+import { FiImage, FiVideo, FiX, FiChevronLeft, FiChevronRight, FiVolume2, FiVolumeX, FiPlay, FiPause, FiFileText, FiDownload } from 'react-icons/fi';
 import Skeleton from '../../components/ui/Skeleton';
 import EmptyState from '../../components/ui/EmptyState';
 import api from '../../services/api';
@@ -38,6 +38,14 @@ export default function Gallery() {
       type: 'video',
       url: vid.startsWith('http') ? vid : `${API_URL}/${vid}`,
       title: item.title,
+    }))
+  );
+
+  const documents = items.flatMap(item =>
+    (item.documents || []).map(doc => ({
+      url: doc.startsWith('http') ? doc : `${API_URL}/${doc}`,
+      title: item.title,
+      name: doc.split('/').pop(),
     }))
   );
 
@@ -213,6 +221,37 @@ export default function Gallery() {
                       <p className="text-white text-xs font-medium truncate">{img.title}</p>
                     </div>
                   </button>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {documents.length > 0 && (
+            <section className="mt-12">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-ink flex items-center gap-2">
+                  <FiFileText size={24} className="text-red-500" /> Documents
+                </h2>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {documents.map((doc, idx) => (
+                  <a
+                    key={`doc-${idx}`}
+                    href={doc.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    download
+                    className="flex items-center gap-3 rounded-2xl border border-dark-100 bg-white p-4 shadow-card hover:border-red-300 hover:shadow-card-md transition-all"
+                  >
+                    <div className="w-11 h-11 shrink-0 rounded-xl bg-red-50 text-red-500 flex items-center justify-center">
+                      <FiFileText size={20} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-ink truncate">{doc.name}</p>
+                      <p className="text-xs text-dark-400 truncate">{doc.title}</p>
+                    </div>
+                    <FiDownload size={16} className="shrink-0 text-red-500" />
+                  </a>
                 ))}
               </div>
             </section>

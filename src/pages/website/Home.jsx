@@ -1,10 +1,13 @@
 ﻿import { Link } from 'react-router-dom';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import gsap from 'gsap';
+import { FiVideo, FiVolume2, FiVolumeX, FiPlay, FiPause, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import websiteService from '../../services/websiteService';
 import api from '../../services/api';
 import { useName } from '../../context/NameContext';
 import { useSettings } from '../../context/SettingsContext';
+
+const API_URL = import.meta.env.VITE_API_URL?.replace(/\/api$/, '') || '';
 
 const defaultFeatures = [
   { icon: '📚', title: 'Complete Forex Education', desc: 'Structured learning from beginner to advanced through professional courses and live sessions.' },
@@ -103,6 +106,20 @@ export default function Home() {
   const [mediaItems, setMediaItems] = useState([]);
   const [announcements, setAnnouncements] = useState([]);
   const [businessProfiles, setBusinessProfiles] = useState([]);
+  const [activeVideo, setActiveVideo] = useState(0);
+  const [videoMuted, setVideoMuted] = useState(true);
+  const [videoPlaying, setVideoPlaying] = useState(true);
+  const sliderVideoRef = useRef(null);
+
+  const galleryVideos = useMemo(
+    () => mediaItems.flatMap(item =>
+      (item.videos || []).map(v => ({
+        url: v.startsWith('http') ? v : `${API_URL}/${v}`,
+        title: item.title,
+      }))
+    ),
+    [mediaItems]
+  );
 
   const instituteName = getSetting('institute_name', 'THE COMPLETE FOREX ECOSYSTEM');
   const siteTagline = getSetting('site_tagline', 'Learn Forex. Trade with confidence.');
@@ -206,6 +223,25 @@ export default function Home() {
       } catch {}
     })();
   }, []);
+
+  useEffect(() => {
+    if (sliderVideoRef.current) {
+      sliderVideoRef.current.muted = videoMuted;
+      if (videoPlaying) {
+        sliderVideoRef.current.play().catch(() => {});
+      } else {
+        sliderVideoRef.current.pause();
+      }
+    }
+  }, [videoMuted, videoPlaying, activeVideo]);
+
+  useEffect(() => {
+    if (galleryVideos.length <= 1) return;
+    const t = setInterval(() => {
+      setActiveVideo(prev => (prev + 1) % galleryVideos.length);
+    }, 7000);
+    return () => clearInterval(t);
+  }, [galleryVideos.length, activeVideo]);
 
   const toggleFaq = (e) => {
     const item = e.currentTarget.closest('.faq-item');
@@ -336,27 +372,116 @@ export default function Home() {
            <div className="max-w-[800px] mx-auto text-center mb-10 sm:mb-12">
              <p className="text-dark-500 text-[14px] sm:text-[16px] leading-relaxed font-inter">At <strong>The 4X Hub</strong>, we believe that successful trading starts with quality education. Through our official education partner, <strong>Dream Trader Academy</strong>, members receive structured Forex training designed for beginners and advanced traders alike.</p>
            </div>
-           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-             {[
-               { title: 'Beginner to Advanced Forex Curriculum', icon: '📚' },
-               { title: 'Live Classroom Sessions', icon: '🏫' },
-               { title: 'Online Interactive Classes', icon: '💻' },
-               { title: 'Practical Market Analysis', icon: '📊' },
-               { title: 'Trading Psychology', icon: '🧠' },
-               { title: 'Risk Management', icon: '🛡️' },
-               { title: 'Weekly Q&A Sessions', icon: '❓' },
-               { title: 'Lifetime Learning Community', icon: '👥' },
-             ].map((item, i) => (
-               <ScrollReveal key={i} delay={i * 60}>
-                 <div className="bg-white border border-dark-100 rounded-[16px] p-5 sm:p-6 shadow-card hover:shadow-card-md hover:border-primary-200 transition-all h-full">
-                   <span className="text-2xl mb-3 block">{item.icon}</span>
-                   <h4 className="font-bold text-[13px] sm:text-[14px]" style={{ fontFamily: '"Plus Jakarta Sans"' }}>{item.title}</h4>
-                 </div>
-               </ScrollReveal>
-             ))}
-           </div>
-         </div>
-       </section>
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+              {[
+                { title: 'Beginner to Advanced Forex Curriculum', icon: '📚' },
+                { title: 'Live Classroom Sessions', icon: '🏫' },
+                { title: 'Online Interactive Classes', icon: '💻' },
+                { title: 'Practical Market Analysis', icon: '📊' },
+                { title: 'Trading Psychology', icon: '🧠' },
+                { title: 'Risk Management', icon: '🛡️' },
+                { title: 'Weekly Q&A Sessions', icon: '❓' },
+                { title: 'Lifetime Learning Community', icon: '👥' },
+              ].map((item, i) => (
+                <ScrollReveal key={i} delay={i * 60}>
+                  <div className="bg-white border border-dark-100 rounded-[16px] p-5 sm:p-6 shadow-card hover:shadow-card-md hover:border-primary-200 transition-all h-full">
+                    <span className="text-2xl mb-3 block">{item.icon}</span>
+                    <h4 className="font-bold text-[13px] sm:text-[14px]" style={{ fontFamily: '"Plus Jakarta Sans"' }}>{item.title}</h4>
+                  </div>
+                </ScrollReveal>
+              ))}
+            </div>
+            {galleryVideos.length > 0 && (
+              <div className="mt-10 sm:mt-14">
+                <div className="text-center max-w-[640px] mx-auto mb-6 sm:mb-8">
+                  <p className="eyebrow mb-3 text-[13px] sm:text-sm">Classroom in Action</p>
+                  <h3 className="text-[22px] sm:text-[26px] lg:text-[30px] font-extrabold leading-tight" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Watch our sessions</h3>
+                </div>
+                <div className="relative max-w-[900px] mx-auto">
+                  <div className="overflow-hidden rounded-[20px] sm:rounded-[26px] bg-dark-900 shadow-card-lg">
+                    <div
+                      className="flex transition-transform duration-500 ease-out"
+                      style={{ transform: `translateX(-${activeVideo * 100}%)` }}
+                    >
+                      {galleryVideos.map((video, idx) => (
+                        <div key={`home-vid-${idx}`} className="w-full flex-shrink-0">
+                          <div className="relative aspect-video">
+                            <video
+                              ref={activeVideo === idx ? sliderVideoRef : null}
+                              src={video.url}
+                              className="w-full h-full object-contain"
+                              muted={videoMuted}
+                              autoPlay
+                              playsInline
+                              loop
+                              onPlay={() => setVideoPlaying(true)}
+                              onPause={() => setVideoPlaying(false)}
+                            />
+                            <div className="absolute inset-0 bg-black/20 pointer-events-none" />
+                            <div className="absolute bottom-3 sm:bottom-4 left-3 sm:left-4 right-3 sm:right-4 flex items-center justify-between gap-2">
+                              <div className="flex gap-2">
+                                <button
+                                  type="button"
+                                  onClick={(e) => { e.stopPropagation(); setVideoPlaying(prev => !prev); }}
+                                  className="p-2 sm:p-2.5 rounded-full bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 transition-colors"
+                                  aria-label={videoPlaying ? 'Pause' : 'Play'}
+                                >
+                                  {videoPlaying ? <FiPause size={16} /> : <FiPlay size={16} />}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={(e) => { e.stopPropagation(); setVideoMuted(prev => !prev); }}
+                                  className="p-2 sm:p-2.5 rounded-full bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 transition-colors"
+                                  aria-label={videoMuted ? 'Unmute' : 'Mute'}
+                                >
+                                  {videoMuted ? <FiVolumeX size={16} /> : <FiVolume2 size={16} />}
+                                </button>
+                              </div>
+                              <p className="text-white text-[11px] sm:text-sm font-medium bg-black/40 backdrop-blur-sm px-3 py-1 rounded-full truncate max-w-[50%]">
+                                {video.title}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  {galleryVideos.length > 1 && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => setActiveVideo(prev => (prev - 1 + galleryVideos.length) % galleryVideos.length)}
+                        className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-10 p-2.5 sm:p-3 rounded-full bg-white/15 backdrop-blur-sm text-white hover:bg-white/25 transition-colors"
+                        aria-label="Previous video"
+                      >
+                        <FiChevronLeft size={20} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setActiveVideo(prev => (prev + 1) % galleryVideos.length)}
+                        className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-10 p-2.5 sm:p-3 rounded-full bg-white/15 backdrop-blur-sm text-white hover:bg-white/25 transition-colors"
+                        aria-label="Next video"
+                      >
+                        <FiChevronRight size={20} />
+                      </button>
+                      <div className="flex justify-center gap-2 mt-4">
+                        {galleryVideos.map((_, idx) => (
+                          <button
+                            key={`home-dot-${idx}`}
+                            type="button"
+                            onClick={() => setActiveVideo(idx)}
+                            className={`h-2 rounded-full transition-all duration-300 ${activeVideo === idx ? 'w-6 bg-primary-500' : 'w-2 bg-dark-300 hover:bg-dark-400'}`}
+                            aria-label={`Go to video ${idx + 1}`}
+                          />
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
       <section className="py-[60px] sm:py-[80px] bg-dark-50">
         <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-[640px] mx-auto mb-10 sm:mb-12">
@@ -478,18 +603,31 @@ export default function Home() {
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               {mediaItems.flatMap((item, i) => {
-                const allMedia = [...(item.images || []), ...(item.videos || [])];
-                return allMedia.map((src, idx) => (
-                  <ScrollReveal key={`${i}-${idx}`} delay={(i * 4 + idx) * 60}>
-                    <div className="rounded-[14px] overflow-hidden border border-dark-100 shadow-sm hover:shadow-card-md transition-all duration-300 aspect-square">
-                      {src.startsWith('http') ? (
-                        <img src={src} alt={item.title} className="w-full h-full object-cover" loading="lazy" />
-                      ) : (
-                        <img src={`${API_URL}/${src}`} alt={item.title} className="w-full h-full object-cover" loading="lazy" />
-                      )}
-                    </div>
-                  </ScrollReveal>
-                ));
+                const allMedia = [
+                  ...(item.images || []).map(s => ({ src: s, isVideo: false })),
+                  ...(item.videos || []).map(s => ({ src: s, isVideo: true })),
+                ];
+                return allMedia.map(({ src, isVideo }, idx) => {
+                  const url = src.startsWith('http') ? src : `${API_URL}/${src}`;
+                  return (
+                    <ScrollReveal key={`${i}-${idx}`} delay={(i * 4 + idx) * 60}>
+                      <div className="relative rounded-[14px] overflow-hidden border border-dark-100 shadow-sm hover:shadow-card-md transition-all duration-300 aspect-square">
+                        {isVideo ? (
+                          <>
+                            <video src={url} className="w-full h-full object-cover" muted playsInline loop preload="metadata" />
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/25 pointer-events-none">
+                              <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center text-dark-900">
+                                <FiPlay size={16} className="ml-0.5" />
+                              </div>
+                            </div>
+                          </>
+                        ) : (
+                          <img src={url} alt={item.title} className="w-full h-full object-cover" loading="lazy" />
+                        )}
+                      </div>
+                    </ScrollReveal>
+                  );
+                });
               })}
             </div>
           </div>

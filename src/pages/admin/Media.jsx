@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { FiImage, FiVideo, FiPlus, FiTrash2, FiRefreshCw, FiUpload } from 'react-icons/fi';
+import { FiImage, FiVideo, FiPlus, FiTrash2, FiRefreshCw, FiUpload, FiFileText, FiDownload } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
@@ -59,10 +59,12 @@ export default function AdminMedia() {
     selected.forEach(file => {
       if (file.type.startsWith('video/')) {
         setPreviews(prev => [...prev, { type: 'video', src: URL.createObjectURL(file), name: file.name }]);
-      } else {
+      } else if (file.type.startsWith('image/')) {
         const reader = new FileReader();
         reader.onload = (ev) => setPreviews(p => [...p, { type: 'image', src: ev.target.result, name: file.name }]);
         reader.readAsDataURL(file);
+      } else {
+        setPreviews(prev => [...prev, { type: 'document', src: null, name: file.name, size: file.size }]);
       }
     });
   };
@@ -150,7 +152,12 @@ export default function AdminMedia() {
                     className="w-full h-32 object-cover rounded-lg"
                     muted
                     playsInline
+                    preload="metadata"
                   />
+                ) : item.documents?.length > 0 ? (
+                  <div className="w-full h-32 rounded-lg bg-red-50 flex items-center justify-center">
+                    <FiFileText size={36} className="text-red-500" />
+                  </div>
                 ) : (
                   <div className="w-full h-32 rounded-lg bg-dark-50 flex items-center justify-center text-dark-400">
                     <FiImage size={32} />
@@ -162,7 +169,22 @@ export default function AdminMedia() {
                 </div>
               </div>
               <p className="text-xs font-medium text-ink truncate">{item.title}</p>
-              <p className="text-[11px] text-dark-400">{(item.images?.length || 0)} image{(item.images?.length || 0) !== 1 ? 's' : ''}{(item.videos?.length || 0) > 0 ? `, ${item.videos.length} video${item.videos.length !== 1 ? 's' : ''}` : ''}</p>
+              <p className="text-[11px] text-dark-400">{(item.images?.length || 0)} image{(item.images?.length || 0) !== 1 ? 's' : ''}{(item.videos?.length || 0) > 0 ? `, ${item.videos.length} video${item.videos.length !== 1 ? 's' : ''}` : ''}{(item.documents?.length || 0) > 0 ? `, ${item.documents.length} document${item.documents.length !== 1 ? 's' : ''}` : ''}</p>
+              {item.documents?.length > 0 && (
+                <div className="mt-1 flex flex-wrap gap-1">
+                  {item.documents.slice(0, 2).map((doc, dIdx) => (
+                    <a
+                      key={`doc-${dIdx}`}
+                      href={doc.startsWith('http') ? doc : `${API_URL}/${doc}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 rounded-md bg-red-50 text-red-500 px-1.5 py-0.5 text-[10px] font-medium hover:bg-red-100 transition-colors"
+                    >
+                      <FiDownload size={10} /> {doc.split('/').pop()}
+                    </a>
+                  ))}
+                </div>
+              )}
               <p className="text-[11px] text-dark-400">{formatDate(item.createdAt)}</p>
             </Card>
           ))}
@@ -174,17 +196,17 @@ export default function AdminMedia() {
           <Input label="Title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Media title" />
 
           <div>
-            <label className="block text-[13px] font-semibold text-ink mb-1.5">Images & Videos</label>
+            <label className="block text-[13px] font-semibold text-ink mb-1.5">Images, Videos & PDFs</label>
             <button
               type="button"
               onClick={() => fileRef.current?.click()}
               className="w-full border-2 border-dashed border-dark-200 rounded-xl p-6 flex flex-col items-center gap-2 text-dark-400 hover:border-primary-400 hover:text-primary-500 transition-colors cursor-pointer"
             >
               <FiUpload size={24} />
-              <span className="text-sm">Click to upload images or videos</span>
-              <span className="text-xs">JPEG, PNG, GIF, WebP, MP4, WebM, MOV (max 100MB each)</span>
+              <span className="text-sm">Click to upload images, videos or PDFs</span>
+              <span className="text-xs">JPEG, PNG, GIF, WebP, MP4, WebM, MOV, PDF (max 100MB each)</span>
             </button>
-            <input ref={fileRef} type="file" multiple accept="image/*,video/*" onChange={handleFileChange} className="hidden" />
+            <input ref={fileRef} type="file" multiple accept="image/*,video/*,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt" onChange={handleFileChange} className="hidden" />
 
             {previews.length > 0 && (
               <div className="mt-3 grid grid-cols-4 gap-2">
@@ -195,6 +217,13 @@ export default function AdminMedia() {
                         <video src={preview.src} className="w-full h-20 object-cover rounded-lg" muted />
                         <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-lg">
                           <FiVideo size={20} className="text-white" />
+                        </div>
+                      </div>
+                    ) : preview.type === 'document' ? (
+                      <div className="relative">
+                        <div className="w-full h-20 rounded-lg bg-red-50 flex flex-col items-center justify-center gap-1 px-1">
+                          <FiFileText size={20} className="text-red-500 shrink-0" />
+                          <span className="text-[9px] text-red-500 font-medium truncate w-full text-center">{preview.name}</span>
                         </div>
                       </div>
                     ) : (
@@ -211,12 +240,12 @@ export default function AdminMedia() {
               </div>
             )}
 
-            {editing && !editing?.images?.length && !editing?.videos?.length && previews.length === 0 && (
+            {editing && !editing?.images?.length && !editing?.videos?.length && !editing?.documents?.length && previews.length === 0 && (
               <p className="text-xs text-dark-400 mt-1">No media yet. Upload to add.</p>
             )}
           </div>
 
-          {editing && (editing.images?.length > 0 || editing.videos?.length > 0) && (
+          {editing && (editing.images?.length > 0 || editing.videos?.length > 0 || editing.documents?.length > 0) && (
             <div>
               <label className="block text-[13px] font-semibold text-ink mb-1.5">Existing Media</label>
               <div className="grid grid-cols-4 gap-2">
@@ -225,6 +254,18 @@ export default function AdminMedia() {
                 ))}
                 {(editing.videos || []).map((vid, idx) => (
                   <video key={`vid-${idx}`} src={vid.startsWith('http') ? vid : `${API_URL}/${vid}`} className="w-full h-20 object-cover rounded-lg" muted />
+                ))}
+                {(editing.documents || []).map((doc, idx) => (
+                  <a
+                    key={`doc-${idx}`}
+                    href={doc.startsWith('http') ? doc : `${API_URL}/${doc}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex flex-col items-center justify-center gap-1 h-20 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition-colors"
+                  >
+                    <FiFileText size={20} />
+                    <span className="text-[9px] font-medium px-1 w-full text-center truncate">{doc.split('/').pop()}</span>
+                  </a>
                 ))}
               </div>
             </div>
