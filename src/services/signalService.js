@@ -8,6 +8,7 @@ const signalService = {
   getStats: () => api.get('/signals/stats'),
   hitTP: (id, price, tpIndex = null) => api.post(`/signals/${id}/hit-tp`, { price, tpIndex }),
   hitSL: (id, price) => api.post(`/signals/${id}/hit-sl`, { price }),
+  closeSignal: (id, price) => api.post(`/signals/${id}/close`, { price }),
   runResultCheck: () => api.post('/signals/run-check'),
 };
 export default signalService;

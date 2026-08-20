@@ -7,6 +7,7 @@ import {
   FiArrowDownCircle,
   FiCheckCircle,
   FiXCircle,
+  FiStopCircle,
 } from 'react-icons/fi';import toast from 'react-hot-toast';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
@@ -80,6 +81,7 @@ export default function Signals() {
   const [submitting, setSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
   const [hittingId, setHittingId] = useState(null);
+  const [closingId, setClosingId] = useState(null);
 
   const fetchSignals = useCallback(async () => {
     try {
@@ -264,6 +266,23 @@ export default function Signals() {
     }
   };
 
+  const handleClose = async (signal) => {
+    const signalId = signal._id || signal.id;
+    if (!window.confirm(
+      `Close ${signal.action} signal for ${signal.symbol}? A close notification email will be sent to ALL students.`
+    )) return;
+    try {
+      setClosingId(signalId);
+      await signalService.closeSignal(signalId);
+      toast.success('Signal closed! Email sent to all students');
+      fetchSignals();
+    } catch (err) {
+      toast.error(err.response?.data?.message || err.message || 'Failed to close signal');
+    } finally {
+      setClosingId(null);
+    }
+  };
+
   const columns = [
     {
       key: 'symbol',
@@ -409,6 +428,7 @@ export default function Signals() {
         const signalId = row._id || row.id;
         const isOpen = row.status === 'open' || row.status === 'pending';
         const hitting = hittingId === signalId;
+        const closing = closingId === signalId;
         const multiTps = Array.isArray(row.takeProfits) && row.takeProfits.length;
         return (
           <div className="flex items-center justify-end gap-1">
@@ -443,6 +463,15 @@ export default function Signals() {
                   title="Mark Stop Loss hit and email all students"
                 >
                   HIT SL
+                </button>
+                <button
+                  onClick={() => handleClose(row)}
+                  disabled={closing}
+                  className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 transition-colors disabled:opacity-50"
+                  title="Close signal and email all students"
+                >
+                  <FiStopCircle className="h-3 w-3" />
+                  {closing ? 'CLOSING...' : 'CLOSE'}
                 </button>
               </>
             )}
