@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { FiPlus, FiTrash2, FiVolume2, FiCalendar, FiImage, FiFileText, FiVideo, FiX } from 'react-icons/fi';
+import { FiPlus, FiTrash2, FiVolume2, FiCalendar, FiImage, FiFileText, FiVideo, FiX, FiMail } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
@@ -233,6 +233,16 @@ export default function Announcements() {
         <span className="inline-flex items-center gap-1.5 text-[14.5px] text-dark-500">
           <FiCalendar className="h-3.5 w-3.5 text-dark-400" />
           {formatDateTime(row.createdAt)}
+        </span>
+      ),
+    },
+    {
+      key: 'emailSentCount',
+      header: 'Emails Sent',
+      render: (_, row) => (
+        <span className="inline-flex items-center gap-1.5 text-[14.5px] text-dark-500 font-medium">
+          <FiMail className="h-3.5 w-3.5 text-dark-400" />
+          {row.emailSentCount || 0}
         </span>
       ),
     },
