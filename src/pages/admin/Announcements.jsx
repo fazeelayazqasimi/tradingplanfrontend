@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { FiPlus, FiTrash2, FiVolume2, FiCalendar, FiImage, FiFileText, FiVideo, FiX, FiMail } from 'react-icons/fi';
+import { FiPlus, FiTrash2, FiVolume2, FiCalendar, FiImage, FiFileText, FiVideo, FiX, FiMail, FiAlertCircle } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
@@ -237,14 +237,34 @@ export default function Announcements() {
       ),
     },
     {
-      key: 'emailSentCount',
-      header: 'Emails Sent',
-      render: (_, row) => (
-        <span className="inline-flex items-center gap-1.5 text-[14.5px] text-dark-500 font-medium">
-          <FiMail className="h-3.5 w-3.5 text-dark-400" />
-          {row.emailSentCount || 0}
-        </span>
-      ),
+      key: 'emailStats',
+      header: 'Email Stats',
+      render: (_, row) => {
+        const stats = row.emailStats || { total: 0, sent: 0, failed: 0, skipped: 0 };
+        return (
+          <div className="flex items-center gap-2 text-[12px]">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-green-50 text-green-700 font-medium">
+              <FiMail className="h-3 w-3" />
+              {stats.sent || 0}
+            </span>
+            {stats.failed > 0 && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-red-50 text-red-700 font-medium">
+                <FiAlertCircle className="h-3 w-3" />
+                {stats.failed}
+              </span>
+            )}
+            {stats.skipped > 0 && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-yellow-50 text-yellow-700 font-medium">
+                <FiAlertCircle className="h-3 w-3" />
+                {stats.skipped}
+              </span>
+            )}
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-gray-50 text-gray-700">
+              {stats.total || 0} total
+            </span>
+          </div>
+        );
+      },
     },
     {
       key: 'actions',
