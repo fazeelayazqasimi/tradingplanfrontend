@@ -47,6 +47,8 @@ export default function Classes() {
   const [form, setForm] = useState(initialForm);
   const [videoFile, setVideoFile] = useState(null);
   const [viewEnrollments, setViewEnrollments] = useState(null);
+  const [slotForm, setSlotForm] = useState({ label: '', day: '', time: '', capacity: '' });
+  const [slotSaving, setSlotSaving] = useState(false);
 
   const fetchClasses = useCallback(async () => {
     try {
@@ -125,6 +127,33 @@ export default function Classes() {
       fetchClasses();
     } catch (err) {
       toast.error(err?.response?.data?.message || 'Failed to delete');
+    }
+  };
+
+  const handleAddSlot = async () => {
+    if (!editing) return;
+    if (!slotForm.label.trim()) { toast.error('Slot label is required'); return; }
+    setSlotSaving(true);
+    try {
+      const res = await classService.addSlot(editing._id, slotForm);
+      setEditing(res.data.data || res.data);
+      setSlotForm({ label: '', day: '', time: '', capacity: '' });
+      toast.success('Slot added');
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Failed to add slot');
+    } finally {
+      setSlotSaving(false);
+    }
+  };
+
+  const handleDeleteSlot = async (slotId) => {
+    if (!editing) return;
+    try {
+      const res = await classService.deleteSlot(editing._id, slotId);
+      setEditing(res.data.data || res.data);
+      toast.success('Slot removed');
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Failed to remove slot');
     }
   };
 
@@ -253,6 +282,33 @@ export default function Classes() {
               rows={3} placeholder="Brief description of this class..." />
           </div>
 
+          {editing && (
+            <div className="rounded-xl border border-dark-200 p-4">
+              <p className="text-[13px] font-semibold text-ink mb-2">Available Slots (shown to students)</p>
+              <div className="space-y-2 mb-3">
+                {editing.slots && editing.slots.length > 0 ? editing.slots.map(slot => (
+                  <div key={slot._id} className="flex items-center justify-between gap-2 rounded-lg bg-dark-50 px-3 py-2">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-ink truncate">{slot.label}</p>
+                      {(slot.day || slot.time) && <p className="text-xs text-dark-500">{[slot.day, slot.time].filter(Boolean).join(' · ')}</p>}
+                    </div>
+                    <button type="button" onClick={() => handleDeleteSlot(slot._id)}
+                      className="p-1.5 rounded-lg hover:bg-red-50 text-dark-500 hover:text-red-600 shrink-0"><FiTrash2 size={15} /></button>
+                  </div>
+                )) : (
+                  <p className="text-xs text-dark-400">No slots added yet. Add the time slots students can choose from.</p>
+                )}
+              </div>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                <Input placeholder="Label (e.g. Morning Batch)" value={slotForm.label} onChange={(e) => setSlotForm(s => ({ ...s, label: e.target.value }))} />
+                <Input placeholder="Day (e.g. Mon-Wed)" value={slotForm.day} onChange={(e) => setSlotForm(s => ({ ...s, day: e.target.value }))} />
+                <Input placeholder="Time (e.g. 6 PM)" value={slotForm.time} onChange={(e) => setSlotForm(s => ({ ...s, time: e.target.value }))} />
+                <Input placeholder="Capacity" type="number" value={slotForm.capacity} onChange={(e) => setSlotForm(s => ({ ...s, capacity: e.target.value }))} />
+              </div>
+              <Button type="button" size="sm" variant="outline" className="mt-2" loading={slotSaving} onClick={handleAddSlot}>Add Slot</Button>
+            </div>
+          )}
+
           <div className="flex justify-end gap-3 pt-2">
             <Button variant="outline" type="button" onClick={() => { setShowForm(false); resetForm(); }}>Cancel</Button>
             <Button type="submit" loading={submitting}>{editing ? 'Update' : 'Create'} Class</Button>
@@ -272,7 +328,7 @@ export default function Classes() {
                   <div key={i} className="rounded-xl border border-dark-100 p-4">
                     <div className="flex items-center justify-between gap-2">
                       <p className="font-semibold text-ink">{e.studentName || 'Unknown'}</p>
-                      <Badge color="warning">{e.preferredSlot}</Badge>
+                      <Badge color="info">{e.slotLabel || 'No slot chosen'}</Badge>
                     </div>
                     <p className="text-xs text-dark-500 mt-0.5">{e.studentEmail}</p>
                     {e.preferredDays?.length > 0 && (

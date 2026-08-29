@@ -42,7 +42,7 @@ export default function Classes() {
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const [enrollClass, setEnrollClass] = useState(null);
-  const [preferredSlot, setPreferredSlot] = useState('Morning');
+  const [selectedSlotId, setSelectedSlotId] = useState('');
   const [preferredDays, setPreferredDays] = useState([]);
   const [enrolling, setEnrolling] = useState(false);
 
@@ -91,7 +91,6 @@ export default function Classes() {
   };
 
   const DAY_OPTIONS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  const SLOT_OPTIONS = ['Morning', 'Evening', 'Weekend'];
 
   const isEnrolled = (cls) =>
     !!user && Array.isArray(cls.enrollments) &&
@@ -99,7 +98,7 @@ export default function Classes() {
 
   const openEnroll = (cls) => {
     const existing = (isEnrolled(cls) && cls.enrollments.find(e => e.userId === user._id || e.userId === user.id)) || null;
-    setPreferredSlot(existing?.preferredSlot || 'Morning');
+    setSelectedSlotId(existing?.slotId || '');
     setPreferredDays(existing?.preferredDays || []);
     setEnrollClass(cls);
   };
@@ -113,7 +112,7 @@ export default function Classes() {
     if (!enrollClass) return;
     setEnrolling(true);
     try {
-      await classService.enroll(enrollClass._id, { preferredSlot, preferredDays });
+      await classService.enroll(enrollClass._id, { slotId: selectedSlotId || null, preferredDays });
       toast.success('Enrollment submitted to Dream Traders Academy');
       setEnrollClass(null);
       const res = await classService.getClasses({ perPage: 50 });
@@ -348,12 +347,44 @@ export default function Classes() {
               <p className="text-base font-bold">{enrollClass.title}</p>
             </div>
 
-            <div>
-              <label className="block text-[13px] font-semibold text-ink mb-1.5">Preferred Slot</label>
-              <Select value={preferredSlot} onChange={(e) => setPreferredSlot(e.target.value)}>
-                {SLOT_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
-              </Select>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-[13px] font-semibold text-ink mb-1.5">Student Name</label>
+                <input
+                  value={user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : ''}
+                  readOnly
+                  className="w-full rounded-xl border border-dark-200 px-4 py-2.5 text-sm bg-dark-50 text-dark-600"
+                />
+              </div>
+              <div>
+                <label className="block text-[13px] font-semibold text-ink mb-1.5">Email</label>
+                <input
+                  value={user?.email || ''}
+                  readOnly
+                  className="w-full rounded-xl border border-dark-200 px-4 py-2.5 text-sm bg-dark-50 text-dark-600"
+                />
+              </div>
             </div>
+
+            {enrollClass.slots && enrollClass.slots.length > 0 ? (
+              <div>
+                <label className="block text-[13px] font-semibold text-ink mb-1.5">Available Slot *</label>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {enrollClass.slots.map(slot => (
+                    <button type="button" key={slot._id} onClick={() => setSelectedSlotId(slot._id)}
+                      className={`text-left p-3 rounded-xl border-2 transition-all ${selectedSlotId === slot._id ? 'border-primary-500 bg-primary-50' : 'border-dark-200 hover:border-dark-300'}`}>
+                      <p className="text-sm font-semibold text-ink">{slot.label}</p>
+                      {(slot.day || slot.time) && (
+                        <p className="text-xs text-dark-500 mt-0.5">{[slot.day, slot.time].filter(Boolean).join(' · ')}</p>
+                      )}
+                      {slot.capacity ? <p className="text-xs text-dark-400 mt-0.5">Capacity: {slot.capacity}</p> : null}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <p className="text-xs text-dark-400">No specific slots defined by the academy — you can still submit your preferred days.</p>
+            )}
 
             <div>
               <label className="block text-[13px] font-semibold text-ink mb-1.5">Preferred Days</label>
