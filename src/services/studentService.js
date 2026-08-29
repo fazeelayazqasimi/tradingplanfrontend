@@ -28,5 +28,6 @@ const studentService = {
   getApprovalStatus: () => api.get('/course-purchases/my/approval-status'),
   createPaymentIntent: (data) => api.post('/payments/create-payment-intent', data),
   getBrokers: () => api.get('/brokers'),
+  getStudentDashboard: () => api.get('/users/student/dashboard'),
 };
 export default studentService;

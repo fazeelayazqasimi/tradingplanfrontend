@@ -1,13 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FiVideo, FiMonitor, FiCalendar, FiClock, FiUser, FiLink, FiExternalLink, FiAlertCircle, FiBook, FiPlay } from 'react-icons/fi';
+import { FiVideo, FiMonitor, FiCalendar, FiClock, FiUser, FiLink, FiExternalLink, FiAlertCircle, FiBook, FiPlay, FiCheckCircle } from 'react-icons/fi';
+import toast from 'react-hot-toast';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 import Skeleton from '../../components/ui/Skeleton';
+import Select from '../../components/ui/Select';
+import Modal from '../../components/ui/Modal';
 import classService from '../../services/classService';
 import marketUpdateService from '../../services/marketUpdateService';
+import { useAuth } from '../../context/AuthContext';
 import { formatDate } from '../../utils/helpers';
 
 const container = {
@@ -36,6 +40,11 @@ export default function Classes() {
   const [classes, setClasses] = useState([]);
   const [studyMaterials, setStudyMaterials] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+  const [enrollClass, setEnrollClass] = useState(null);
+  const [preferredSlot, setPreferredSlot] = useState('Morning');
+  const [preferredDays, setPreferredDays] = useState([]);
+  const [enrolling, setEnrolling] = useState(false);
 
   useEffect(() => {
     const tab = TABS.find(t => location.pathname.includes(t.key))?.key || 'classes/physical';
@@ -81,6 +90,42 @@ export default function Classes() {
     navigate(`/student/${key}`, { replace: true });
   };
 
+  const DAY_OPTIONS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const SLOT_OPTIONS = ['Morning', 'Evening', 'Weekend'];
+
+  const isEnrolled = (cls) =>
+    !!user && Array.isArray(cls.enrollments) &&
+    cls.enrollments.some(e => e.userId === user._id || e.userId === user.id);
+
+  const openEnroll = (cls) => {
+    const existing = (isEnrolled(cls) && cls.enrollments.find(e => e.userId === user._id || e.userId === user.id)) || null;
+    setPreferredSlot(existing?.preferredSlot || 'Morning');
+    setPreferredDays(existing?.preferredDays || []);
+    setEnrollClass(cls);
+  };
+
+  const toggleDay = (day) => {
+    setPreferredDays(prev => prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]);
+  };
+
+  const handleEnrollSubmit = async (e) => {
+    e.preventDefault();
+    if (!enrollClass) return;
+    setEnrolling(true);
+    try {
+      await classService.enroll(enrollClass._id, { preferredSlot, preferredDays });
+      toast.success('Enrollment submitted to Dream Traders Academy');
+      setEnrollClass(null);
+      const res = await classService.getClasses({ perPage: 50 });
+      const body = res.data;
+      setClasses(Array.isArray(body.data) ? body.data : []);
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Failed to enroll');
+    } finally {
+      setEnrolling(false);
+    }
+  };
+
   const renderClassCard = (cls, idx) => {
     const isPast = cls.date && new Date(cls.date) < new Date();
     return (
@@ -116,6 +161,10 @@ export default function Classes() {
                   <FiVideo size={15} /> Watch Recording
                 </a>
               )}
+              <button onClick={() => openEnroll(cls)} disabled={isEnrolled(cls)}
+                className={`mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-white text-sm font-semibold transition-colors ${isEnrolled(cls) ? 'bg-emerald-500 cursor-default' : 'bg-primary-500 hover:bg-primary-600'}`}>
+                {isEnrolled(cls) ? <><FiCheckCircle size={15} /> Enrolled</> : 'Fill Class Form'}
+              </button>
             </div>
           </div>
         </Card>
@@ -290,6 +339,41 @@ export default function Classes() {
       </div>
 
       {tabContent()}
+
+      <Modal isOpen={!!enrollClass} onClose={() => setEnrollClass(null)} title="Class Enrollment" size="lg">
+        {enrollClass && (
+          <form onSubmit={handleEnrollSubmit} className="space-y-4">
+            <div className="rounded-xl bg-gradient-to-r from-primary-600 to-emerald-500 text-black px-4 py-3">
+              <p className="text-xs font-bold uppercase tracking-widest text-black/70">Dream Traders Academy</p>
+              <p className="text-base font-bold">{enrollClass.title}</p>
+            </div>
+
+            <div>
+              <label className="block text-[13px] font-semibold text-ink mb-1.5">Preferred Slot</label>
+              <Select value={preferredSlot} onChange={(e) => setPreferredSlot(e.target.value)}>
+                {SLOT_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
+              </Select>
+            </div>
+
+            <div>
+              <label className="block text-[13px] font-semibold text-ink mb-1.5">Preferred Days</label>
+              <div className="grid grid-cols-4 gap-2 sm:grid-cols-7">
+                {DAY_OPTIONS.map(day => (
+                  <button type="button" key={day} onClick={() => toggleDay(day)}
+                    className={`py-2 rounded-lg text-sm font-semibold border-2 transition-all ${preferredDays.includes(day) ? 'border-primary-500 bg-primary-50 text-primary-700' : 'border-dark-200 text-dark-500 hover:border-dark-300'}`}>
+                    {day}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-2">
+              <Button variant="outline" type="button" onClick={() => setEnrollClass(null)}>Cancel</Button>
+              <Button type="submit" loading={enrolling}>Submit Enrollment</Button>
+            </div>
+          </form>
+        )}
+      </Modal>
     </div>
   );
 }

@@ -348,8 +348,12 @@ export default function CopyTrading() {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-500 to-emerald-500 flex items-center justify-center mb-4">
-                    <FiServer className="h-7 w-7 text-white" />
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-500 to-emerald-500 flex items-center justify-center mb-4 overflow-hidden">
+                    {broker.logo ? (
+                      <img src={broker.logo} alt={broker.name} className="h-full w-full object-contain" />
+                    ) : (
+                      <FiServer className="h-7 w-7 text-white" />
+                    )}
                   </div>
                   <h3 className="text-xl font-bold text-ink mb-1">{broker.name}</h3>
                   <p className="text-sm text-dark-400">{broker.accounts?.length || 0} account(s) available</p>

@@ -14,16 +14,6 @@ import { formatCurrency, copyToClipboard } from "../../utils/helpers";
 import LiveRatesMarquee from "../../components/shared/LiveRatesMarquee";
 import MarketSessionsWidget from "../../components/shared/MarketSessionsWidget";
 import studentService from "../../services/studentService";
-import walletService from "../../services/walletService";
-import referralService from "../../services/referralService";
-import courseService from "../../services/courseService";
-import signalService from "../../services/signalService";
-import marketOverviewService from "../../services/marketOverviewService";
-import announcementService from "../../services/announcementService";
-import webinarService from "../../services/webinarService";
-import zoomSessionService from "../../services/zoomSessionService";
-import marketUpdateService from "../../services/marketUpdateService";
-import websiteService from "../../services/websiteService";
 import ContentDetailsModal from "../../components/student/ContentDetailsModal";
 import api from "../../services/api";
 import { WHATSAPP_CHANNEL_URL } from "../../constants";
@@ -61,6 +51,7 @@ export default function Dashboard() {
   const [openSignalsCount, setOpenSignalsCount] = useState(0);
   const [copyStats, setCopyStats] = useState(null);
   const [businessProfiles, setBusinessProfiles] = useState([]);
+  const [previewPdf, setPreviewPdf] = useState(null);
   const [selectedFreeItem, setSelectedFreeItem] = useState(null);
   const [showActivateModal, setShowActivateModal] = useState(false);
   const [activatePin, setActivatePin] = useState("");
@@ -69,106 +60,52 @@ export default function Dashboard() {
   const [fundingBalance, setFundingBalance] = useState(0);
   const [activationInfo, setActivationInfo] = useState({ membershipPrice: 120, fundingPercent: 20, uplineActivationDiscount: 0, discountAmount: 0, finalAmount: 120 });
 
-useEffect(() => {
+  useEffect(() => {
     let cancelled = false;
     let mounted = true;
     const maxWait = setTimeout(() => { if (!cancelled) setLoading(false); }, 2500);
     async function fetchDashboard() {
       try {
         setLoading(true);
-        const isPremium = user?.subscriptionStatus === "active";
-        setIsFreeUser(!isPremium);
-        const secondaryPromise = Promise.allSettled([
-          marketOverviewService.getMarketOverview(),
-          signalService.getSignals({ status: "open", isPublished: true, perPage: 1 }),
-          webinarService.getWebinars({ isFree: true, limit: 5, sort: "-date" }),
-          zoomSessionService.getZoomSessions({ category: "free-zoom", limit: 5, sort: "-date" }),
-          marketUpdateService.getMarketUpdates({ limit: 5, sort: "-createdAt" }),
-          announcementService.getAnnouncements({ limit: 5, sort: "-createdAt" }),
-          courseService.getCourses({ isFree: true, limit: 5, sort: "-order" }),
-          studentService.getCopyStats(),
-        ]);
-        const criticalResults = await Promise.allSettled([
-          courseService.getEnrolled(),
-          signalService.getSignals({ perPage: 5, sort: "-createdAt" }),
-          walletService.getWallet("main"),
-          walletService.getWallet("funding"),
-          walletService.getStats(),
-          studentService.getMyRank(),
-          referralService.getStats(),
-          referralService.getReferralCode(),
-        ]);
+        const result = await studentService.getStudentDashboard();
         if (!mounted || cancelled) return;
-        if (criticalResults[0].status === "fulfilled") {
-          const d = criticalResults[0].value.data || {};
-          setEnrolled(Array.isArray(d.data?.courses || d.data) ? (d.data?.courses || d.data).slice(0, 3) : []);
-        }
-        if (criticalResults[1].status === "fulfilled") {
-          const d = criticalResults[1].value.data || {};
-          setSignals(Array.isArray(d.data?.data || d.data?.signals || d.data) ? (d.data?.data || d.data?.signals || d.data).slice(0, 5) : []);
-        }
-        if (criticalResults[2].status === "fulfilled" && criticalResults[2].value) setWalletData(criticalResults[2].value.data?.data || criticalResults[2].value.data);
-        if (criticalResults[3].status === "fulfilled" && criticalResults[3].value) setFundingWalletData(criticalResults[3].value.data?.data || criticalResults[3].value.data);
-        if (criticalResults[4].status === "fulfilled" && criticalResults[4].value) setWalletStats(criticalResults[4].value.data?.data || criticalResults[4].value.data);
-        if (criticalResults[4].status === "fulfilled" && criticalResults[4].value) setWalletStats(criticalResults[4].value.data?.data || criticalResults[4].value.data);
-        if (criticalResults[5].status === "fulfilled" && criticalResults[5].value) {
-          const rd = criticalResults[5].value.data?.data || criticalResults[5].value.data;
-          setRank(rd?.userRank?.currentRankId || null);
-          setNextRank(rd?.nextRank || null);
-        }
-        if (criticalResults[6].status === "fulfilled" && criticalResults[6].value) setReferralStats(criticalResults[6].value.data?.data || criticalResults[6].value.data);
-        if (criticalResults[7].status === "fulfilled" && criticalResults[7].value) {
-          const rd = criticalResults[7].value.data?.data || criticalResults[7].value.data;
-          const code = rd?.referralCode || rd?.code || "";
-          setReferralLink(code ? `https://the4xhub.com/register?ref=${code}` : rd?.referralLink || "");
-        }
-        if (criticalResults[7].status === "rejected" || !criticalResults[7].value) {
-          const code = user?.referralCode || "";
-          setReferralLink(code ? `https://the4xhub.com/register?ref=${code}` : "");
-        }
-        const secondaryResults = await secondaryPromise;
-        if (!mounted || cancelled) return;
-        if (secondaryResults[0].status === "fulfilled" && secondaryResults[0].value) setMarketOverview(secondaryResults[0].value.data?.data || secondaryResults[0].value.data);
-        if (secondaryResults[1].status === "fulfilled" && secondaryResults[1].value) {
-          const d = secondaryResults[1].value.data || {};
-          const list = d.data?.data || d.data?.signals || d.data || [];
-          setOpenSignalsCount(Array.isArray(list) ? list.length : 0);
-        }
-        const extractData = (res) => {
-          if (!res?.data) return [];
-          const body = res.data;
-          return body.data?.data || body.data?.webinars || body.data?.sessions || body.data?.updates || body.data?.announcements || body.data?.courses || body.data || [];
-        };
-        if (secondaryResults[2].status === "fulfilled") setFreeWebinars(Array.isArray(secondaryResults[2].value?.data?.data) ? secondaryResults[2].value.data.data : extractData(secondaryResults[2].value));
-        if (secondaryResults[3].status === "fulfilled") setFreeZoomSessions(Array.isArray(secondaryResults[3].value?.data?.data) ? secondaryResults[3].value.data.data : extractData(secondaryResults[3].value));
-        if (secondaryResults[4].status === "fulfilled") setMarketUpdates(Array.isArray(secondaryResults[4].value?.data?.data) ? secondaryResults[4].value.data.data : extractData(secondaryResults[4].value));
-        if (secondaryResults[5].status === "fulfilled") setAnnouncements(Array.isArray(secondaryResults[5].value?.data?.data) ? secondaryResults[5].value.data.data : extractData(secondaryResults[5].value));
-        if (secondaryResults[6].status === "fulfilled") setFreeCourses(Array.isArray(secondaryResults[6].value?.data?.data) ? secondaryResults[6].value.data.data : extractData(secondaryResults[6].value));
-        if (secondaryResults[7].status === "fulfilled" && secondaryResults[7].value) {
-          const cs = secondaryResults[7].value.data?.data || secondaryResults[7].value.data;
-          setCopyStats(cs);
-        }
-        websiteService.getBusinessProfiles().then((res) => {
-          const d = res?.data?.data;
-          if (!cancelled && Array.isArray(d)) setBusinessProfiles(d);
-        }).catch(() => {});
+        const d = result?.data || result || {};
+        setIsFreeUser(!d.isPremium);
+        setEnrolled(d.enrolled || []);
+        setSignals(d.signals || []);
+        setWalletData(d.walletData || {});
+        setFundingWalletData(d.fundingWalletData || {});
+        setWalletStats(d.walletStats || {});
+        setRank(d.rank || null);
+        setReferralStats(d.referralStats || {});
+        const code = d.referralCode || user?.referralCode || "";
+        setReferralLink(code ? `https://the4xhub.com/register?ref=${code}` : "");
+        setMarketOverview(d.marketOverview || {});
+        setOpenSignalsCount(d.openSignalsCount || 0);
+        setFreeWebinars(d.freeWebinars || []);
+        setFreeZoomSessions(d.freeZoomSessions || []);
+        setMarketUpdates(d.marketUpdates || []);
+        setAnnouncements(d.announcements || []);
+        setFreeCourses(d.freeCourses || []);
+        setCopyStats(d.copyStats || {});
+        setBusinessProfiles(d.businessProfiles || []);
       } catch { if (!cancelled) toast.error("Failed to load dashboard data"); }
       finally { clearTimeout(maxWait); if (!cancelled) setLoading(false); }
     }
     fetchDashboard();
     return () => { cancelled = true; mounted = false; clearTimeout(maxWait); };
-  }, []);
+  }, [user?.referralCode]);
 
   const availableBalance = walletStats?.available ?? walletData?.availableBalance ?? walletData?.balance ?? 0;
   const pendingEarnings = walletStats?.pending ?? walletData?.pendingBalance ?? 0;
-  const totalEarnings = (referralStats?.totalEarnings || 0) + (referralStats?.freeRegistrationEarnings || 0);
+  const totalEarnings = (referralStats?.totalCommission || 0) + (referralStats?.freeRegistrationEarnings || 0);
   const rewardCredits = fundingWalletData?.availableBalance ?? fundingWalletData?.available ?? 0;
   const directReferrals = referralStats?.directReferrals || 0;
   const indirectReferrals = referralStats?.indirectReferrals || 0;
-  const activeMembers = referralStats?.activeMembers || referralStats?.activeReferrals || 0;
+  const activeMembers = referralStats?.activeReferrals || 0;
   const freeMembers = referralStats?.freeMembers || 0;
   const teamSize = referralStats?.totalReferrals || (directReferrals + indirectReferrals + freeMembers);
-  const currentRankName = rank?.name || "—";
+  const currentRankName = rank?.currentRankId?.name || "—";
   const nextRankName = nextRank?.name || "—";
 
   const goldTrend = marketOverview?.goldTrend || "neutral";
@@ -770,20 +707,27 @@ useEffect(() => {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {businessProfiles.map((p) => (
-              <Card key={p._id} className="p-4 flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-400 to-rose-600 flex items-center justify-center text-white shadow-md shrink-0">
-                  <FiFileText size={20} />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-bold text-ink truncate">{p.title}</p>
-                  {p.fileName && <p className="text-xs text-dark-400 truncate">{p.fileName}</p>}
-                </div>
-                <a href={p.fileUrl} target="_blank" rel="noopener noreferrer">
-                  <Button variant="outline" size="sm">
-                    <FiDownload size={13} className="mr-1" /> Download
-                  </Button>
-                </a>
-              </Card>
+               <Card key={p._id} className="p-4 flex items-center gap-4">
+                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-400 to-rose-600 flex items-center justify-center text-white shadow-md shrink-0">
+                   <FiFileText size={20} />
+                 </div>
+                 <div className="min-w-0 flex-1">
+                   <p className="text-sm font-bold text-ink truncate">{p.title}</p>
+                   {p.fileName && <p className="text-xs text-dark-400 truncate">{p.fileName}</p>}
+                 </div>
+                 <div className="flex gap-2 shrink-0">
+                   {p.fileUrl && p.fileUrl.toLowerCase().endsWith('.pdf') && (
+                     <Button variant="outline" size="sm" onClick={() => setPreviewPdf(p)}>
+                       <FiExternalLink size={13} className="mr-1" /> View
+                     </Button>
+                   )}
+                   <a href={p.fileUrl} target="_blank" rel="noopener noreferrer">
+                     <Button variant="outline" size="sm">
+                       <FiDownload size={13} className="mr-1" /> Download
+                     </Button>
+                   </a>
+                 </div>
+               </Card>
             ))}
           </div>
         </motion.div>
@@ -856,6 +800,24 @@ useEffect(() => {
         onClose={() => setSelectedFreeItem(null)}
         isFreeUser={isFreeUser}
       />
+
+      <Modal isOpen={!!previewPdf} onClose={() => setPreviewPdf(null)} title={previewPdf?.title || 'Business PDF'} size="xl">
+        {previewPdf?.fileUrl && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-dark-500 truncate">{previewPdf.fileName}</p>
+              <a href={previewPdf.fileUrl} target="_blank" rel="noopener noreferrer">
+                <Button variant="outline" size="sm"><FiDownload size={13} className="mr-1" /> Open</Button>
+              </a>
+            </div>
+            <iframe
+              src={previewPdf.fileUrl}
+              title={previewPdf.title}
+              className="w-full h-[70vh] rounded-xl border border-dark-100"
+            />
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }

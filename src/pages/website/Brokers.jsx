@@ -63,8 +63,12 @@ export default function Brokers() {
                 <ScrollReveal key={broker._id} delay={bi * 100}>
                   <div className="bg-white border border-dark-100 rounded-[22px] p-6 sm:p-8 lg:p-10 shadow-card">
                     <div className="flex items-center gap-3 mb-6">
-                      <div className="w-10 h-10 rounded-xl bg-primary-50 text-primary-500 flex items-center justify-center text-lg font-bold">
-                        {broker.name[0]}
+                      <div className="w-10 h-10 rounded-xl bg-primary-50 text-primary-500 flex items-center justify-center text-lg font-bold overflow-hidden">
+                        {broker.logo ? (
+                          <img src={broker.logo} alt={broker.name} className="w-full h-full object-contain" />
+                        ) : (
+                          broker.name[0]
+                        )}
                       </div>
                       <h2 className="text-[22px] sm:text-[26px] font-extrabold" style={{ fontFamily: '"Plus Jakarta Sans"' }}>{broker.name}</h2>
                     </div>

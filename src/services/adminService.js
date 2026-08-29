@@ -40,6 +40,7 @@ const adminService = {
   updateBusinessProfile: (id, data) => unwrap(api.put(`/business-profiles/${id}`, data)),
   deleteBusinessProfile: (id) => unwrap(api.delete(`/business-profiles/${id}`)),
   uploadBusinessProfileFile: (formData) => unwrap(api.post('/business-profiles/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } })),
+  uploadBusinessProfileVideo: (formData) => unwrap(api.post('/business-profiles/upload-video', formData, { headers: { 'Content-Type': 'multipart/form-data' } })),
   getSupportTickets: (params) => unwrap(api.get('/support', { params })),
   getSupportTicket: (id) => unwrap(api.get(`/support/${id}`)),
   updateTicketStatus: (id, data) => unwrap(api.put(`/support/${id}/status`, data)),
@@ -108,6 +109,7 @@ const adminService = {
   createBroker: (data) => unwrap(api.post('/brokers', data)),
   updateBroker: (id, data) => unwrap(api.put(`/brokers/${id}`, data)),
   deleteBroker: (id) => unwrap(api.delete(`/brokers/${id}`)),
+  uploadBrokerLogo: (id, formData) => unwrap(api.post(`/brokers/${id}/logo`, formData, { headers: { 'Content-Type': 'multipart/form-data' } })),
   createAccount: (brokerId, data) => unwrap(api.post(`/brokers/${brokerId}/accounts`, data)),
   updateAccount: (brokerId, accountId, data) => unwrap(api.put(`/brokers/${brokerId}/accounts/${accountId}`, data)),
   deleteAccount: (brokerId, accountId) => unwrap(api.delete(`/brokers/${brokerId}/accounts/${accountId}`)),
@@ -118,6 +120,11 @@ const adminService = {
   getZoomSessionStats: () => unwrap(api.get('/zoom-sessions/stats')),
   getMarketUpdateStats: () => unwrap(api.get('/market-updates/stats')),
   getWhatsappStats: (params) => unwrap(api.get('/admin/whatsapp-stats', { params })),
+
+  exportUsers: async () => {
+    const response = await api.get('/admin/export/users', { responseType: 'blob' });
+    return response.data;
+  },
 
   getWebinars: (params) => unwrap(api.get('/webinars', { params })),
   getWebinar: (id) => unwrap(api.get(`/webinars/${id}`)),

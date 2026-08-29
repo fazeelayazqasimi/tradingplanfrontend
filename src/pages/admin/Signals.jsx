@@ -241,22 +241,21 @@ export default function Signals() {
     const label = isTP
       ? (tpIndex != null ? `Take Profit ${tpIndex + 1} (TP ${tpIndex + 1})` : 'Take Profit (TP)')
       : 'Stop Loss (SL)';
-    if (!window.confirm(
-      isTP
-        ? (tpIndex != null
-          ? `Confirm TP ${tpIndex + 1} hit for ${signal.symbol}? A target-achieved email will be sent to ALL students.`
-          : `Confirm TP hit for ${signal.symbol}? A target-achieved email will be sent to ALL students.`)
-        : `Confirm SL hit for ${signal.symbol}? A motivational email will be sent to ALL students.`
-    )) return;
+    const confirmMsg = isTP
+      ? (tpIndex != null
+        ? `Confirm TP ${tpIndex + 1} hit for ${signal.symbol}? This will mark TPs 1–${tpIndex + 1} as hit (green) on every student dashboard and send ONE email to all students.`
+        : `Confirm TP hit for ${signal.symbol}? A target-achieved email will be sent to ALL students.`)
+      : `Confirm SL hit for ${signal.symbol}? A motivational email will be sent to ALL students.`;
+    if (!window.confirm(confirmMsg)) return;
     const signalId = signal._id || signal.id;
     try {
       setHittingId(signalId);
       if (isTP) {
-        if (tpIndex != null) await signalService.hitTP(signalId, undefined, tpIndex);
+        if (tpIndex != null) await signalService.markTpHit(signalId, tpIndex + 1);
         else await signalService.hitTP(signalId);
       } else await signalService.hitSL(signalId);
       toast.success(isTP
-        ? (tpIndex != null ? `TP ${tpIndex + 1} hit! Email sent to all students` : 'TP hit! Email sent to all students')
+        ? (tpIndex != null ? `TPs 1–${tpIndex + 1} hit! One email sent to all students` : 'TP hit! Email sent to all students')
         : 'SL hit! Motivational email sent to all students');
       fetchSignals();
     } catch (err) {
@@ -266,15 +265,31 @@ export default function Signals() {
     }
   };
 
-  const handleClose = async (signal) => {
+  const [closeModalOpen, setCloseModalOpen] = useState(false);
+  const [closingSignal, setClosingSignal] = useState(null);
+  const [closeReason, setCloseReason] = useState('');
+  const [closePrice, setClosePrice] = useState('');
+
+  const openCloseModal = (signal) => {
+    setClosingSignal(signal);
+    setCloseReason(signal.closeReason || '');
+    setClosePrice(signal.currentPrice != null ? String(signal.currentPrice) : '');
+    setCloseModalOpen(true);
+  };
+
+  const handleCloseSubmit = async () => {
+    const signal = closingSignal;
     const signalId = signal._id || signal.id;
-    if (!window.confirm(
-      `Close ${signal.action} signal for ${signal.symbol}? A close notification email will be sent to ALL students.`
-    )) return;
     try {
       setClosingId(signalId);
-      await signalService.closeSignal(signalId);
-      toast.success('Signal closed! Email sent to all students');
+      await signalService.closeSignal(signalId, {
+        price: closePrice !== '' ? parseFloat(closePrice) : undefined,
+        closeReason,
+      });
+      toast.success('Signal closed! Close reason emailed to all students');
+      setCloseModalOpen(false);
+      setClosingSignal(null);
+      setCloseReason('');
       fetchSignals();
     } catch (err) {
       toast.error(err.response?.data?.message || err.message || 'Failed to close signal');
@@ -465,10 +480,10 @@ export default function Signals() {
                   HIT SL
                 </button>
                 <button
-                  onClick={() => handleClose(row)}
+                  onClick={() => openCloseModal(row)}
                   disabled={closing}
                   className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 transition-colors disabled:opacity-50"
-                  title="Close signal and email all students"
+                  title="Close signal and email the reason to all students"
                 >
                   <FiStopCircle className="h-3 w-3" />
                   {closing ? 'CLOSING...' : 'CLOSE'}
@@ -704,6 +719,55 @@ export default function Signals() {
             </Button>
           </div>
         </form>
+      </Modal>
+
+      <Modal
+        isOpen={closeModalOpen}
+        onClose={() => setCloseModalOpen(false)}
+        title="Close Signal"
+        size="md"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-dark-500">
+            Closing <span className="font-semibold text-ink">{closingSignal?.symbol} {closingSignal?.action}</span>. The reason below will be emailed to all students.
+          </p>
+          <div>
+            <label className="block text-sm font-medium text-dark-500 mb-1.5">
+              Close Price (optional)
+            </label>
+            <Input
+              type="number"
+              step="0.00001"
+              placeholder="Leave blank to use current price"
+              value={closePrice}
+              onChange={(e) => setClosePrice(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-dark-500 mb-1.5">
+              Reason for closing <span className="text-red-500">*</span>
+            </label>
+            <textarea
+              value={closeReason}
+              onChange={(e) => setCloseReason(e.target.value)}
+              rows={4}
+              placeholder="Explain to the student why this trade was closed..."
+              className="w-full rounded-[11px] border border-dark-200 bg-dark-50 px-4 py-3 text-[14.5px] text-ink placeholder-dark-400 outline-none focus:border-primary-500 focus:bg-white transition-colors"
+            />
+          </div>
+          <div className="flex items-center gap-3 pt-2">
+            <Button type="button" onClick={handleCloseSubmit}>
+              Close Signal &amp; Email
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setCloseModalOpen(false)}
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
       </Modal>
     </div>
   );

@@ -6,6 +6,7 @@ const classService = {
   createClass: (data) => api.post('/classes', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
   updateClass: (id, data) => api.put(`/classes/${id}`, data, { headers: { 'Content-Type': 'multipart/form-data' } }),
   deleteClass: (id) => api.delete(`/classes/${id}`),
+  enroll: (id, data) => api.post(`/classes/${id}/enroll`, data),
 };
 
 export default classService;

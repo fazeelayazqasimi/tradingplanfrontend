@@ -12,8 +12,6 @@ import {
   FiShield,
   FiMonitor,
   FiKey,
-  FiCheck,
-  FiSend,
   FiUsers,
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
@@ -49,7 +47,6 @@ export default function Settings() {
   const [profileForm, setProfileForm] = useState({
     firstName: user?.firstName || '',
     lastName: user?.lastName || '',
-    phone: user?.phone || '',
   });
   const [avatarPreview, setAvatarPreview] = useState(user?.avatar || null);
   const [avatarFile, setAvatarFile] = useState(null);
@@ -71,18 +68,6 @@ export default function Settings() {
 
   const isMTConnected = user?.mtConnected || user?.metatrader?.connected || false;
   const mtAccount = user?.metatrader?.accountNumber || user?.mtAccount || '';
-
-  // Email change state
-  const [emailForm, setEmailForm] = useState({ newEmail: '', otp: '' });
-  const [emailOtpSent, setEmailOtpSent] = useState(false);
-  const [sendingEmailOtp, setSendingEmailOtp] = useState(false);
-  const [changingEmail, setChangingEmail] = useState(false);
-
-  // Phone OTP state
-  const [phoneForm, setPhoneForm] = useState({ phone: user?.phone || '', otp: '' });
-  const [phoneOtpSent, setPhoneOtpSent] = useState(false);
-  const [sendingPhoneOtp, setSendingPhoneOtp] = useState(false);
-  const [verifyingPhone, setVerifyingPhone] = useState(false);
 
   const handleAvatarChange = (e) => {
     const file = e.target.files?.[0];
@@ -112,7 +97,6 @@ export default function Settings() {
       const formData = new FormData();
       formData.append('firstName', profileForm.firstName.trim());
       formData.append('lastName', profileForm.lastName.trim());
-      formData.append('phone', profileForm.phone.trim());
       if (avatarFile) {
         formData.append('avatar', avatarFile);
       }
@@ -189,66 +173,6 @@ export default function Settings() {
       toast.error(err.response?.data?.message || err.message || 'Failed to disconnect');
     } finally {
       setMtLoading(false);
-    }
-  };
-
-  const handleSendEmailOtp = async () => {
-    if (!emailForm.newEmail.trim()) { toast.error('Enter a new email'); return; }
-    try {
-      setSendingEmailOtp(true);
-      await authService.sendOtp({ email: emailForm.newEmail.trim() });
-      toast.success('OTP sent to new email');
-      setEmailOtpSent(true);
-    } catch (err) {
-      toast.error(err?.response?.data?.message || 'Failed to send OTP');
-    } finally {
-      setSendingEmailOtp(false);
-    }
-  };
-
-  const handleChangeEmail = async () => {
-    if (!emailForm.otp.trim()) { toast.error('Enter the OTP'); return; }
-    try {
-      setChangingEmail(true);
-      await authService.changeEmail({ newEmail: emailForm.newEmail.trim(), otp: emailForm.otp.trim() });
-      toast.success('Email changed successfully');
-      setEmailForm({ newEmail: '', otp: '' });
-      setEmailOtpSent(false);
-      await loadUser();
-    } catch (err) {
-      toast.error(err?.response?.data?.message || 'Failed to change email');
-    } finally {
-      setChangingEmail(false);
-    }
-  };
-
-  const handleSendPhoneOtp = async () => {
-    if (!phoneForm.phone.trim()) { toast.error('Enter a phone number'); return; }
-    try {
-      setSendingPhoneOtp(true);
-      await authService.sendPhoneOTP({ phone: phoneForm.phone.trim() });
-      toast.success('OTP sent to your phone');
-      setPhoneOtpSent(true);
-    } catch (err) {
-      toast.error(err?.response?.data?.message || 'Failed to send OTP');
-    } finally {
-      setSendingPhoneOtp(false);
-    }
-  };
-
-  const handleVerifyPhone = async () => {
-    if (!phoneForm.otp.trim()) { toast.error('Enter the OTP'); return; }
-    try {
-      setVerifyingPhone(true);
-      await authService.verifyPhoneOTP({ phone: phoneForm.phone.trim(), otp: phoneForm.otp.trim() });
-      toast.success('Phone number verified and updated');
-      setPhoneForm({ phone: phoneForm.phone.trim(), otp: '' });
-      setPhoneOtpSent(false);
-      await loadUser();
-    } catch (err) {
-      toast.error(err?.response?.data?.message || 'Failed to verify phone');
-    } finally {
-      setVerifyingPhone(false);
     }
   };
 
@@ -506,102 +430,6 @@ export default function Settings() {
           </Card>
         </motion.div>
 
-        <motion.div variants={item}>
-          <Card className="p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-[42px] h-[42px] rounded-[11px] bg-red-50 text-red-500 flex items-center justify-center">
-                <FiMail size={20} />
-              </div>
-              <div>
-                <h2 className="text-lg font-semibold text-ink">Change Email</h2>
-                <p className="text-sm text-dark-500">Current: {user?.email || 'No email'}</p>
-              </div>
-            </div>
-            <div className="space-y-4">
-              <Input
-                label="New Email Address"
-                icon={FiMail}
-                type="email"
-                placeholder="Enter your new email"
-                value={emailForm.newEmail}
-                onChange={(e) => setEmailForm((p) => ({ ...p, newEmail: e.target.value, otp: '' }))}
-              />
-              {!emailOtpSent ? (
-                <div className="flex justify-end">
-                  <Button onClick={handleSendEmailOtp} loading={sendingEmailOtp} className="gap-2">
-                    <FiSend size={16} /> Send OTP
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <Input
-                    label="OTP Code"
-                    placeholder="Enter OTP sent to new email"
-                    value={emailForm.otp}
-                    onChange={(e) => setEmailForm((p) => ({ ...p, otp: e.target.value }))}
-                    maxLength={6}
-                  />
-                  <div className="flex justify-end gap-3">
-                    <Button variant="outline" onClick={() => { setEmailForm({ newEmail: '', otp: '' }); setEmailOtpSent(false); }}>
-                      Cancel
-                    </Button>
-                    <Button onClick={handleChangeEmail} loading={changingEmail} className="gap-2">
-                      <FiCheck size={16} /> Verify & Update
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </Card>
-        </motion.div>
-
-        <motion.div variants={item}>
-          <Card className="p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-[42px] h-[42px] rounded-[11px] bg-green-50 text-green-500 flex items-center justify-center">
-                <FiPhone size={20} />
-              </div>
-              <div>
-                <h2 className="text-lg font-semibold text-ink">Verify Phone Number</h2>
-                <p className="text-sm text-dark-500">Current: {user?.phone || 'No phone set'}</p>
-              </div>
-            </div>
-            <div className="space-y-4">
-              <Input
-                label="Phone Number"
-                icon={FiPhone}
-                placeholder="+1234567890"
-                value={phoneForm.phone}
-                onChange={(e) => setPhoneForm((p) => ({ ...p, phone: e.target.value, otp: '' }))}
-              />
-              {!phoneOtpSent ? (
-                <div className="flex justify-end">
-                  <Button onClick={handleSendPhoneOtp} loading={sendingPhoneOtp} className="gap-2">
-                    <FiSend size={16} /> Send OTP
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <Input
-                    label="OTP Code"
-                    placeholder="Enter OTP sent to your phone"
-                    value={phoneForm.otp}
-                    onChange={(e) => setPhoneForm((p) => ({ ...p, otp: e.target.value }))}
-                    maxLength={6}
-                  />
-                  <div className="flex justify-end gap-3">
-                    <Button variant="outline" onClick={() => { setPhoneForm({ phone: user?.phone || '', otp: '' }); setPhoneOtpSent(false); }}>
-                      Cancel
-                    </Button>
-                    <Button onClick={handleVerifyPhone} loading={verifyingPhone} className="gap-2">
-                      <FiCheck size={16} /> Verify & Update
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </Card>
-        </motion.div>
       </motion.div>
     </div>
   );

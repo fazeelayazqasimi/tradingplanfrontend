@@ -103,7 +103,7 @@ function SignalCard({ signal, isExpanded, onToggle }) {
     : (signal.openPrice != null ? [signal.openPrice] : []);
   const tps = Array.isArray(signal.takeProfits) && signal.takeProfits.length
     ? signal.takeProfits
-    : (signal.takeProfit != null ? [{ price: signal.takeProfit }] : []);
+    : (signal.takeProfit != null ? [{ price: signal.takeProfit, hit: signal.result === 'tp' }] : []);
 
   return (
     <motion.div
@@ -228,6 +228,16 @@ function SignalCard({ signal, isExpanded, onToggle }) {
                   <p className="mt-3 text-sm text-dark-600">
                     {signal.description}
                   </p>
+                )}
+                {signal.status === 'closed' && signal.closeReason && (
+                  <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-amber-700">
+                      Why was this trade closed?
+                    </p>
+                    <p className="mt-1 text-sm text-amber-800 whitespace-pre-wrap">
+                      {signal.closeReason}
+                    </p>
+                  </div>
                 )}
                 {signal.analysis && (
                   <div className="mt-3">

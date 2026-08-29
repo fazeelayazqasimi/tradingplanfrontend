@@ -14,6 +14,8 @@ import Pagination from '../../components/ui/Pagination';
 import classService from '../../services/classService';
 import { formatDate } from '../../utils/helpers';
 
+const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
 const container = {
   hidden: { opacity: 0 },
   show: { opacity: 1, transition: { staggerChildren: 0.05 } },
@@ -44,6 +46,7 @@ export default function Classes() {
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState(initialForm);
   const [videoFile, setVideoFile] = useState(null);
+  const [viewEnrollments, setViewEnrollments] = useState(null);
 
   const fetchClasses = useCallback(async () => {
     try {
@@ -147,6 +150,17 @@ export default function Classes() {
       },
     },
     {
+      header: 'Enrollments',
+      render: (_, row) => {
+        const count = Array.isArray(row.enrollments) ? row.enrollments.length : 0;
+        return count > 0 ? (
+          <button onClick={() => setViewEnrollments(row)} className="text-xs font-semibold text-primary-500 hover:underline">
+            {count} filled
+          </button>
+        ) : <span className="text-xs text-dark-400">None</span>;
+      },
+    },
+    {
       header: 'Actions',
       render: (_, row) => (
         <div className="flex items-center gap-2">
@@ -244,6 +258,36 @@ export default function Classes() {
             <Button type="submit" loading={submitting}>{editing ? 'Update' : 'Create'} Class</Button>
           </div>
         </form>
+      </Modal>
+
+      <Modal isOpen={!!viewEnrollments} onClose={() => setViewEnrollments(null)} title="Class Enrollments" size="lg">
+        {viewEnrollments && (
+          <div className="space-y-3">
+            <p className="text-sm text-dark-500">
+              <span className="font-semibold text-ink">{viewEnrollments.title}</span> — filled by {Array.isArray(viewEnrollments.enrollments) ? viewEnrollments.enrollments.length : 0} student(s)
+            </p>
+            {Array.isArray(viewEnrollments.enrollments) && viewEnrollments.enrollments.length > 0 ? (
+              <div className="space-y-3 max-h-[60vh] overflow-y-auto">
+                {viewEnrollments.enrollments.map((e, i) => (
+                  <div key={i} className="rounded-xl border border-dark-100 p-4">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="font-semibold text-ink">{e.studentName || 'Unknown'}</p>
+                      <Badge color="warning">{e.preferredSlot}</Badge>
+                    </div>
+                    <p className="text-xs text-dark-500 mt-0.5">{e.studentEmail}</p>
+                    {e.preferredDays?.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mt-2">
+                        {e.preferredDays.map(d => <span key={d} className="text-xs px-2 py-0.5 rounded bg-primary-50 text-primary-700 font-medium">{d}</span>)}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-dark-400 text-center py-6">No students have filled this class form yet.</p>
+            )}
+          </div>
+        )}
       </Modal>
     </div>
   );

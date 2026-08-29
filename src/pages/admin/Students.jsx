@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { FiSearch, FiEye, FiUserX, FiUserCheck, FiMail, FiPhone, FiCalendar, FiTrash2, FiAward, FiTrendingUp, FiDollarSign, FiZap } from 'react-icons/fi';
+import { FiSearch, FiEye, FiUserX, FiUserCheck, FiMail, FiPhone, FiCalendar, FiTrash2, FiAward, FiTrendingUp, FiDollarSign, FiZap, FiDownload, FiSave } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Button from '../../components/ui/Button';
 import DataTable from '../../components/ui/DataTable';
@@ -115,6 +115,10 @@ export default function Students() {
   const [overridingRank, setOverridingRank] = useState(false);
   const [selectedIds, setSelectedIds] = useState([]);
   const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [editEmail, setEditEmail] = useState('');
+  const [editPhone, setEditPhone] = useState('');
+  const [editingContact, setEditingContact] = useState(false);
 
   const pagination = usePagination({ totalItems: students.length, perPage: 10 });
 
@@ -171,7 +175,56 @@ export default function Students() {
 
   const handleViewDetails = async (student) => {
     setSelectedStudent(student);
+    setEditEmail(student.email || '');
+    setEditPhone(student.phone || '');
     setDetailOpen(true);
+  };
+
+  const handleSaveContact = async () => {
+    if (!selectedStudent) return;
+    const studentId = getStudentId(selectedStudent);
+    try {
+      setEditingContact(true);
+      await adminService.updateUser(studentId, {
+        email: editEmail.trim(),
+        phone: editPhone.trim(),
+      });
+      toast.success('Email and phone updated successfully');
+      setStudents((prev) =>
+        prev.map((s) =>
+          getStudentId(s) === studentId
+            ? { ...s, email: editEmail.trim(), phone: editPhone.trim() }
+            : s
+        )
+      );
+      setSelectedStudent((prev) =>
+        prev ? { ...prev, email: editEmail.trim(), phone: editPhone.trim() } : prev
+      );
+    } catch (err) {
+      toast.error(err.response?.data?.message || err.message || 'Failed to update contact');
+    } finally {
+      setEditingContact(false);
+    }
+  };
+
+  const handleExport = async () => {
+    try {
+      setExporting(true);
+      const blob = await adminService.exportUsers();
+      const url = window.URL.createObjectURL(new Blob([blob]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `users_export_${new Date().toISOString().slice(0, 10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success('Users exported successfully');
+    } catch (err) {
+      toast.error(err.response?.data?.message || err.message || 'Failed to export users');
+    } finally {
+      setExporting(false);
+    }
   };
 
   const handleDelete = async (student) => {
@@ -330,6 +383,9 @@ export default function Students() {
           <Button type="submit" variant="primary">
             Search
           </Button>
+          <Button type="button" variant="outline" onClick={handleExport} loading={exporting} className="gap-2">
+            <FiDownload size={16} /> Export to Excel
+          </Button>
         </form>
 
         <DataTable
@@ -419,30 +475,45 @@ export default function Students() {
             </div>
 
             <div className="rounded-xl border border-dark-100 divide-y divide-dark-100">
-              <div className="flex items-center gap-3 px-4 py-3.5">
-                <div className="w-[42px] h-[42px] rounded-[11px] bg-primary-50 text-primary-500 flex items-center justify-center">
+              <div className="flex items-start gap-3 px-4 py-3.5">
+                <div className="w-[42px] h-[42px] rounded-[11px] bg-primary-50 text-primary-500 flex items-center justify-center mt-1">
                   <FiMail className="h-4 w-4" />
                 </div>
-                <div>
+                <div className="flex-1">
                   <p className="text-[11px] text-dark-400 uppercase tracking-wider font-medium">Email</p>
-                  <p className="text-sm font-medium text-ink">
-                    {selectedStudent.email}
-                  </p>
+                  <input
+                    type="email"
+                    value={editEmail}
+                    onChange={(e) => setEditEmail(e.target.value)}
+                    className="w-full rounded-[11px] border border-dark-200 bg-dark-50 px-3 py-2 mt-1 text-sm text-ink outline-none transition-colors focus:border-primary-500 focus:bg-white"
+                  />
                 </div>
               </div>
-              {selectedStudent.phone && (
-                <div className="flex items-center gap-3 px-4 py-3.5">
-                  <div className="w-[42px] h-[42px] rounded-[11px] bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                    <FiPhone className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <p className="text-[11px] text-dark-400 uppercase tracking-wider font-medium">Phone</p>
-                    <p className="text-sm font-medium text-ink">
-                      {selectedStudent.phone}
-                    </p>
-                  </div>
+              <div className="flex items-start gap-3 px-4 py-3.5">
+                <div className="w-[42px] h-[42px] rounded-[11px] bg-emerald-50 text-emerald-600 flex items-center justify-center mt-1">
+                  <FiPhone className="h-4 w-4" />
                 </div>
-              )}
+                <div className="flex-1">
+                  <p className="text-[11px] text-dark-400 uppercase tracking-wider font-medium">Phone</p>
+                  <input
+                    type="text"
+                    value={editPhone}
+                    onChange={(e) => setEditPhone(e.target.value)}
+                    className="w-full rounded-[11px] border border-dark-200 bg-dark-50 px-3 py-2 mt-1 text-sm text-ink outline-none transition-colors focus:border-primary-500 focus:bg-white"
+                  />
+                </div>
+              </div>
+              <div className="px-4 pb-3.5">
+                <Button
+                  size="sm"
+                  onClick={handleSaveContact}
+                  disabled={editingContact}
+                  loading={editingContact}
+                  className="gap-2"
+                >
+                  <FiSave size={16} /> Save Email &amp; Phone
+                </Button>
+              </div>
               <div className="flex items-center gap-3 px-4 py-3.5">
                 <div className="w-[42px] h-[42px] rounded-[11px] bg-primary-50 text-primary-500 flex items-center justify-center">
                   <FiCalendar className="h-4 w-4" />

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { FiPlus, FiEdit2, FiTrash2, FiServer, FiCheck } from 'react-icons/fi';
+import { FiPlus, FiEdit2, FiTrash2, FiServer, FiCheck, FiUpload, FiImage } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
@@ -15,6 +15,8 @@ export default function Brokers() {
   const [brokerModal, setBrokerModal] = useState(false);
   const [brokerForm, setBrokerForm] = useState({ name: '', order: 0 });
   const [submitting, setSubmitting] = useState(false);
+  const [logoFile, setLogoFile] = useState(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
   const [editingAccount, setEditingAccount] = useState(null);
   const [accountModal, setAccountModal] = useState(false);
   const [accountBrokerId, setAccountBrokerId] = useState(null);
@@ -53,6 +55,23 @@ export default function Brokers() {
       toast.error(err?.response?.data?.message || 'Failed to save broker');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleLogoUpload = async () => {
+    if (!editingBroker || !logoFile) return;
+    setUploadingLogo(true);
+    try {
+      const formData = new FormData();
+      formData.append('logo', logoFile);
+      await adminService.uploadBrokerLogo(editingBroker._id, formData);
+      toast.success('Logo uploaded');
+      setLogoFile(null);
+      fetchBrokers();
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Failed to upload logo');
+    } finally {
+      setUploadingLogo(false);
     }
   };
 
@@ -148,8 +167,12 @@ export default function Brokers() {
               <Card className="overflow-hidden">
                 <div className="flex items-center justify-between p-5 border-b border-dark-100">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-primary-50 text-primary-600 flex items-center justify-center">
-                      <FiServer size={20} />
+                    <div className="w-10 h-10 rounded-xl bg-primary-50 text-primary-600 flex items-center justify-center overflow-hidden">
+                      {broker.logo ? (
+                        <img src={broker.logo} alt={broker.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <FiServer size={20} />
+                      )}
                     </div>
                     <div>
                       <h3 className="font-semibold text-ink">{broker.name}</h3>
@@ -157,7 +180,7 @@ export default function Brokers() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <button onClick={() => { setEditingBroker(broker); setBrokerForm({ name: broker.name, order: broker.order || 0 }); setBrokerModal(true); }}
+                    <button onClick={() => { setEditingBroker(broker); setBrokerForm({ name: broker.name, order: broker.order || 0 }); setLogoFile(null); setBrokerModal(true); }}
                       className="p-2 rounded-lg hover:bg-dark-100 text-dark-500 hover:text-primary-600">
                       <FiEdit2 size={16} />
                     </button>
@@ -218,6 +241,29 @@ export default function Brokers() {
             onChange={(e) => setBrokerForm(p => ({ ...p, name: e.target.value }))} required />
           <Input label="Display Order" type="number" placeholder="0" value={brokerForm.order}
             onChange={(e) => setBrokerForm(p => ({ ...p, order: parseInt(e.target.value) || 0 }))} />
+          {editingBroker && (
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-ink">Broker Logo</label>
+              {editingBroker.logo && (
+                <div className="flex items-center gap-3">
+                  <img src={editingBroker.logo} alt={editingBroker.name} className="w-12 h-12 rounded-lg object-cover border border-dark-100" />
+                  <span className="text-xs text-dark-400">Current logo</span>
+                </div>
+              )}
+              <div className="flex items-center gap-3">
+                <label className="flex-1 cursor-pointer">
+                  <input type="file" accept="image/*" className="hidden" onChange={(e) => setLogoFile(e.target.files?.[0] || null)} />
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-dark-200 hover:border-primary-300 text-sm text-dark-500 hover:text-primary-600 transition-colors">
+                    <FiImage size={16} /> {logoFile ? logoFile.name : 'Choose logo image'}
+                  </div>
+                </label>
+                <Button type="button" size="sm" variant="outline" loading={uploadingLogo} onClick={handleLogoUpload} disabled={!logoFile}>
+                  <FiUpload size={14} /> Upload
+                </Button>
+              </div>
+              <p className="text-xs text-dark-400">Upload a broker logo (jpeg, png, gif, webp). Saved separately from the broker name/order.</p>
+            </div>
+          )}
           <div className="flex justify-end gap-3 pt-2">
             <Button variant="outline" type="button" onClick={() => { setBrokerModal(false); setEditingBroker(null); }}>Cancel</Button>
             <Button type="submit" loading={submitting}>{editingBroker ? 'Update' : 'Create'}</Button>

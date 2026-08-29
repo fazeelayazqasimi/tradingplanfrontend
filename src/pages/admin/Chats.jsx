@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { FiMessageCircle, FiSearch, FiSend, FiUsers } from 'react-icons/fi';
+import { FiMessageCircle, FiSearch, FiSend, FiUsers, FiPaperclip, FiFile, FiTrash2 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Card from '../../components/ui/Card';
 import chatService from '../../services/chatService';
@@ -16,6 +16,9 @@ export default function Chats() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [message, setMessage] = useState('');
+  const [file, setFile] = useState(null);
+  const [filePreview, setFilePreview] = useState(null);
+  const fileInputRef = useRef(null);
   const [search, setSearch] = useState('');
   const messagesEndRef = useRef(null);
 
@@ -72,17 +75,36 @@ export default function Chats() {
     setSelectedId(chat._id || chat.id);
   };
 
+  const handleFileChange = (e) => {
+    const selected = e.target.files && e.target.files[0];
+    if (selected) {
+      setFile(selected);
+      if (selected.type.startsWith('image/')) {
+        setFilePreview(URL.createObjectURL(selected));
+      } else {
+        setFilePreview(null);
+      }
+    }
+  };
+
+  const clearFile = () => {
+    setFile(null);
+    setFilePreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
   const handleSend = async (e) => {
     e.preventDefault();
     const text = message.trim();
-    if (!text || !activeChat) return;
+    if ((!text && !file) || !activeChat) return;
     try {
       setSending(true);
       const chatId = activeChat._id || activeChat.id;
-      const res = await chatService.sendMessage(chatId, text);
+      const res = await chatService.sendMessage(chatId, { message: text, file });
       const data = res?.data?.data || res?.data || res;
       setActiveChat(data);
       setMessage('');
+      clearFile();
       fetchChats(true);
       scrollToBottom();
     } catch (err) {
@@ -266,11 +288,42 @@ export default function Chats() {
                             <span className="text-[11px] font-medium text-dark-700">{senderName}</span>
                             <span className="text-[10px] text-dark-400">{formatDateTime(msg.createdAt)}</span>
                           </div>
-                          <div className={`inline-block whitespace-pre-wrap break-words rounded-2xl px-3.5 py-2 text-sm ${
-                            mine ? 'bg-dark-600 text-white' : 'bg-white text-dark-700 border border-dark-100'
-                          }`}>
-                            {msg.message}
-                          </div>
+                          {msg.attachments && msg.attachments.length > 0 && (
+                            <div className="space-y-2 mb-1">
+                              {msg.attachments.map((att, i) => (
+                                <div key={i}>
+                                  {att.type === 'image' ? (
+                                    <a href={att.url} target="_blank" rel="noopener noreferrer">
+                                      <img
+                                        src={att.url}
+                                        alt={att.name || 'attachment'}
+                                        className="max-w-[220px] rounded-xl border border-dark-100 object-cover"
+                                      />
+                                    </a>
+                                  ) : (
+                                    <a
+                                      href={att.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm ${
+                                        mine ? 'bg-dark-500 text-white' : 'bg-white text-dark-700 border border-dark-100'
+                                      }`}
+                                    >
+                                      <FiFile size={16} />
+                                      <span className="max-w-[180px] truncate">{att.name || 'File'}</span>
+                                    </a>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          {msg.message && (
+                            <div className={`inline-block whitespace-pre-wrap break-words rounded-2xl px-3.5 py-2 text-sm ${
+                              mine ? 'bg-dark-600 text-white' : 'bg-white text-dark-700 border border-dark-100'
+                            }`}>
+                              {msg.message}
+                            </div>
+                          )}
                         </div>
                       </div>
                     );
@@ -280,7 +333,40 @@ export default function Chats() {
               </div>
 
               <form onSubmit={handleSend} className="border-t border-dark-100 bg-white p-3">
+                {file && (
+                  <div className="mb-2 flex items-center gap-2 rounded-xl border border-dark-100 bg-dark-50 px-3 py-2">
+                    {filePreview ? (
+                      <img src={filePreview} alt="preview" className="h-10 w-10 rounded-md object-cover" />
+                    ) : (
+                      <FiFile size={20} className="text-dark-500" />
+                    )}
+                    <span className="flex-1 truncate text-xs text-dark-600">{file.name}</span>
+                    <button
+                      type="button"
+                      onClick={clearFile}
+                      className="rounded-full p-1 text-dark-400 hover:bg-dark-100 hover:text-red-500"
+                      aria-label="Remove attachment"
+                    >
+                      <FiTrash2 size={15} />
+                    </button>
+                  </div>
+                )}
                 <div className="flex items-center gap-2">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*,video/*,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current && fileInputRef.current.click()}
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-dark-200 text-dark-500 transition-all duration-200 hover:bg-dark-50 hover:text-primary-500"
+                    aria-label="Attach file or screenshot"
+                  >
+                    <FiPaperclip size={16} />
+                  </button>
                   <input
                     type="text"
                     value={message}
@@ -290,7 +376,7 @@ export default function Chats() {
                   />
                   <button
                     type="submit"
-                    disabled={!message.trim() || sending}
+                    disabled={(!message.trim() && !file) || sending}
                     className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-500 text-white transition-all duration-200 hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed"
                     aria-label="Send message"
                   >

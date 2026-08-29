@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { FiPlus, FiTrash2, FiFileText, FiDownload, FiToggleLeft, FiToggleRight, FiX } from 'react-icons/fi';
+import { FiPlus, FiTrash2, FiFileText, FiDownload, FiToggleLeft, FiToggleRight, FiX, FiVideo, FiPlay } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
@@ -17,6 +17,9 @@ const initialForm = {
   fileUrl: '',
   fileName: '',
   fileSize: 0,
+  videoUrl: '',
+  videoName: '',
+  videoSize: 0,
   isPublished: true,
 };
 
@@ -31,6 +34,7 @@ export default function BusinessProfiles() {
   const [form, setForm] = useState(initialForm);
   const [submitting, setSubmitting] = useState(false);
   const [uploadingFile, setUploadingFile] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
 
   const fetchProfiles = useCallback(async () => {
@@ -76,6 +80,26 @@ export default function BusinessProfiles() {
     }
   };
 
+  const handleVideoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingVideo(true);
+    try {
+      const fd = new FormData();
+      fd.append('video', file);
+      const data = await adminService.uploadBusinessProfileVideo(fd);
+      const res = data?.data || data;
+      if (res?.url) {
+        setForm((prev) => ({ ...prev, videoUrl: res.url, videoName: res.fileName || file.name, videoSize: res.fileSize || file.size }));
+        toast.success('Video uploaded');
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || err.message || 'Failed to upload video');
+    } finally {
+      setUploadingVideo(false);
+    }
+  };
+
   const openCreateModal = () => {
     setForm(initialForm);
     setModalOpen(true);
@@ -84,7 +108,7 @@ export default function BusinessProfiles() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.title.trim()) return toast.error('Title is required');
-    if (!form.fileUrl) return toast.error('Please upload a PDF file first');
+    if (!form.fileUrl && !form.videoUrl) return toast.error('Please upload a PDF file or video first');
     try {
       setSubmitting(true);
       await adminService.createBusinessProfile({
@@ -93,6 +117,9 @@ export default function BusinessProfiles() {
         fileUrl: form.fileUrl,
         fileName: form.fileName,
         fileSize: form.fileSize,
+        videoUrl: form.videoUrl,
+        videoName: form.videoName,
+        videoSize: form.videoSize,
         isPublished: form.isPublished,
       });
       toast.success('Business profile published successfully');
