@@ -69,7 +69,7 @@ export default function Dashboard() {
         setLoading(true);
         const result = await studentService.getStudentDashboard();
         if (!mounted || cancelled) return;
-        const d = result?.data || result || {};
+        const d = result?.data?.data || result?.data || result || {};
         setIsFreeUser(!d.isPremium);
         setEnrolled(d.enrolled || []);
         setSignals(d.signals || []);
