@@ -94,7 +94,7 @@ export default function Dashboard() {
     }
     fetchDashboard();
     return () => { cancelled = true; mounted = false; clearTimeout(maxWait); };
-  }, [user?.referralCode]);
+  }, [user]);
 
   const availableBalance = walletStats?.available ?? walletData?.availableBalance ?? walletData?.balance ?? 0;
   const pendingEarnings = walletStats?.pending ?? walletData?.pendingBalance ?? 0;

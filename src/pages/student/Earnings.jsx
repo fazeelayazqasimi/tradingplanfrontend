@@ -41,7 +41,10 @@ export default function Earnings() {
         const td = txRes.value?.data?.data || txRes.value?.data?.transactions || txRes.value?.data || [];
         setTransactions(Array.isArray(td) ? td.filter(tx => tx.category !== 'deposit') : []);
       }
-    } catch {}
+    } catch (err) {
+    console.error('Failed to load earnings data', err);
+    toast.error('Failed to load earnings data');
+  }
     setLoading(false);
   };
 

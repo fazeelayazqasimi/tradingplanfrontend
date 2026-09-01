@@ -148,8 +148,10 @@ export default function Wallet() {
     try {
       const res = await walletService.getAllWallets();
       const data = res?.data?.data || res?.data || [];
-      setAllWallets(Array.isArray(data) ? data : []);
-    } catch { /* silent */ }
+setAllWallets(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error('Failed to load all wallets', err);
+    }
   }, []);
 
   const fetchStats = useCallback(async () => {
@@ -200,7 +202,9 @@ export default function Wallet() {
       const res = await paymentAccountService.getAccounts();
       const data = res?.data?.data || res?.data || res;
       setPaymentAccounts(Array.isArray(data) ? data : []);
-    } catch { /* silent */ }
+    } catch (err) {
+      console.error('Failed to load payment accounts', err);
+    }
   }, []);
 
   const fetchDepositHistory = useCallback(async () => {
@@ -208,7 +212,9 @@ export default function Wallet() {
       const res = await depositService.getMyDeposits();
       const data = res?.data?.data || res?.data || res;
       setDepositHistory(data?.docs || (Array.isArray(data) ? data : []));
-    } catch { /* silent */ }
+    } catch (err) {
+      console.error('Failed to load deposit history', err);
+    }
   }, []);
 
   const fetchWithdrawFeeInfo = useCallback(async () => {
@@ -216,7 +222,9 @@ export default function Wallet() {
       const res = await studentService.getWithdrawalFeeInfo();
       const data = res?.data?.data || {};
       if (data.feeType) setWithdrawFeeInfo(data);
-    } catch { /* silent */ }
+    } catch (err) {
+      console.error('Failed to load withdrawal fee info', err);
+    }
   }, []);
 
   useEffect(() => {
