@@ -31,6 +31,15 @@ const STATUS_OPTIONS = [
   { value: "cancelled", label: "Cancelled" },
 ];
 
+const DATE_FILTER_OPTIONS = [
+  { value: "all", label: "All Time" },
+  { value: "today", label: "Today" },
+  { value: "week", label: "This Week" },
+  { value: "month", label: "This Month" },
+  { value: "quarter", label: "This Quarter" },
+  { value: "year", label: "This Year" },
+];
+
 const SYMBOL_OPTIONS = [
   { value: "all", label: "All Symbols" },
   { value: "EURUSD", label: "EUR/USD" },
@@ -286,6 +295,11 @@ export default function Signals() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [totalPages, setTotalPages] = useState(1);
+  const [dateFilter, setDateFilter] = useState("all");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+
+  const sortBy = dateFilter !== "all" ? "-createdAt" : "-createdAt";
 
   const { page, perPage, setPage, setPerPage } = usePagination({
     initialPage: 1,
@@ -296,14 +310,43 @@ export default function Signals() {
     setLoading(true);
     setError(null);
     try {
+      const sortValue = dateFilter !== "all" ? "-createdAt" : "-createdAt";
       const params = {
         page,
         perPage,
-        sort: "newest",
+        sort: sortValue,
       };
       if (symbolFilter !== "all") params.symbol = symbolFilter;
       if (statusFilter !== "all") params.status = statusFilter;
       if (searchQuery.trim()) params.search = searchQuery.trim();
+      if (dateFilter !== "all") {
+        const today = new Date();
+        let start, end;
+        if (dateFilter === "today") {
+          start = today.toISOString().split('T')[0];
+          end = start;
+        } else if (dateFilter === "week") {
+          const day = today.getDay();
+          const diff = today.getDate() - day + (day === 0 ? -6 : 1);
+          start = new Date(today.setDate(today.getDate() - diff + 1)).toISOString().split('T')[0];
+          end = today.toISOString().split('T')[0];
+        } else if (dateFilter === "month") {
+          start = `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}-01`;
+          end = `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}-${today.getDate()}`;
+        } else if (dateFilter === "quarter") {
+          const month = today.getMonth();
+          const quarterStartMonth = (Math.floor(month / 3) * 3) + 1;
+          start = `${today.getFullYear()}-${quarterStartMonth.toString().padStart(2, '0')}-01`;
+          const quarterEndMonth = quarterStartMonth + 2;
+          const endDay = today.getDate();
+          end = `${today.getFullYear()}-${(quarterEndMonth > 12 ? 1 : quarterEndMonth + 1).toString().padStart(2, '0')}-${endDay}`;
+        } else if (dateFilter === "year") {
+          start = `${today.getFullYear()}-01-01`;
+          end = `${today.getFullYear()}-12-31`;
+        }
+        if (start) params.startDate = start;
+        if (end) params.endDate = end;
+      }
 
       const response = await signalService.getSignals(params);
       const body = response?.data || response || {};
@@ -320,7 +363,7 @@ export default function Signals() {
     } finally {
       setLoading(false);
     }
-  }, [page, perPage, symbolFilter, statusFilter, searchQuery]);
+  }, [page, perPage, symbolFilter, statusFilter, searchQuery, dateFilter, sortBy]);
 
   useEffect(() => {
     fetchSignals();
@@ -399,7 +442,7 @@ export default function Signals() {
               exit={{ height: 0, opacity: 0 }}
               className="overflow-hidden"
             >
-              <div className="mt-4 grid grid-cols-1 gap-3 border-t border-dark-100 pt-4 sm:grid-cols-2">
+              <div className="mt-4 grid grid-cols-1 gap-3 border-t border-dark-100 pt-4 sm:grid-cols-3">
                 <div>
                   <label className="mb-1 block text-xs font-medium text-dark-500">
                     Symbol
@@ -432,6 +475,56 @@ export default function Signals() {
                     className="w-full rounded-[11px] border border-dark-200 bg-dark-50 px-3 py-2.5 text-[14.5px] text-ink focus:border-primary-500 focus:bg-white focus:outline-none transition-all"
                   >
                     {STATUS_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-dark-500">
+                    Date Filter
+                  </label>
+                  <select
+                    value={dateFilter}
+                    onChange={(e) => {
+                      setDateFilter(e.target.value);
+                      if (e.target.value !== "all") {
+                        const today = new Date();
+                        let start, end;
+                        if (e.target.value === "today") {
+                          start = today.toISOString().split('T')[0];
+                          end = start;
+                        } else if (e.target.value === "week") {
+                          const day = today.getDay();
+                          const diff = today.getDate() - day + (day === 0 ? -6 : 1);
+                          start = new Date(today.setDate(today.getDate() - diff + 1)).toISOString().split('T')[0];
+                          end = today.toISOString().split('T')[0];
+                        } else if (e.target.value === "month") {
+                          start = `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}-01`;
+                          end = `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}-${today.getDate()}`;
+                        } else if (e.target.value === "quarter") {
+                          const month = today.getMonth();
+                          const quarterStartMonth = (Math.floor(month / 3) * 3) + 1;
+                          start = `${today.getFullYear()}-${quarterStartMonth.toString().padStart(2, '0')}-01`;
+                          const quarterEndMonth = quarterStartMonth + 2;
+                          const endDay = today.getDate();
+                          end = `${today.getFullYear()}-${(quarterEndMonth > 12 ? 1 : quarterEndMonth + 1).toString().padStart(2, '0')}-${endDay}`;
+                        } else if (e.target.value === "year") {
+                          start = `${today.getFullYear()}-01-01`;
+                          end = `${today.getFullYear()}-12-31`;
+                        }
+                        setStartDate(start);
+                        setEndDate(end);
+                      } else {
+                        setStartDate("");
+                        setEndDate("");
+                      }
+                      setPage(1);
+                    }}
+                    className="w-full rounded-[11px] border border-dark-200 bg-dark-50 px-3 py-2.5 text-[14.5px] text-ink focus:border-primary-500 focus:bg-white focus:outline-none transition-all"
+                  >
+                    {DATE_FILTER_OPTIONS.map((opt) => (
                       <option key={opt.value} value={opt.value}>
                         {opt.label}
                       </option>

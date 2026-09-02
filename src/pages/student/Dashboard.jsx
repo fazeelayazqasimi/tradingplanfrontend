@@ -77,6 +77,7 @@ export default function Dashboard() {
         setFundingWalletData(d.fundingWalletData || {});
         setWalletStats(d.walletStats || {});
         setRank(d.rank || null);
+        setNextRank(d.nextRank || null);
         setReferralStats(d.referralStats || {});
         const code = d.referralCode || user?.referralCode || "";
         setReferralLink(code ? `https://the4xhub.com/register?ref=${code}` : "");

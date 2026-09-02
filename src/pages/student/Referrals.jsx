@@ -60,8 +60,20 @@ export default function Referrals() {
   const [rankData, setRankData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('direct');
+  const [dateFilter, setDateFilter] = useState("all");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [copiedCode, setCopiedCode] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
+
+  const STAT_OPTIONS = [
+    { value: "all", label: "All Time" },
+    { value: "today", label: "Today" },
+    { value: "week", label: "This Week" },
+    { value: "month", label: "This Month" },
+    { value: "quarter", label: "This Quarter" },
+    { value: "year", label: "This Year" },
+  ];
 
   const renderReferralItem = (ref, idx) => {
     const u = ref.referredUserId || ref.user || ref;
@@ -110,14 +122,13 @@ export default function Referrals() {
     );
   };
 
-  const fetchData = useCallback(async () => {
+const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       const [codeRes, statsRes, treeRes, rankRes] = await Promise.allSettled([
         referralService.getReferralCode(),
         referralService.getStats(),
         referralService.getTree(),
-        studentService.getMyRank(),
       ]);
 
       if (codeRes.status === 'fulfilled') {
@@ -228,6 +239,51 @@ export default function Referrals() {
   ];
 
   const activeList = activeTab === 'direct' ? directReferrals : activeTab === 'indirect' ? indirectReferrals : [];
+
+  const renderDateFilter = () => {
+    return (
+      <div className="flex items-center gap-2">
+        <select
+          value={dateFilter}
+          onChange={(e) => {
+            setDateFilter(e.target.value);
+            if (e.target.value === "today") {
+              setStartDate(new Date().toISOString().split('T')[0]);
+              setEndDate(new Date().toISOString().split('T')[0]);
+            } else if (e.target.value === "week") {
+              const day = new Date().getDay();
+              const diff = new Date().getDate() - day + (day === 0 ? -6 : 1);
+              setStartDate(new Date(new Date().setDate(new Date().getDate() - diff + 1)).toISOString().split('T')[0]);
+              setEndDate(new Date().toISOString().split('T')[0]);
+            } else if (e.target.value === "month") {
+              setStartDate(`${new Date().getFullYear()}-${(new Date().getMonth() + 1).toString().padStart(2, '0')}-01`);
+              setEndDate(`${new Date().getFullYear()}-${(new Date().getMonth() + 1).toString().padStart(2, '0')}-${new Date().getDate()}`);
+            } else if (e.target.value === "quarter") {
+              const month = new Date().getMonth();
+              const quarterStartMonth = (Math.floor(month / 3) * 3) + 1;
+              setStartDate(`${new Date().getFullYear()}-${quarterStartMonth.toString().padStart(2, '0')}-01`);
+              const quarterEndMonth = quarterStartMonth + 2;
+              setEndDate(`${new Date().getFullYear()}-${(quarterEndMonth > 12 ? 1 : quarterEndMonth + 1).toString().padStart(2, '0')}-${new Date().getDate()}`);
+            } else if (e.target.value === "year") {
+              setStartDate(`${new Date().getFullYear()}-01-01`);
+              setEndDate(`${new Date().getFullYear()}-12-31`);
+            } else {
+              setStartDate("");
+              setEndDate("");
+            }
+            fetchData();
+          }}
+          className="w-full rounded-[11px] border border-dark-200 bg-dark-50 px-3 py-2.5 text-[14.5px] text-ink focus:border-primary-500 focus:bg-white focus:outline-none transition-all"
+        >
+          {STAT_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+      </div>
+    );
+  };
 
   function UserCard({ node, isRoot }) {
   const active = node.user?.isApproved && node.user?.subscriptionStatus === 'active';
@@ -486,6 +542,47 @@ function GenealogyTree({ rootUser, treeNodes, stats, onBack }) {
           )}
         </Card>
       </motion.div>
+
+      <div className="flex items-center gap-4 mb-6">
+        <select
+          value={dateFilter}
+          onChange={(e) => {
+            setDateFilter(e.target.value);
+            if (e.target.value === "today") {
+              setStartDate(new Date().toISOString().split('T')[0]);
+              setEndDate(new Date().toISOString().split('T')[0]);
+            } else if (e.target.value === "week") {
+              const day = new Date().getDay();
+              const diff = new Date().getDate() - day + (day === 0 ? -6 : 1);
+              setStartDate(new Date(new Date().setDate(new Date().getDate() - diff + 1)).toISOString().split('T')[0]);
+              setEndDate(new Date().toISOString().split('T')[0]);
+            } else if (e.target.value === "month") {
+              setStartDate(`${new Date().getFullYear()}-${(new Date().getMonth() + 1).toString().padStart(2, '0')}-01`);
+              setEndDate(`${new Date().getFullYear()}-${(new Date().getMonth() + 1).toString().padStart(2, '0')}-${new Date().getDate()}`);
+            } else if (e.target.value === "quarter") {
+              const month = new Date().getMonth();
+              const quarterStartMonth = (Math.floor(month / 3) * 3) + 1;
+              setStartDate(`${new Date().getFullYear()}-${quarterStartMonth.toString().padStart(2, '0')}-01`);
+              const quarterEndMonth = quarterStartMonth + 2;
+              setEndDate(`${new Date().getFullYear()}-${(quarterEndMonth > 12 ? 1 : quarterEndMonth + 1).toString().padStart(2, '0')}-${new Date().getDate()}`);
+            } else if (e.target.value === "year") {
+              setStartDate(`${new Date().getFullYear()}-01-01`);
+              setEndDate(`${new Date().getFullYear()}-12-31`);
+            } else {
+              setStartDate("");
+              setEndDate("");
+            }
+            fetchData();
+          }}
+          className="rounded-[11px] border border-dark-200 bg-dark-50 px-3 py-2.5 text-[14.5px] text-ink focus:border-primary-500 focus:bg-white focus:outline-none transition-all"
+        >
+          {STAT_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+      </div>
 
       {!loading && rankData && (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
