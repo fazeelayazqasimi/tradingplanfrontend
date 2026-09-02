@@ -90,6 +90,20 @@ const columns = [
     ),
   },
   {
+    key: 'upline',
+    header: 'Upline',
+    sortable: true,
+    render: (_, row) => {
+      const referrerName = row.referrerName;
+      if (!referrerName) return <span className="text-sm text-dark-500">—</span>;
+      return (
+        <span className="text-sm text-dark-500">
+          {referrerName}
+        </span>
+      );
+    },
+  },
+  {
     key: 'earnings',
     header: 'Earnings',
     render: (_, row) => (
