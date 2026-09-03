@@ -240,6 +240,13 @@ const fetchData = useCallback(async () => {
 
   const activeList = activeTab === 'direct' ? directReferrals : activeTab === 'indirect' ? indirectReferrals : [];
 
+  // Sort by joined date descending (newest first) for consistent display
+  activeList.sort((a, b) => {
+    const dateA = a.joinedAt || a.createdAt || a.date || 0;
+    const dateB = b.joinedAt || b.createdAt || b.date || 0;
+    return dateB - dateA;
+  });
+
   const renderDateFilter = () => {
     return (
       <div className="flex items-center gap-2">
