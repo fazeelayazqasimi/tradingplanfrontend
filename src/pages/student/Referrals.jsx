@@ -132,20 +132,18 @@ const fetchData = useCallback(async () => {
       ]);
 
       if (codeRes.status === 'fulfilled') {
-        const cd = codeRes.value?.data?.data || codeRes.value?.data || codeRes.value;
-        const referralCode = cd?.code || cd?.referralCode || cd || '';
-        setCode(typeof referralCode === 'string' ? referralCode : referralCode?.toString() || '');
-        const code = typeof referralCode === 'string' ? referralCode : referralCode?.code || '';
-        setReferralLink(`https://the4xhub.com/register?ref=${code}`);
+        const cd = codeRes.value?.data?.code || codeRes.value?.code || '';
+        setCode(typeof cd === 'string' ? cd : cd?.toString() || '');
+        setReferralLink(`https://the4xhub.com/register?ref=${cd || ''}`);
       }
 
       if (statsRes.status === 'fulfilled') {
-        const sd = statsRes.value?.data?.data || statsRes.value?.data || statsRes.value;
+        const sd = statsRes.value?.data || statsRes.value || {};
         setStats(sd);
       }
 
       if (treeRes.status === 'fulfilled') {
-        const td = treeRes.value?.data?.data || treeRes.value?.data || treeRes.value;
+        const td = treeRes.value?.data || treeRes.value || {};
         const direct = td?.direct || td?.directReferrals || td?.level1 || [];
         const indirect = td?.indirect || td?.indirectReferrals || td?.level2 || [];
         setDirectReferrals(Array.isArray(direct) ? direct : []);
