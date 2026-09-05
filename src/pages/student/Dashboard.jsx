@@ -15,6 +15,7 @@ import LiveRatesMarquee from "../../components/shared/LiveRatesMarquee";
 import MarketSessionsWidget from "../../components/shared/MarketSessionsWidget";
 import studentService from "../../services/studentService";
 import ContentDetailsModal from "../../components/student/ContentDetailsModal";
+import announcementService from "../../services/announcementService";
 import api from "../../services/api";
 import { WHATSAPP_CHANNEL_URL } from "../../constants";
 
@@ -92,6 +93,17 @@ export default function Dashboard() {
         setBusinessProfiles(d.businessProfiles || []);
       } catch { if (!cancelled) toast.error("Failed to load dashboard data"); }
       finally { clearTimeout(maxWait); if (!cancelled) setLoading(false); }
+
+      // Fetch announcements separately to get image/video/attachments
+      // (dashboard API .select() doesn't include media fields)
+      try {
+        const annRes = await announcementService.getAnnouncements({ limit: 5, sort: '-createdAt' });
+        const annData = annRes?.data?.data || annRes?.data || annRes;
+        const annList = annData?.announcements || annData?.data || annData;
+        if (!cancelled && Array.isArray(annList) && annList.length > 0) {
+          setAnnouncements(annList);
+        }
+      } catch {}
     }
     fetchDashboard();
     return () => { cancelled = true; mounted = false; clearTimeout(maxWait); };
@@ -454,12 +466,26 @@ export default function Dashboard() {
               const gradient = typeColors[item.type] || "from-primary-500 to-emerald-500";
               return (
                 <Card key={item._id} className="p-4 relative overflow-hidden">
-                  <div className={`absolute top-0 right-0 w-16 h-16 bg-gradient-to-br ${gradient} opacity-10 rounded-bl-full`} />
+                  {(item.thumbnail || item.image) ? (
+                    <div className="relative h-32 rounded-xl overflow-hidden mb-3 bg-dark-100">
+                      <img src={item.thumbnail || item.image} alt={item.title} className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                      <div className="absolute top-2 right-2">
+                        <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${gradient} flex items-center justify-center text-white`}>
+                          <FiBookOpen size={14} />
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className={`absolute top-0 right-0 w-16 h-16 bg-gradient-to-br ${gradient} opacity-10 rounded-bl-full`} />
+                  )}
                   <div className="relative z-10">
                     <div className="flex items-center gap-3 mb-3">
-                      <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center text-white shrink-0`}>
-                        <FiBookOpen size={16} />
-                      </div>
+                      {!(item.thumbnail || item.image) && (
+                        <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center text-white shrink-0`}>
+                          <FiBookOpen size={16} />
+                        </div>
+                      )}
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-bold text-ink truncate">{item.title}</p>
                         <p className="text-xs text-dark-400">{item.date || item.createdAt ? new Date(item.date || item.createdAt).toLocaleDateString() : ''}</p>

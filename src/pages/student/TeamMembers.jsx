@@ -190,7 +190,8 @@ export default function TeamMembers() {
       setLoading(true);
       const treeRes = await referralService.getTree();
       const payload = extractPayload(treeRes);
-      const direct = payload?.direct || payload?.directReferrals || payload?.level1 || [];
+      const treeItems = payload?.tree || [];
+      const direct = treeItems.length > 0 ? treeItems : (payload?.direct || payload?.directReferrals || payload?.level1 || []);
       const indirect = payload?.indirect || payload?.indirectReferrals || payload?.level2 || [];
       const st = payload?.stats || {};
       setDirectReferrals(Array.isArray(direct) ? direct : []);
@@ -221,11 +222,11 @@ export default function TeamMembers() {
 
   const indirectMap = {};
   indirectReferrals.forEach((member) => {
-    const parentUserId = member.referredUserId?.referredBy;
+    const parentUserId = member.referrerId;
     if (parentUserId) {
       const directRef = directReferrals.find((dr) => {
-        const du = dr.referredUserId;
-        return du ? (du._id || du).toString() === parentUserId.toString() : false;
+        const du = dr.user;
+        return du ? (du._id || du.id || '').toString() === parentUserId.toString() : false;
       });
       if (directRef) {
         const parentKey = directRef._id || directRef.id;

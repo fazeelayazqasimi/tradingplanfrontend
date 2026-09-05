@@ -168,12 +168,12 @@ export default function Referrals() {
       if (treeRes.status === 'fulfilled') {
         const payload = extractPayload(treeRes.value);
         if (payload && typeof payload === 'object') {
-          const direct = payload.direct || payload.directReferrals || payload.level1 || [];
+          const treeItems = payload.tree || [];
+          const direct = treeItems.length > 0 ? treeItems : (payload.direct || payload.directReferrals || payload.level1 || []);
           const indirect = payload.indirect || payload.indirectReferrals || payload.level2 || [];
           setDirectReferrals(Array.isArray(direct) ? direct : []);
           setIndirectReferrals(Array.isArray(indirect) ? indirect : []);
-          const treeData = payload.tree || direct || indirect || [];
-          setReferralTree(Array.isArray(treeData) ? treeData : []);
+          setReferralTree(Array.isArray(treeItems) ? treeItems : []);
         }
       }
 
