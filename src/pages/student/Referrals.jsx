@@ -131,22 +131,29 @@ const fetchData = useCallback(async () => {
         referralService.getTree(),
       ]);
 
-      // Handle referral code
-      if (codeRes.status === 'fulfilled') {
+      // Handle referral code - always set default values
+      setCode('');
+      setReferralLink('https://the4xhub.com/register?ref=');
+
+      if (codeRes.status === 'fulfilled' && codeRes.value) {
         let cd = '';
         if (codeRes.value && codeRes.value.data) {
           cd = codeRes.value.data.code || '';
         } else if (codeRes.value && codeRes.value.code !== undefined) {
-          cd = codeRes.value.code;
+          cd = String(codeRes.value.code);
         } else if (codeRes.value !== undefined) {
           cd = String(codeRes.value);
         }
-        setCode(cd || '');
-        setReferralLink(`https://the4xhub.com/register?ref=${cd || ''}`);
+        if (cd) {
+          setCode(cd);
+          setReferralLink(`https://the4xhub.com/register?ref=${cd}`);
+        }
       }
 
-      // Handle stats
-      if (statsRes.status === 'fulfilled') {
+      // Handle stats - always set default empty object
+      setStats({});
+
+      if (statsRes.status === 'fulfilled' && statsRes.value) {
         let sd = {};
         if (statsRes.value && statsRes.value.data) {
           sd = statsRes.value.data;
@@ -156,8 +163,12 @@ const fetchData = useCallback(async () => {
         setStats(sd);
       }
 
-      // Handle tree
-      if (treeRes.status === 'fulfilled') {
+      // Handle tree - always set default empty arrays
+      setDirectReferrals([]);
+      setIndirectReferrals([]);
+      setReferralTree([]);
+
+      if (treeRes.status === 'fulfilled' && treeRes.value) {
         let td = {};
         if (treeRes.value && treeRes.value.data) {
           td = treeRes.value.data;
@@ -168,12 +179,14 @@ const fetchData = useCallback(async () => {
         const indirect = td.indirect || td.indirectReferrals || td.level2 || [];
         setDirectReferrals(Array.isArray(direct) ? direct : []);
         setIndirectReferrals(Array.isArray(indirect) ? indirect : []);
-        const treeData = Array.isArray(td) ? td : (td.tree || []);
+        const treeData = td.tree || direct || indirect || [];
         setReferralTree(treeData.length > 0 ? treeData : []);
       }
 
-      // Handle rank
-      if (rankRes.status === 'fulfilled') {
+      // Handle rank - always set default null
+      setRankData(null);
+
+      if (rankRes.status === 'fulfilled' && rankRes.value) {
         let rd = null;
         if (rankRes.value && rankRes.value.data) {
           rd = rankRes.value.data;

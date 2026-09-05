@@ -179,16 +179,24 @@ export default function TeamMembers() {
 
   const fetchData = useCallback(async () => {
     try {
+      setLoading(true);
       const treeRes = await referralService.getTree();
-      const td = treeRes?.data?.data || treeRes?.data || treeRes;
+      let td = {};
+      if (treeRes?.data && treeRes.data.data) {
+        td = treeRes.data.data;
+      } else if (treeRes?.data) {
+        td = treeRes.data;
+      }
       const direct = td?.direct || td?.directReferrals || td?.level1 || [];
       const indirect = td?.indirect || td?.indirectReferrals || td?.level2 || [];
       const st = td?.stats || {};
       setDirectReferrals(Array.isArray(direct) ? direct : []);
       setIndirectReferrals(Array.isArray(indirect) ? indirect : []);
       setStats(st);
-    } catch {
+      setLoading(false);
+    } catch (error) {
       toast.error('Failed to load team data');
+      setLoading(false);
     }
   }, []);
 
