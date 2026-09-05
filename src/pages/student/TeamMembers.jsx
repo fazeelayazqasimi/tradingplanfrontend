@@ -177,25 +177,30 @@ export default function TeamMembers() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
+  const extractPayload = (res) => {
+    if (!res) return null;
+    if (res.data?.data?.data) return res.data.data.data;
+    if (res.data?.data) return res.data.data;
+    if (res.data) return res.data;
+    return res;
+  };
+
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       const treeRes = await referralService.getTree();
-      let td = {};
-      if (treeRes?.data && treeRes.data.data) {
-        td = treeRes.data.data;
-      } else if (treeRes?.data) {
-        td = treeRes.data;
-      }
-      const direct = td?.direct || td?.directReferrals || td?.level1 || [];
-      const indirect = td?.indirect || td?.indirectReferrals || td?.level2 || [];
-      const st = td?.stats || {};
+      const payload = extractPayload(treeRes);
+      const direct = payload?.direct || payload?.directReferrals || payload?.level1 || [];
+      const indirect = payload?.indirect || payload?.indirectReferrals || payload?.level2 || [];
+      const st = payload?.stats || {};
       setDirectReferrals(Array.isArray(direct) ? direct : []);
       setIndirectReferrals(Array.isArray(indirect) ? indirect : []);
-      setStats(st);
+      setStats(typeof st === 'object' ? { ...st } : {});
       setLoading(false);
     } catch (error) {
-      toast.error('Failed to load team data');
+      setDirectReferrals([]);
+      setIndirectReferrals([]);
+      setStats({});
       setLoading(false);
     }
   }, []);

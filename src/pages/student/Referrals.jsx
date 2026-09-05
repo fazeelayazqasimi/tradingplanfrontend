@@ -122,7 +122,16 @@ export default function Referrals() {
     );
   };
 
-const fetchData = useCallback(async () => {
+// Extract actual payload from Axios response (handles double .data wrapping from sendSuccess)
+  const extractPayload = (res) => {
+    if (!res) return null;
+    if (res.data?.data?.data) return res.data.data.data;
+    if (res.data?.data) return res.data.data;
+    if (res.data) return res.data;
+    return res;
+  };
+
+  const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       const [codeRes, statsRes, treeRes, rankRes] = await Promise.allSettled([
@@ -131,73 +140,53 @@ const fetchData = useCallback(async () => {
         referralService.getTree(),
       ]);
 
-      // Handle referral code - always set default values
+      // ✅ REFERRAL CODE
       setCode('');
       setReferralLink('https://the4xhub.com/register?ref=');
-
-      if (codeRes.status === 'fulfilled' && codeRes.value) {
-        let cd = '';
-        if (codeRes.value && codeRes.value.data) {
-          cd = codeRes.value.data.code || '';
-        } else if (codeRes.value && codeRes.value.code !== undefined) {
-          cd = String(codeRes.value.code);
-        } else if (codeRes.value !== undefined) {
-          cd = String(codeRes.value);
-        }
+      if (codeRes.status === 'fulfilled') {
+        const payload = extractPayload(codeRes.value);
+        const cd = payload?.code || payload?.data?.code || '';
         if (cd) {
           setCode(cd);
           setReferralLink(`https://the4xhub.com/register?ref=${cd}`);
         }
       }
 
-      // Handle stats - always set default empty object
+      // ✅ STATS
       setStats({});
-
-      if (statsRes.status === 'fulfilled' && statsRes.value) {
-        let sd = {};
-        if (statsRes.value && statsRes.value.data) {
-          sd = statsRes.value.data;
-        } else if (statsRes.value) {
-          sd = statsRes.value;
+      if (statsRes.status === 'fulfilled') {
+        const payload = extractPayload(statsRes.value);
+        if (payload && typeof payload === 'object') {
+          setStats(payload);
         }
-        setStats(sd);
       }
 
-      // Handle tree - always set default empty arrays
+      // ✅ TREE
       setDirectReferrals([]);
       setIndirectReferrals([]);
       setReferralTree([]);
-
-      if (treeRes.status === 'fulfilled' && treeRes.value) {
-        let td = {};
-        if (treeRes.value && treeRes.value.data) {
-          td = treeRes.value.data;
-        } else if (treeRes.value) {
-          td = treeRes.value;
+      if (treeRes.status === 'fulfilled') {
+        const payload = extractPayload(treeRes.value);
+        if (payload && typeof payload === 'object') {
+          const direct = payload.direct || payload.directReferrals || payload.level1 || [];
+          const indirect = payload.indirect || payload.indirectReferrals || payload.level2 || [];
+          setDirectReferrals(Array.isArray(direct) ? direct : []);
+          setIndirectReferrals(Array.isArray(indirect) ? indirect : []);
+          const treeData = payload.tree || direct || indirect || [];
+          setReferralTree(Array.isArray(treeData) ? treeData : []);
         }
-        const direct = td.direct || td.directReferrals || td.level1 || [];
-        const indirect = td.indirect || td.indirectReferrals || td.level2 || [];
-        setDirectReferrals(Array.isArray(direct) ? direct : []);
-        setIndirectReferrals(Array.isArray(indirect) ? indirect : []);
-        const treeData = td.tree || direct || indirect || [];
-        setReferralTree(treeData.length > 0 ? treeData : []);
       }
 
-      // Handle rank - always set default null
+      // ✅ RANK
       setRankData(null);
-
-      if (rankRes.status === 'fulfilled' && rankRes.value) {
-        let rd = null;
-        if (rankRes.value && rankRes.value.data) {
-          rd = rankRes.value.data;
-        } else if (rankRes.value) {
-          rd = rankRes.value;
+      if (rankRes.status === 'fulfilled') {
+        const payload = extractPayload(rankRes.value);
+        if (payload && typeof payload === 'object') {
+          setRankData(payload);
         }
-        setRankData(rd);
       }
     } catch (error) {
       console.error('[REFERRAL] fetchData error:', error.message);
-      toast.error('Failed to load referral data');
     } finally {
       setLoading(false);
     }
