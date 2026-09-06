@@ -65,6 +65,8 @@ export default function Referrals() {
   const [endDate, setEndDate] = useState("");
   const [copiedCode, setCopiedCode] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [sortOrder, setSortOrder] = useState('desc');
+  const [sortField, setSortField] = useState('date');
 
   const STAT_OPTIONS = [
     { value: "all", label: "All Time" },
@@ -267,11 +269,18 @@ export default function Referrals() {
 
   const activeList = activeTab === 'direct' ? directReferrals : activeTab === 'indirect' ? indirectReferrals : [];
 
-  // Sort by joined date descending (newest first) for consistent display
+  // Sort by date or name based on user selection
   activeList.sort((a, b) => {
-    const dateA = a.joinedAt || a.createdAt || a.date || 0;
-    const dateB = b.joinedAt || b.createdAt || b.date || 0;
-    return dateB - dateA;
+    const uA = a.user || a.referredUserId || a;
+    const uB = b.user || b.referredUserId || b;
+    if (sortField === 'name') {
+      const nameA = (uA.firstName || '') + ' ' + (uA.lastName || '');
+      const nameB = (uB.firstName || '') + ' ' + (uB.lastName || '');
+      return sortOrder === 'asc' ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+    }
+    const dateA = new Date(a.joinedAt || a.createdAt || a.date || 0).getTime();
+    const dateB = new Date(b.joinedAt || b.createdAt || b.date || 0).getTime();
+    return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
   });
 
   const renderDateFilter = () => {
@@ -802,8 +811,36 @@ function GenealogyTree({ rootUser, treeNodes, stats, onBack }) {
                     }
                   />
 ) : (
-                  <div className="space-y-3">
+                  <div>
+                    <div className="flex items-center gap-2 mb-3">
+                      <select
+                        value={sortField}
+                        onChange={(e) => setSortField(e.target.value)}
+                        className="rounded-[11px] border border-dark-200 bg-dark-50 px-3 py-2 text-sm text-ink focus:border-primary-500 focus:outline-none transition-all"
+                      >
+                        <option value="date">Sort by Date</option>
+                        <option value="name">Sort by Name</option>
+                      </select>
+                      <button
+                        onClick={() => setSortOrder((prev) => prev === 'asc' ? 'desc' : 'asc')}
+                        className="flex items-center gap-1.5 rounded-[11px] border border-dark-200 bg-dark-50 px-3 py-2 text-sm font-medium text-ink hover:bg-dark-100 transition-all"
+                      >
+                        {sortOrder === 'asc' ? (
+                          <>
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
+                            Oldest First
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                            Newest First
+                          </>
+                        )}
+                      </button>
+                    </div>
+                    <div className="space-y-3">
 {activeList.map(renderReferralItem)}
+                    </div>
                   </div>
                 )}
               </motion.div>

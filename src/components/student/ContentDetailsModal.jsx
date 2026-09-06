@@ -57,10 +57,9 @@ export default function ContentDetailsModal({ item, isOpen, onClose, isFreeUser 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="" size="lg">
       {image && (
-        <div className="relative h-44 rounded-xl overflow-hidden bg-dark-100 mb-5">
-          <img src={image} alt={title} className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-          <div className="absolute bottom-3 left-3">
+        <div className="rounded-xl overflow-hidden bg-dark-100 mb-5">
+          <img src={image} alt={title} className="w-full" />
+          <div className="relative px-4 py-2">
             <Badge color={config.color}>
               <Icon size={12} className="mr-1 inline" /> {config.label}
             </Badge>
