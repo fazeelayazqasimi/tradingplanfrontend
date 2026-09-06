@@ -104,6 +104,19 @@ export default function Dashboard() {
           setAnnouncements(annList);
         }
       } catch {}
+
+      // Pre-fetch wallet balances so Activate Now modal has data ready
+      try {
+        const walletRes = await walletService.getAllWallets();
+        const wData = walletRes?.data?.data || walletRes?.data || walletRes;
+        const wallets = Array.isArray(wData) ? wData : Array.isArray(wData?.data) ? wData.data : [];
+        if (!cancelled) {
+          const fw = wallets.find(w => w.type === 'funding');
+          if (fw) setFundingBalance(fw.availableBalance || 0);
+          const mw = wallets.find(w => w.type === 'main');
+          if (mw) setWalletData(prev => ({ ...prev, availableBalance: mw.availableBalance || 0, pendingBalance: mw.pendingBalance || 0 }));
+        }
+      } catch {}
     }
     fetchDashboard();
     return () => { cancelled = true; mounted = false; clearTimeout(maxWait); };
@@ -158,7 +171,11 @@ export default function Dashboard() {
       api.get("/subscriptions/activation-info"),
     ]);
     if (walletRes.status === "fulfilled") {
-      const wallets = walletRes.value?.data?.data || walletRes.value?.data || [];
+      const res = walletRes.value;
+      const wallets = Array.isArray(res?.data?.data) ? res.data.data
+        : Array.isArray(res?.data) ? res.data
+        : Array.isArray(res) ? res
+        : [];
       setFundingBalance(wallets.find(w => w.type === "funding")?.availableBalance || 0);
     }
     if (infoRes.status === "fulfilled") {

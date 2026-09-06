@@ -118,11 +118,19 @@ function MemberRow({ member, index, isIndirect }) {
   );
 }
 
-function DirectReferralSection({ directRef, index, indirectMap }) {
+function DirectReferralSection({ directRef, index, indirectMap, isIndirect }) {
   const [expanded, setExpanded] = useState(false);
   const name = getMemberName(directRef);
   const id = directRef._id || directRef.id || index;
-  const children = indirectMap[id] || [];
+  const children = isIndirect ? [] : (indirectMap[id] || []);
+
+  if (isIndirect) {
+    return (
+      <div className="space-y-2">
+        <MemberRow member={directRef} index={index} isIndirect />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-2">
@@ -176,6 +184,8 @@ export default function TeamMembers() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [memberFilter, setMemberFilter] = useState('all');
+  const [commissionFilter, setCommissionFilter] = useState(false);
 
   const extractPayload = (res) => {
     if (!res) return null;
@@ -237,6 +247,28 @@ export default function TeamMembers() {
   });
 
   const allMembers = [...directReferrals, ...indirectReferrals];
+
+  // Apply filters
+  const filteredDirect = directReferrals.filter((member) => {
+    if (commissionFilter) {
+      const commission = member.commissionEarned ?? member.commission ?? member.totalCommission ?? 0;
+      if (commission <= 0) return false;
+    }
+    return true;
+  });
+
+  const filteredIndirect = indirectReferrals.filter((member) => {
+    if (commissionFilter) {
+      const commission = member.commissionEarned ?? member.commission ?? member.totalCommission ?? 0;
+      if (commission <= 0) return false;
+    }
+    return true;
+  });
+
+  const filteredList = memberFilter === 'direct' ? filteredDirect
+    : memberFilter === 'indirect' ? filteredIndirect
+    : [...filteredDirect, ...filteredIndirect];
+
   const activeMembers =
     stats?.activeMembers ??
     stats?.active_members ??
@@ -374,6 +406,31 @@ export default function TeamMembers() {
         </motion.div>
       )}
 
+      {!loading && directReferrals.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <select
+            value={memberFilter}
+            onChange={(e) => setMemberFilter(e.target.value)}
+            className="rounded-[11px] border border-dark-200 bg-dark-50 px-3 py-2 text-sm text-ink focus:border-primary-500 focus:outline-none transition-all"
+          >
+            <option value="all">All Members</option>
+            <option value="direct">Direct Only</option>
+            <option value="indirect">Indirect Only</option>
+          </select>
+          <button
+            onClick={() => setCommissionFilter((prev) => !prev)}
+            className={`flex items-center gap-1.5 rounded-[11px] border px-3 py-2 text-sm font-medium transition-all ${
+              commissionFilter
+                ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                : 'border-dark-200 bg-dark-50 text-ink hover:bg-dark-100'
+            }`}
+          >
+            <FiRefreshCw size={14} className={commissionFilter ? 'text-emerald-500' : ''} />
+            {commissionFilter ? 'Show All' : 'Commission Earned'}
+          </button>
+        </div>
+      )}
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -400,30 +457,75 @@ export default function TeamMembers() {
                 title="No team members yet"
                 description="Share your referral code to invite others and start building your team."
               />
-            ) : (
+            ) : filteredList.length === 0 ? (
+              <EmptyState
+                icon={FiUsers}
+                title="No matching members"
+                description="Try changing the filters to see more results."
+              />
+            ) : memberFilter === 'indirect' ? (
               <div className="space-y-2">
                 <div className="px-4 pb-2">
                   <h3 className="text-xs font-semibold uppercase tracking-wider text-dark-400">
-                    My Direct Referrals
+                    Indirect Referrals
                   </h3>
                 </div>
-                {directReferrals.map((ref, idx) => (
+                {filteredList.map((ref, idx) => (
                   <DirectReferralSection
                     key={ref._id || ref.id || idx}
                     directRef={ref}
                     index={idx}
-                    indirectMap={indirectMap}
+                    indirectMap={{}}
+                    isIndirect
                   />
                 ))}
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {memberFilter !== 'indirect' && filteredDirect.length > 0 && (
+                  <>
+                    <div className="px-4 pb-2">
+                      <h3 className="text-xs font-semibold uppercase tracking-wider text-dark-400">
+                        My Direct Referrals
+                      </h3>
+                    </div>
+                    {filteredDirect.map((ref, idx) => (
+                      <DirectReferralSection
+                        key={ref._id || ref.id || idx}
+                        directRef={ref}
+                        index={idx}
+                        indirectMap={indirectMap}
+                      />
+                    ))}
+                  </>
+                )}
+                {memberFilter === 'all' && filteredIndirect.length > 0 && (
+                  <>
+                    <div className="px-4 pb-2 mt-4">
+                      <h3 className="text-xs font-semibold uppercase tracking-wider text-dark-400">
+                        Indirect Referrals
+                      </h3>
+                    </div>
+                    {filteredIndirect.map((ref, idx) => (
+                      <DirectReferralSection
+                        key={ref._id || ref.id || idx}
+                        directRef={ref}
+                        index={idx}
+                        indirectMap={{}}
+                        isIndirect
+                      />
+                    ))}
+                  </>
+                )}
               </div>
             )}
           </div>
 
           <div className="px-6 pb-4 text-center">
             <p className="text-xs text-dark-400">
-              {directReferrals.length} direct &middot;{' '}
-              {indirectReferrals.length} indirect &middot;{' '}
-              {directReferrals.length + indirectReferrals.length} total members
+              {filteredList.length} showing &middot;{' '}
+              {filteredDirect.length} direct &middot;{' '}
+              {filteredIndirect.length} indirect
             </p>
           </div>
         </Card>
