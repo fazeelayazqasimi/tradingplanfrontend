@@ -146,6 +146,15 @@ export default function Rank() {
     ? Math.min(100, (qualifiedLegs / qualifiedLegsRequired) * 100)
     : 100;
 
+  const allComplete = nextRankData && directNeeded === 0 && teamNeeded === 0 && legsNeeded === 0;
+  const motivationalParts = [];
+  if (nextRankData) {
+    if (directNeeded > 0) motivationalParts.push(`${directNeeded} more direct referral${directNeeded !== 1 ? 's' : ''}`);
+    if (teamNeeded > 0) motivationalParts.push(`${teamNeeded} more team member${teamNeeded !== 1 ? 's' : ''}`);
+    if (legsNeeded > 0) motivationalParts.push(`${legsNeeded} more qualified leg${legsNeeded !== 1 ? 's' : ''}`);
+  }
+  const showMotivationalBanner = !loading && nextRankData && (motivationalParts.length > 0 || allComplete);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -158,6 +167,23 @@ export default function Rank() {
           Refresh
         </Button>
       </div>
+
+      {showMotivationalBanner && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className={`rounded-xl px-5 py-3.5 flex items-center gap-3 bg-gradient-to-r ${RANK_GRADIENTS[rankName] || 'from-primary-400 to-primary-600'} text-white shadow-md`}
+        >
+          <FiZap size={20} className="shrink-0" />
+          <p className="text-sm font-medium">
+            {allComplete
+              ? <>All requirements met for <span className="font-bold">{nextRankName}</span>! You&apos;re ready to rank up!</>
+              : <>Almost there! Just <span className="font-bold">{motivationalParts.join(', ')}</span> to reach <span className="font-bold">{nextRankName}</span>. Keep pushing!</>
+            }
+          </p>
+        </motion.div>
+      )}
 
       {loading ? (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
