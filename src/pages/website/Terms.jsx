@@ -3,7 +3,7 @@ export default function Terms() {
   const [open, setOpen] = useState(false);
   return (
     <div>
-      <section className="bg-gradient-to-br from-dark-900 to-primary-900 text-white py-20">
+      <section className="bg-ink text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-3xl sm:text-4xl font-bold">Terms & Conditions</h1>
           <p className="text-dark-300 mt-2">Effective Date: ____</p>

@@ -131,7 +131,7 @@ export default function ReferralProgram() {
                 ))}
               </div>
             </div>
-            <div className="bg-gradient-to-br from-primary-50 to-emerald-50 rounded-2xl border border-dark-100 p-6 sm:p-8 shadow-card">
+            <div className="bg-primary-50 rounded-2xl border border-dark-100 p-6 sm:p-8 shadow-card">
               <h3 className="font-bold text-xl mb-4">Earning Types</h3>
               <div className="space-y-4">
                 {[
@@ -155,7 +155,7 @@ export default function ReferralProgram() {
 
       <section className="section-sm pt-0">
         <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="rounded-[26px] border border-dark-100 py-10 sm:py-16 px-6 sm:px-16 flex flex-col sm:flex-row justify-between items-center gap-6 sm:gap-10" style={{ background: 'linear-gradient(120deg, #EFF4FE, #ECFDF5)' }}>
+          <div className="rounded-[26px] border border-dark-100 py-10 sm:py-16 px-6 sm:px-16 flex flex-col sm:flex-row justify-between items-center gap-6 sm:gap-10" style={{ background: '#F7F8FA' }}>
             <div className="text-center sm:text-left">
               <h3 className="text-[22px] sm:text-[28px] mb-2.5" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Ready to start earning?</h3>
               <p className="text-dark-500 text-[15px] font-inter">Join today and get your personal referral link instantly.</p>

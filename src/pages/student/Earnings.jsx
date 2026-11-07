@@ -9,7 +9,7 @@ import Skeleton from '../../components/ui/Skeleton';
 import walletService from '../../services/walletService';
 import { formatCurrency } from '../../utils/helpers';
 
-const CHART_COLORS = ['#45F000', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
+const CHART_COLORS = ['#45F000', '#111111', '#737373', '#FF3B30', '#262626', '#A3A3A3'];
 
 const container = {
   hidden: { opacity: 0 },

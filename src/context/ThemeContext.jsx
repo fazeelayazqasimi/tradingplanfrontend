@@ -2,13 +2,20 @@ import { createContext, useContext, useState, useEffect } from 'react';
 
 const ThemeContext = createContext(null);
 
+const isStudentPath = () => window.location.pathname.startsWith('/student');
+
 export const ThemeProvider = ({ children }) => {
   const [dark, setDark] = useState(() => {
+    if (isStudentPath()) return false;
     const saved = localStorage.getItem('theme');
     return saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
   });
 
   useEffect(() => {
+    if (isStudentPath()) {
+      document.documentElement.classList.remove('dark');
+      return;
+    }
     document.documentElement.classList.toggle('dark', dark);
     localStorage.setItem('theme', dark ? 'dark' : 'light');
   }, [dark]);

@@ -37,7 +37,7 @@ import paymentAccountService from '../../services/paymentAccountService';
 import { formatCurrency, formatDate, copyToClipboard, getAssetUrl } from '../../utils/helpers';
 import usePagination from '../../hooks/usePagination';
 
-const CHART_COLORS = ['#10B981', '#45F000', '#F59E0B', '#8B5CF6'];
+const CHART_COLORS = ['#45F000', '#111111', '#737373', '#262626'];
 
 const INCOME_LABELS = {
   direct_income: 'Direct Income',
@@ -53,12 +53,12 @@ const INCOME_LABELS = {
 };
 
 const CHART_CATEGORIES = [
-  { key: 'direct_income', fallback: 'directIncome', label: 'Direct Income', color: '#10B981' },
+  { key: 'direct_income', fallback: 'directIncome', label: 'Direct Income', color: '#45F000' },
   { key: 'indirect_income', fallback: 'indirectIncome', label: 'Indirect Income', color: '#45F000' },
-  { key: 'trading_profit', fallback: 'tradingProfit', label: 'Trading Profit', color: '#F59E0B' },
-  { key: 'bonus', label: 'Bonus', color: '#8B5CF6' },
-  { key: 'commission', label: 'Commission', color: '#EC4899' },
-  { key: 'registration', label: 'Registration Bonus', color: '#06B6D4' },
+  { key: 'trading_profit', fallback: 'tradingProfit', label: 'Trading Profit', color: '#737373' },
+  { key: 'bonus', label: 'Bonus', color: '#262626' },
+  { key: 'commission', label: 'Commission', color: '#A3A3A3' },
+  { key: 'registration', label: 'Registration Bonus', color: '#737373' },
 ];
 
 const container = {
@@ -573,9 +573,9 @@ const validateWithdraw = () => {
                       formatter={(value) => formatCurrency(value)}
                       contentStyle={{
                         backgroundColor: '#ffffff',
-                        border: '1px solid #e5e7eb',
+                        border: '1px solid #E5E5E5',
                         borderRadius: '12px',
-                        color: '#1a1a2e',
+                        color: '#111111',
                         fontSize: '13px',
                       }}
                     />

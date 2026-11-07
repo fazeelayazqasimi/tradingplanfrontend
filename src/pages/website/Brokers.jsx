@@ -106,7 +106,7 @@ export default function Brokers() {
 
       <section className="section pb-16">
         <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="rounded-[26px] border border-dark-100 py-10 sm:py-16 px-6 sm:px-16 flex flex-col md:flex-row justify-between items-center gap-6 sm:gap-10" style={{ background: 'linear-gradient(120deg, #EFF4FE, #ECFDF5)' }}>
+          <div className="rounded-[26px] border border-dark-100 py-10 sm:py-16 px-6 sm:px-16 flex flex-col md:flex-row justify-between items-center gap-6 sm:gap-10" style={{ background: '#F7F8FA' }}>
             <div className="text-center md:text-left">
               <h3 className="text-[22px] sm:text-[28px] mb-2.5" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Ready to start trading?</h3>
               <p className="text-dark-500 text-[15px] font-inter">Open an account with a trusted broker and begin your trading journey.</p>

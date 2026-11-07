@@ -342,7 +342,7 @@ export default function Referrals() {
     `}>
       <div className="flex items-start gap-2 sm:gap-3">
         <div className={`shrink-0 flex items-center justify-center rounded-full font-bold text-white ${
-          isRoot ? 'w-8 sm:w-12 h-8 sm:h-12 text-xs sm:text-base bg-gradient-to-br from-primary-500 to-blue-600' : 'w-7 sm:w-10 h-7 sm:h-10 text-[10px] sm:text-sm bg-gradient-to-br from-primary-400 to-blue-500'
+          isRoot ? 'w-8 sm:w-12 h-8 sm:h-12 text-xs sm:text-base bg-ink' : 'w-7 sm:w-10 h-7 sm:h-10 text-[10px] sm:text-sm bg-ink'
         }`}>
           {initials}
         </div>
@@ -464,10 +464,10 @@ function GenealogyTree({ rootUser, treeNodes, stats, onBack }) {
 
   return (
     <div>
-      <div className="mb-3 sm:mb-4 p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-r from-primary-50 to-blue-50 border border-primary-200">
+      <div className="mb-3 sm:mb-4 p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-primary-50 border border-primary-200">
         <div className="flex items-center justify-between flex-wrap gap-2 sm:gap-3">
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="w-8 sm:w-11 h-8 sm:h-11 rounded-full bg-gradient-to-br from-primary-500 to-blue-600 flex items-center justify-center shadow-sm shrink-0">
+            <div className="w-8 sm:w-11 h-8 sm:h-11 rounded-full bg-ink flex items-center justify-center shadow-sm shrink-0">
               <FiUser className="text-white" size={14} />
             </div>
             <div className="min-w-0">
@@ -534,7 +534,7 @@ function GenealogyTree({ rootUser, treeNodes, stats, onBack }) {
       </div>
 
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-        <Card className="p-6 bg-gradient-to-br from-primary-500 to-primary-700 text-white border-0">
+        <Card className="p-6 bg-ink text-white border-0">
           <h2 className="text-lg font-semibold mb-4">Your Referral Code</h2>
           {loading ? (
             <Skeleton className="h-12 w-48 bg-white/20" />
@@ -639,7 +639,7 @@ function GenealogyTree({ rootUser, treeNodes, stats, onBack }) {
             </div>
             <div className="flex flex-col sm:flex-row sm:items-center gap-4">
               <div className="flex items-center gap-3 shrink-0">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white font-bold text-lg">
+                <div className="w-14 h-14 rounded-2xl bg-ink flex items-center justify-center text-white font-bold text-lg">
                   {rankData.userRank?.currentRankId?.name?.charAt(0) || '?'}
                 </div>
                 <div>

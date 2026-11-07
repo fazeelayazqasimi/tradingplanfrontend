@@ -27,7 +27,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12" style={{ background: 'radial-gradient(600px 300px at 50% 20%, rgba(69,240,0,0.06), transparent 60%)' }}>
+    <div className="min-h-screen flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-[420px]">
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2.5 mb-5">

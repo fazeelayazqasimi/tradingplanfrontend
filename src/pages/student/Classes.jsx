@@ -252,7 +252,7 @@ export default function Classes() {
             {studyMaterials.map((mat) => (
               <Card key={mat._id} className="p-4">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white">
+                  <div className="w-10 h-10 rounded-xl bg-ink flex items-center justify-center text-white">
                     <FiBook size={16} />
                   </div>
                   <div className="min-w-0 flex-1">
@@ -281,7 +281,7 @@ export default function Classes() {
             {recordings.map((rec) => (
               <Card key={rec._id} className="p-4">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white">
+                  <div className="w-10 h-10 rounded-xl bg-ink flex items-center justify-center text-white">
                     <FiPlay size={16} />
                   </div>
                   <div className="min-w-0 flex-1">
@@ -342,8 +342,8 @@ export default function Classes() {
       <Modal isOpen={!!enrollClass} onClose={() => setEnrollClass(null)} title="Class Enrollment" size="lg">
         {enrollClass && (
           <form onSubmit={handleEnrollSubmit} className="space-y-4">
-            <div className="rounded-xl bg-gradient-to-r from-primary-600 to-emerald-500 text-black px-4 py-3">
-              <p className="text-xs font-bold uppercase tracking-widest text-black/70">Dream Traders Academy</p>
+            <div className="rounded-xl bg-primary-500 text-white px-4 py-3">
+              <p className="text-xs font-bold uppercase tracking-widest text-white/70">Dream Traders Academy</p>
               <p className="text-base font-bold">{enrollClass.title}</p>
             </div>
 

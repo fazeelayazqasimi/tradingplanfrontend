@@ -1,4 +1,4 @@
-﻿import { Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import gsap from 'gsap';
 import { FiVideo, FiVolume2, FiVolumeX, FiPlay, FiPause, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
@@ -10,14 +10,14 @@ import { useSettings } from '../../context/SettingsContext';
 const API_URL = import.meta.env.VITE_API_URL?.replace(/\/api$/, '') || '';
 
 const defaultFeatures = [
-  { icon: '📚', title: 'Complete Forex Education', desc: 'Structured learning from beginner to advanced through professional courses and live sessions.' },
-  { icon: '🏫', title: 'Physical Classes in Karachi', desc: 'Attend professional classroom sessions with experienced mentors for practical market training.' },
-  { icon: '💻', title: 'Live Online Classes', desc: 'Interactive online sessions from anywhere with real-time mentorship and Q&A.' },
-  { icon: '📊', title: 'Daily Trading Signals', desc: 'Receive high-accuracy Forex signals with complete entry, stop loss, take profit, and risk management guidance.' },
-  { icon: '🔄', title: 'Copy Trading Access', desc: 'Copy professional traders automatically and benefit from proven strategies without trading experience.' },
-  { icon: '🎁', title: 'High-Reward Affiliate Program', desc: 'Build your network and earn industry-leading commissions through our transparent rank-based program.' },
-  { icon: '💰', title: 'Profit Sharing Opportunities', desc: 'Earn a share from the network profit pool based on your rank configuration.' },
-  { icon: '👥', title: 'Members Community & Support', desc: 'Stay connected with our trading community for lifetime support, updates, webinars, and continuous learning.' },
+  { icon: '??', title: 'Complete Forex Education', desc: 'Structured learning from beginner to advanced through professional courses and live sessions.' },
+  { icon: '??', title: 'Physical Classes in Karachi', desc: 'Attend professional classroom sessions with experienced mentors for practical market training.' },
+  { icon: '??', title: 'Live Online Classes', desc: 'Interactive online sessions from anywhere with real-time mentorship and Q&A.' },
+  { icon: '??', title: 'Daily Trading Signals', desc: 'Receive high-accuracy Forex signals with complete entry, stop loss, take profit, and risk management guidance.' },
+  { icon: '??', title: 'Copy Trading Access', desc: 'Copy professional traders automatically and benefit from proven strategies without trading experience.' },
+  { icon: '??', title: 'High-Reward Affiliate Program', desc: 'Build your network and earn industry-leading commissions through our transparent rank-based program.' },
+  { icon: '??', title: 'Profit Sharing Opportunities', desc: 'Earn a share from the network profit pool based on your rank configuration.' },
+  { icon: '??', title: 'Members Community & Support', desc: 'Stay connected with our trading community for lifetime support, updates, webinars, and continuous learning.' },
 ];
 
 const defaultTimeline = [
@@ -123,7 +123,7 @@ export default function Home() {
 
   const instituteName = getSetting('institute_name', 'THE COMPLETE FOREX ECOSYSTEM');
   const siteTagline = getSetting('site_tagline', 'Learn Forex. Trade with confidence.');
-  const siteDescription = getSetting('site_description', 'Everything you need to succeed in one platform — professional Forex education, live trading signals, automated copy trading, and a rewarding affiliate program, all included in one annual membership.');
+  const siteDescription = getSetting('site_description', 'Everything you need to succeed in one platform � professional Forex education, live trading signals, automated copy trading, and a rewarding affiliate program, all included in one annual membership.');
 
   useEffect(() => {
     const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
@@ -256,7 +256,7 @@ export default function Home() {
     <div>
       <style>{`.reveal-element { opacity: 0; transform: translateY(28px); transition: opacity 0.8s ease, transform 0.8s ease; } .reveal-active { opacity: 1 !important; transform: translateY(0) !important; }`}</style>
 
-      <section className="pt-[120px] sm:pt-[140px] lg:pt-[180px] pb-[50px] sm:pb-[80px] lg:pb-[100px] relative overflow-hidden" style={{ background: 'radial-gradient(600px 300px at 85% 10%, rgba(69,240,0,0.06), transparent 60%), radial-gradient(500px 260px at 100% 60%, rgba(16,185,129,0.05), transparent 60%)' }}>
+      <section className="pt-[120px] sm:pt-[140px] lg:pt-[180px] pb-[50px] sm:pb-[80px] lg:pb-[100px] relative overflow-hidden">
         <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-[1.05fr_0.95fr] gap-8 sm:gap-10 lg:gap-16 items-center">
           <div>
             <p className="eyebrow mb-4 sm:mb-6 text-[11px] sm:text-xs">{instituteName}</p>
@@ -264,7 +264,7 @@ export default function Home() {
               {visitorName ? <>Hello {visitorName}. <span className="text-primary-500">Be a trader.</span></> : <>Learn Forex. <span className="text-primary-500">Trade Smarter.</span> Build Passive Income.</>}
             </h1>
             <p ref={heroTextRef} className="text-base sm:text-lg leading-[1.65] text-dark-500 max-w-[480px] mb-6 sm:mb-9 font-inter">
-              {visitorName ? `Welcome, ${visitorName}! Your journey to financial freedom starts here.` : 'Everything you need to succeed in one platform — professional Forex education, live trading signals, automated copy trading, and a rewarding affiliate program, all included in one annual membership.'}
+              {visitorName ? `Welcome, ${visitorName}! Your journey to financial freedom starts here.` : 'Everything you need to succeed in one platform � professional Forex education, live trading signals, automated copy trading, and a rewarding affiliate program, all included in one annual membership.'}
             </p>
             <div ref={heroCtaRef} className="flex flex-col sm:flex-row gap-3 sm:gap-3.5 mb-8 sm:mb-12">
               <Link to="/register" className="btn-blue btn-lg text-center px-6 py-3 sm:px-8 sm:py-4 text-sm sm:text-[15.5px]">Join Now</Link>
@@ -298,7 +298,7 @@ export default function Home() {
               <div className="h-[150px] rounded-[14px] bg-dark-50 border border-dark-100 overflow-hidden mb-4">
                 <svg viewBox="0 0 400 150" preserveAspectRatio="none" className="w-full h-full">
                   <polyline fill="none" stroke="#45F000" strokeWidth="2.5" points="0,110 40,95 80,100 120,70 160,80 200,55 240,60 280,35 320,45 360,20 400,30" />
-                  <polyline fill="none" stroke="#10B981" strokeWidth="2" strokeOpacity="0.5" points="0,130 40,120 80,125 120,100 160,110 200,90 240,95 280,75 320,80 360,60 400,65" />
+                  <polyline fill="none" stroke="#45F000" strokeWidth="2" strokeOpacity="0.5" points="0,130 40,120 80,125 120,100 160,110 200,90 240,95 280,75 320,80 360,60 400,65" />
                 </svg>
               </div>
               <div className="grid grid-cols-2 gap-3.5">
@@ -334,7 +334,7 @@ export default function Home() {
        </section>
 
        {/* Official Education Partner - Right after Hero */}
-       <section className="py-[60px] sm:py-[80px] lg:py-[100px] bg-gradient-to-r from-primary-50 to-emerald-50">
+       <section className="py-[60px] sm:py-[80px] lg:py-[100px] bg-primary-50">
          <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
            <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
              <ScrollReveal>
@@ -351,10 +351,10 @@ export default function Home() {
                <h2 className="text-[28px] sm:text-[34px] lg:text-[40px] font-extrabold mb-4" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Dream Trader Academy</h2>
                <p className="text-dark-500 text-[14px] sm:text-[16px] leading-relaxed font-inter mb-6">Professional Forex education delivered in partnership with Dream Trader Academy, offering structured learning through both physical classroom training in Karachi and live online sessions for students across Pakistan.</p>
                <div className="grid grid-cols-2 gap-4">
-                 <div className="flex items-center gap-2 text-[13px] sm:text-[14px] font-inter"><span className="text-lg">🏫</span> Physical Classes (Karachi)</div>
-                 <div className="flex items-center gap-2 text-[13px] sm:text-[14px] font-inter"><span className="text-lg">💻</span> Live Online Classes</div>
-                 <div className="flex items-center gap-2 text-[13px] sm:text-[14px] font-inter"><span className="text-lg">📅</span> Weekday &amp; Weekend Batches</div>
-                 <div className="flex items-center gap-2 text-[13px] sm:text-[14px] font-inter"><span className="text-lg">🎓</span> Professional Mentors</div>
+                 <div className="flex items-center gap-2 text-[13px] sm:text-[14px] font-inter"><span className="text-lg">??</span> Physical Classes (Karachi)</div>
+                 <div className="flex items-center gap-2 text-[13px] sm:text-[14px] font-inter"><span className="text-lg">??</span> Live Online Classes</div>
+                 <div className="flex items-center gap-2 text-[13px] sm:text-[14px] font-inter"><span className="text-lg">??</span> Weekday &amp; Weekend Batches</div>
+                 <div className="flex items-center gap-2 text-[13px] sm:text-[14px] font-inter"><span className="text-lg">??</span> Professional Mentors</div>
                </div>
              </ScrollReveal>
            </div>
@@ -374,14 +374,14 @@ export default function Home() {
            </div>
 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
               {[
-                { title: 'Beginner to Advanced Forex Curriculum', icon: '📚' },
-                { title: 'Live Classroom Sessions', icon: '🏫' },
-                { title: 'Online Interactive Classes', icon: '💻' },
-                { title: 'Practical Market Analysis', icon: '📊' },
-                { title: 'Trading Psychology', icon: '🧠' },
-                { title: 'Risk Management', icon: '🛡️' },
-                { title: 'Weekly Q&A Sessions', icon: '❓' },
-                { title: 'Lifetime Learning Community', icon: '👥' },
+                { title: 'Beginner to Advanced Forex Curriculum', icon: '??' },
+                { title: 'Live Classroom Sessions', icon: '??' },
+                { title: 'Online Interactive Classes', icon: '??' },
+                { title: 'Practical Market Analysis', icon: '??' },
+                { title: 'Trading Psychology', icon: '??' },
+                { title: 'Risk Management', icon: '???' },
+                { title: 'Weekly Q&A Sessions', icon: '?' },
+                { title: 'Lifetime Learning Community', icon: '??' },
               ].map((item, i) => (
                 <ScrollReveal key={i} delay={i * 60}>
                   <div className="bg-white border border-dark-100 rounded-[16px] p-5 sm:p-6 shadow-card hover:shadow-card-md hover:border-primary-200 transition-all h-full">
@@ -781,7 +781,7 @@ export default function Home() {
                 ))}
               </ul>
                <Link to="/register" className="btn-blue btn-lg w-full text-sm sm:text-base py-3 sm:py-3.5">Join Now</Link>
-               <div className="text-[12px] sm:text-[12.5px] text-dark-500 mt-3 sm:mt-4 font-inter">Education • Signals • Copy Trading • Affiliate Rewards • Profit Sharing</div>
+               <div className="text-[12px] sm:text-[12.5px] text-dark-500 mt-3 sm:mt-4 font-inter">Education � Signals � Copy Trading � Affiliate Rewards � Profit Sharing</div>
             </div>
           </ScrollReveal>
         </div>
@@ -865,7 +865,7 @@ export default function Home() {
                 <ScrollReveal key={p._id || i} delay={i * 60}>
                   <div className="bg-white border border-dark-100 rounded-2xl p-6 shadow-card transition-all duration-300 hover:-translate-y-[5px] hover:shadow-card-md h-full flex flex-col">
                     <div className="w-12 h-12 rounded-xl bg-red-50 flex items-center justify-center mb-4">
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FF3B30" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
                     </div>
                     <h3 className="text-base font-bold text-ink mb-1" style={{ fontFamily: '"Plus Jakarta Sans"' }}>{p.title}</h3>
                     {p.description && <p className="text-[13px] text-dark-500 leading-relaxed mb-4 font-inter line-clamp-3">{p.description}</p>}
@@ -900,7 +900,7 @@ export default function Home() {
 
       <section className="pt-[40px] sm:pt-[60px] lg:pt-[80px] pb-[60px] sm:pb-[80px] lg:pb-[120px]">
         <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="rounded-[20px] sm:rounded-[26px] border border-dark-100 py-8 sm:py-12 lg:py-16 px-6 sm:px-10 lg:px-16 flex flex-col sm:flex-row justify-between items-center gap-6 sm:gap-8 lg:gap-10 text-center sm:text-left" style={{ background: 'linear-gradient(120deg, #EFF4FE, #ECFDF5)' }}>
+          <div className="rounded-[20px] sm:rounded-[26px] border border-dark-100 py-8 sm:py-12 lg:py-16 px-6 sm:px-10 lg:px-16 flex flex-col sm:flex-row justify-between items-center gap-6 sm:gap-8 lg:gap-10 text-center sm:text-left" style={{ background: '#F7F8FA' }}>
             <div>
               <h3 className="text-[20px] sm:text-[24px] lg:text-[28px] mb-2 max-w-[460px]" style={{ fontFamily: '"Plus Jakarta Sans"' }}>
                 {visitorName ? `${visitorName}, need help choosing the right program?` : 'Need help choosing the right program?'}

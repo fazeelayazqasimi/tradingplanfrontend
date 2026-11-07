@@ -10,6 +10,7 @@ const adminService = {
   getRevenue: (params) => unwrap(api.get('/admin/revenue', { params })),
   getActivityLogs: (params) => unwrap(api.get('/admin/activity-logs', { params })),
   getUsers: (params) => unwrap(api.get('/users', { params })),
+  getBotAccounts: (params) => unwrap(api.get('/admin/bot-accounts', { params })),
   getUser: (id) => unwrap(api.get(`/users/${id}`)),
   updateUser: (id, data) => unwrap(api.put(`/users/${id}`, data)),
   getSubscriptions: (params) => unwrap(api.get('/subscriptions', { params })),

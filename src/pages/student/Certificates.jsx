@@ -40,12 +40,12 @@ const gradeColors = {
 };
 
 const gradients = [
-  'from-blue-500 to-indigo-600',
-  'from-emerald-500 to-teal-600',
-  'from-amber-500 to-orange-600',
-  'from-violet-500 to-purple-600',
-  'from-rose-500 to-pink-600',
-  'from-cyan-500 to-blue-600',
+  'bg-ink',
+  'bg-ink',
+  'bg-ink',
+  'bg-ink',
+  'bg-ink',
+  'bg-ink',
 ];
 
 export default function Certificates() {
@@ -144,7 +144,7 @@ export default function Certificates() {
             return (
               <motion.div key={id || idx} variants={item}>
                 <Card className="p-0 overflow-hidden h-full flex flex-col">
-                  <div className={`relative h-32 bg-gradient-to-br ${gradients[idx % gradients.length]} flex items-center justify-center`}>
+                  <div className={`relative h-32 ${gradients[idx % gradients.length]} flex items-center justify-center`}>
                     <div className="text-center text-white">
                       <FiAward size={36} className="mx-auto mb-2 opacity-80" />
                       <p className="text-xs font-medium uppercase tracking-wider opacity-70">Certificate of Completion</p>

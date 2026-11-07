@@ -220,15 +220,15 @@ export default function FreeLearning() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {[
-          { label: 'Free Webinars', value: stats.totalWebinars, icon: FiVideo, color: 'from-blue-500 to-blue-700', bgColor: 'bg-blue-50', textColor: 'text-blue-600' },
-          { label: 'Zoom Sessions', value: stats.totalZoomSessions, icon: FiRadio, color: 'from-emerald-500 to-emerald-700', bgColor: 'bg-emerald-50', textColor: 'text-emerald-600' },
-          { label: 'Market Updates', value: stats.totalMarketUpdates, icon: FiTrendingUp, color: 'from-violet-500 to-violet-700', bgColor: 'bg-violet-50', textColor: 'text-violet-600' },
-          { label: 'Free Courses', value: stats.totalFreeCourses, icon: FiBookOpen, color: 'from-teal-500 to-teal-700', bgColor: 'bg-teal-50', textColor: 'text-teal-600' },
+          { label: 'Free Webinars', value: stats.totalWebinars, icon: FiVideo, color: 'bg-ink', bgColor: 'bg-dark-50', textColor: 'text-ink' },
+          { label: 'Zoom Sessions', value: stats.totalZoomSessions, icon: FiRadio, color: 'bg-ink', bgColor: 'bg-dark-50', textColor: 'text-ink' },
+          { label: 'Market Updates', value: stats.totalMarketUpdates, icon: FiTrendingUp, color: 'bg-ink', bgColor: 'bg-dark-50', textColor: 'text-ink' },
+          { label: 'Free Courses', value: stats.totalFreeCourses, icon: FiBookOpen, color: 'bg-ink', bgColor: 'bg-dark-50', textColor: 'text-ink' },
         ].map((stat) => {
           const Icon = stat.icon;
           return (
             <Card key={stat.label} className="p-4 flex items-center gap-4">
-              <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center text-white shrink-0`}>
+              <div className={`w-10 h-10 rounded-xl ${stat.color} flex items-center justify-center text-white shrink-0`}>
                 <Icon size={18} />
               </div>
               <div>

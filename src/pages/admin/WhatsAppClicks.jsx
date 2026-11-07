@@ -42,7 +42,7 @@ export default function WhatsAppClicks() {
       header: 'Student',
       render: (_, row) => (
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-400 to-green-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
+          <div className="w-9 h-9 rounded-full bg-ink flex items-center justify-center text-white text-xs font-bold shrink-0">
             {((row.firstName?.[0] || '') + (row.lastName?.[0] || '')).toUpperCase() || '?'}
           </div>
           <div className="min-w-0">

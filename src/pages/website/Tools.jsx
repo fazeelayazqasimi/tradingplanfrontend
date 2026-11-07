@@ -239,7 +239,7 @@ function LiveGoldPrice() {
     return () => { cancelled = true; clearInterval(interval); };
   }, []);
   return (
-    <div className="bg-white border border-dark-100 rounded-2xl p-4 sm:p-6 shadow-card bg-gradient-to-br from-amber-50 to-orange-50/30">
+    <div className="bg-white border border-dark-100 rounded-2xl p-4 sm:p-6 shadow-card bg-primary-50/60">
       <div className="flex items-center justify-between mb-4">
         <div>
           <div className="flex items-center gap-2">

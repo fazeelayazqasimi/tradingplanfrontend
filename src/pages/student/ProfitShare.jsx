@@ -18,7 +18,7 @@ import EmptyState from '../../components/ui/EmptyState';
 import walletService from '../../services/walletService';
 import { formatCurrency, formatDate } from '../../utils/helpers';
 
-const CHART_COLORS = ['#10B981', '#45F000', '#F59E0B', '#8B5CF6'];
+const CHART_COLORS = ['#45F000', '#111111', '#737373', '#262626'];
 
 const container = {
   hidden: { opacity: 0 },
@@ -225,9 +225,9 @@ export default function ProfitShare() {
                       formatter={(value) => formatCurrency(value)}
                       contentStyle={{
                         backgroundColor: '#ffffff',
-                        border: '1px solid #e5e7eb',
+                        border: '1px solid #E5E5E5',
                         borderRadius: '12px',
-                        color: '#1a1a2e',
+                        color: '#111111',
                         fontSize: '13px',
                       }}
                     />

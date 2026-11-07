@@ -23,10 +23,10 @@ const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { st
 const item = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 280, damping: 22 } } };
 
 const walletStatsData = [
-  { label: "Wallet Balance", icon: FiCreditCard, gradient: "from-blue-500 to-blue-700", textColor: "text-blue-600", badge: "blue" },
-  { label: "Reward Credits", icon: FiGift, gradient: "from-amber-500 to-orange-600", textColor: "text-amber-600", badge: "amber" },
-  { label: "Affiliate Earnings", icon: FiTrendingUp, gradient: "from-primary-500 to-emerald-500", textColor: "text-black", badge: "emerald" },
-  { label: "Pending Earnings", icon: FiClock, gradient: "from-violet-500 to-violet-700", textColor: "text-violet-600", badge: "violet" },
+  { label: "Wallet Balance", icon: FiCreditCard, gradient: "bg-ink", textColor: "text-ink", badge: "blue" },
+  { label: "Reward Credits", icon: FiGift, gradient: "bg-ink", textColor: "text-ink", badge: "amber" },
+  { label: "Affiliate Earnings", icon: FiTrendingUp, gradient: "bg-ink", textColor: "text-ink", badge: "emerald" },
+  { label: "Pending Earnings", icon: FiClock, gradient: "bg-ink", textColor: "text-ink", badge: "violet" },
 ];
 
 export default function Dashboard() {
@@ -246,7 +246,7 @@ export default function Dashboard() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="h-48 rounded-2xl bg-gradient-to-br from-gray-200 to-gray-300 animate-pulse" />
+        <div className="h-48 rounded-2xl bg-dark-100 animate-pulse" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-28 rounded-2xl bg-white border border-dark-100 p-5"><Skeleton className="h-4 w-24 mb-3" /><Skeleton className="h-8 w-16" /></div>)}</div>
       </div>
     );
@@ -269,17 +269,17 @@ export default function Dashboard() {
 
       {/* Big Hero Welcome */}
       <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-primary-600 via-primary-500 to-emerald-500 text-black p-6 sm:p-8">
+        <Card className="relative overflow-hidden border-0 bg-primary-500 text-white p-6 sm:p-8">
           <div className="absolute top-0 right-0 w-72 h-72 bg-white/5 rounded-full blur-3xl -translate-y-1/3 translate-x-1/3" />
           <div className="absolute bottom-0 left-0 w-56 h-56 bg-white/5 rounded-full blur-2xl translate-y-1/2 -translate-x-1/4" />
-          <div className="absolute top-1/2 left-1/3 w-32 h-32 bg-yellow-300/10 rounded-full blur-2xl" />
+          <div className="absolute top-1/2 left-1/3 w-32 h-32 bg-black/5 rounded-full blur-2xl" />
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <FiZap size={24} className="text-yellow-300" />
-                <span className="text-sm font-bold text-black/70 uppercase tracking-wider">Dashboard</span>
+                <FiZap size={24} className="text-white" />
+                <span className="text-sm font-bold text-white/70 uppercase tracking-wider">Dashboard</span>
               </div>
-              <Badge variant={isFreeUser ? "neutral" : "success"} className="text-xs">
+              <Badge color={isFreeUser ? "neutral" : "success"} className="text-xs">
                 {isFreeUser ? "Free Member" : "Premium"}
               </Badge>
             </div>
@@ -288,7 +288,7 @@ export default function Dashboard() {
                 <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold mb-1">
                   Hey, {fullName}! 👋
                 </h1>
-                <p className="text-black/70 text-sm sm:text-base max-w-lg">
+                <p className="text-white/70 text-sm sm:text-base max-w-lg">
                   {isFreeUser
                     ? "Explore free resources and activate your membership to unlock premium features."
                     : "Your trading empire awaits — here's your overview."}
@@ -306,7 +306,7 @@ export default function Dashboard() {
 
       {/* Banner: One Membership. Unlimited Opportunities. */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
-        <Card className="relative overflow-hidden border-0 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white p-5 sm:p-6">
+        <Card className="relative overflow-hidden border-0 bg-ink text-white p-5 sm:p-6">
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-30" />
           <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-3">
             <div className="text-center sm:text-left">
@@ -314,12 +314,12 @@ export default function Dashboard() {
               <p className="text-white/80 text-sm mt-1">Ready to Learn, Trade & Grow Today</p>
             </div>
             {isFreeUser ? (
-              <Button variant="white" className="text-purple-700 font-bold shadow-lg shrink-0" onClick={openActivateModal}>
+              <Button variant="white" className="text-ink font-bold shadow-lg shrink-0" onClick={openActivateModal}>
                 Activate Now
               </Button>
             ) : (
               <Link to="/student/classes">
-                <Button variant="white" className="text-purple-700 font-bold shadow-lg shrink-0">
+                <Button variant="white" className="text-ink font-bold shadow-lg shrink-0">
                   Explore Classes
                 </Button>
               </Link>
@@ -330,7 +330,7 @@ export default function Dashboard() {
 
       {/* WhatsApp Channel */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.06 }}>
-        <Card className="p-5 sm:p-6 relative overflow-hidden border-0 bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 text-white">
+        <Card className="p-5 sm:p-6 relative overflow-hidden border-0 bg-ink text-white">
           <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full blur-3xl" />
           <div className="absolute bottom-0 left-10 w-24 h-24 bg-white/5 rounded-full blur-2xl" />
           <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -352,11 +352,11 @@ export default function Dashboard() {
 
       {/* Referral Rewards */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }}>
-        <Card className="p-5 sm:p-6 relative overflow-hidden border-0 bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50">
-          <div className="absolute top-0 right-0 w-40 h-40 bg-purple-200/20 rounded-full blur-3xl" />
+        <Card className="p-5 sm:p-6 relative overflow-hidden border-0 bg-dark-50">
+          <div className="absolute top-0 right-0 w-40 h-40 bg-primary-500/10 rounded-full blur-3xl" />
           <div className="relative z-10">
             <div className="flex items-center gap-2 mb-3">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white">
+              <div className="w-8 h-8 rounded-xl bg-ink flex items-center justify-center text-primary-400">
                 <FiShare2 size={15} />
               </div>
               <h3 className="font-bold text-ink text-sm uppercase tracking-wider">Invite Friends — Earn a Registration Bonus</h3>
@@ -474,13 +474,13 @@ export default function Dashboard() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {freeLearningContent.slice(0, 6).map((item) => {
               const typeColors = {
-                webinar: "from-blue-500 to-cyan-500",
-                zoom: "from-green-500 to-emerald-500",
-                market: "from-amber-500 to-orange-500",
-                announcement: "from-purple-500 to-pink-500",
-                course: "from-primary-500 to-emerald-500",
+                webinar: "bg-ink",
+                zoom: "bg-ink",
+                market: "bg-ink",
+                announcement: "bg-ink",
+                course: "bg-ink",
               };
-              const gradient = typeColors[item.type] || "from-primary-500 to-emerald-500";
+              const gradient = typeColors[item.type] || "bg-ink";
               return (
                 <Card key={item._id} className="p-4 relative overflow-hidden">
                   {(item.thumbnail || item.image) ? (
@@ -488,18 +488,18 @@ export default function Dashboard() {
                       <img src={item.thumbnail || item.image} alt={item.title} className="w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                       <div className="absolute top-2 right-2">
-                        <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${gradient} flex items-center justify-center text-white`}>
+                        <div className={`w-8 h-8 rounded-lg ${gradient} flex items-center justify-center text-white`}>
                           <FiBookOpen size={14} />
                         </div>
                       </div>
                     </div>
                   ) : (
-                    <div className={`absolute top-0 right-0 w-16 h-16 bg-gradient-to-br ${gradient} opacity-10 rounded-bl-full`} />
+                    <div className={`absolute top-0 right-0 w-16 h-16 ${gradient} opacity-10 rounded-bl-full`} />
                   )}
                   <div className="relative z-10">
                     <div className="flex items-center gap-3 mb-3">
                       {!(item.thumbnail || item.image) && (
-                        <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center text-white shrink-0`}>
+                        <div className={`w-10 h-10 rounded-xl ${gradient} flex items-center justify-center text-white shrink-0`}>
                           <FiBookOpen size={16} />
                         </div>
                       )}
@@ -526,16 +526,16 @@ export default function Dashboard() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {[
-              { label: "Signals", desc: "Live trading signals with high win rate", icon: FiTrendingUp, gradient: "from-blue-500 to-cyan-500" },
-              { label: "Copy Trading", desc: "Mirror expert traders automatically", icon: FiGlobe, gradient: "from-emerald-500 to-teal-500" },
-              { label: "Premium Training", desc: "Advanced courses & mentorship", icon: FiBookOpen, gradient: "from-purple-500 to-pink-500" },
+              { label: "Signals", desc: "Live trading signals with high win rate", icon: FiTrendingUp, gradient: "bg-ink" },
+              { label: "Copy Trading", desc: "Mirror expert traders automatically", icon: FiGlobe, gradient: "bg-ink" },
+              { label: "Premium Training", desc: "Advanced courses & mentorship", icon: FiBookOpen, gradient: "bg-ink" },
             ].map((feature) => {
               const Icon = feature.icon;
               return (
                 <Card key={feature.label} className="p-5 relative overflow-hidden">
-                  <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-[0.03]`} />
+                  <div className={`absolute inset-0 ${feature.gradient} opacity-[0.03]`} />
                   <div className="relative z-10 text-center py-4">
-                    <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mx-auto mb-3 text-white opacity-50`}>
+                    <div className={`w-14 h-14 rounded-2xl ${feature.gradient} flex items-center justify-center mx-auto mb-3 text-white opacity-50`}>
                       <Icon size={24} />
                     </div>
                     <h4 className="text-base font-bold text-ink mb-1">{feature.label}</h4>
@@ -559,14 +559,14 @@ export default function Dashboard() {
             {signals.slice(0, 3).map((signal) => (
               <Link key={signal._id} to="/student/signals">
                 <Card className="p-4 flex items-center gap-4 transition-all duration-200 hover:border-primary-300 hover:shadow-card-md group">
-                  <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center text-white shrink-0">
+                  <div className="w-11 h-11 rounded-xl bg-ink flex items-center justify-center text-white shrink-0">
                     <FiTrendingUp size={18} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-bold text-ink truncate">{signal.title || "Signal"}</p>
                     <p className="text-xs text-dark-400">{signal.symbol || ""} {signal.side && `(${signal.side})`}</p>
                   </div>
-                  <Badge variant={signal.isPublished ? "success" : "neutral"}>{signal.isPublished ? "Live" : "Draft"}</Badge>
+                  <Badge color={signal.isPublished ? "success" : "neutral"}>{signal.isPublished ? "Live" : "Draft"}</Badge>
                 </Card>
               </Link>
             ))}
@@ -587,10 +587,10 @@ export default function Dashboard() {
             return (
               <motion.div key={stat.label} variants={item}>
                 <Card className="p-5 relative overflow-hidden group">
-                  <div className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-[0.04] group-hover:opacity-[0.08] transition-opacity`} />
+                  <div className={`absolute inset-0 ${stat.gradient} opacity-[0.04] group-hover:opacity-[0.08] transition-opacity`} />
                   <div className="relative z-10">
                     <div className="flex items-center justify-between mb-4">
-                      <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${stat.gradient} flex items-center justify-center text-white shadow-lg`}>
+                      <div className={`w-11 h-11 rounded-xl ${stat.gradient} flex items-center justify-center text-white shadow-lg`}>
                         <Icon size={19} />
                       </div>
                     </div>
@@ -612,7 +612,7 @@ export default function Dashboard() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card className="p-4 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white shadow-md shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-ink flex items-center justify-center text-white shadow-md shrink-0">
               <FiAward size={20} />
             </div>
             <div>
@@ -621,7 +621,7 @@ export default function Dashboard() {
             </div>
           </Card>
           <Card className="p-4 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-400 to-slate-600 flex items-center justify-center text-white shadow-md shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-ink flex items-center justify-center text-white shadow-md shrink-0">
               <FiStar size={20} />
             </div>
             <div>
@@ -630,7 +630,7 @@ export default function Dashboard() {
             </div>
           </Card>
           <Card className="p-4 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white shadow-md shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-ink flex items-center justify-center text-white shadow-md shrink-0">
               <FiUserPlus size={20} />
             </div>
             <div>
@@ -639,7 +639,7 @@ export default function Dashboard() {
             </div>
           </Card>
           <Card className="p-4 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-400 to-cyan-600 flex items-center justify-center text-white shadow-md shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-ink flex items-center justify-center text-white shadow-md shrink-0">
               <FiUsers size={20} />
             </div>
             <div>
@@ -648,7 +648,7 @@ export default function Dashboard() {
             </div>
           </Card>
           <Card className="p-4 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white shadow-md shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-ink flex items-center justify-center text-white shadow-md shrink-0">
               <FiCheckCircle size={20} />
             </div>
             <div>
@@ -657,7 +657,7 @@ export default function Dashboard() {
             </div>
           </Card>
           <Card className="p-4 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-400 to-violet-600 flex items-center justify-center text-white shadow-md shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-ink flex items-center justify-center text-white shadow-md shrink-0">
               <FiUsers size={20} />
             </div>
             <div>
@@ -666,7 +666,7 @@ export default function Dashboard() {
             </div>
           </Card>
           <Card className="p-4 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white shadow-md shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-ink flex items-center justify-center text-white shadow-md shrink-0">
               <FiTrendingUp size={20} />
             </div>
             <div>
@@ -675,7 +675,7 @@ export default function Dashboard() {
             </div>
           </Card>
           <Card className="p-4 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-400 to-indigo-600 flex items-center justify-center text-white shadow-md shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-ink flex items-center justify-center text-white shadow-md shrink-0">
               <FiBarChart2 size={20} />
             </div>
             <div>
@@ -688,15 +688,15 @@ export default function Dashboard() {
 
       {/* Available Balance Highlight */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-        <Card className="p-5 sm:p-6 bg-gradient-to-r from-primary-500 to-emerald-500 text-black border-0 relative overflow-hidden">
+        <Card className="p-5 sm:p-6 bg-primary-500 text-white border-0 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4" />
           <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full blur-2xl translate-y-1/2 -translate-x-1/4" />
-          <div className="absolute top-1/2 left-1/2 w-24 h-24 bg-yellow-300/10 rounded-full blur-2xl" />
+          <div className="absolute top-1/2 left-1/2 w-24 h-24 bg-black/5 rounded-full blur-2xl" />
           <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <p className="text-sm font-medium text-black/80 uppercase tracking-widest mb-1">Available Balance</p>
-              <p className="text-3xl sm:text-4xl font-extrabold text-black">{formatCurrency(availableBalance)}</p>
-              <p className="text-xs text-black/60 mt-1">Pending: {formatCurrency(pendingEarnings)}</p>
+              <p className="text-sm font-medium text-white/80 uppercase tracking-widest mb-1">Available Balance</p>
+              <p className="text-3xl sm:text-4xl font-extrabold text-white">{formatCurrency(availableBalance)}</p>
+              <p className="text-xs text-white/60 mt-1">Pending: {formatCurrency(pendingEarnings)}</p>
             </div>
             <div className="flex gap-2">
               <Link to="/student/wallet"><Button variant="white" size="sm">View Wallet</Button></Link>
@@ -718,12 +718,12 @@ export default function Dashboard() {
           <h3 className="text-xs font-bold text-dark-400 uppercase tracking-widest">Copy Trading</h3>
           <Link to="/student/copy-trading" className="text-xs text-primary-500 font-medium flex items-center gap-1">Manage <FiArrowRight size={12} /></Link>
         </div>
-        <Card className="p-5 sm:p-6 bg-gradient-to-br from-dark-50 to-dark-100 border-dark-200 relative overflow-hidden">
+        <Card className="p-5 sm:p-6 bg-dark-50 border-dark-200 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500/5 rounded-full blur-3xl" />
           <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             <div className="lg:col-span-2">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary-500 to-emerald-500 flex items-center justify-center text-black shadow-lg">
+                <div className="w-12 h-12 rounded-2xl bg-ink flex items-center justify-center text-primary-400 shadow-lg">
                   <FiGlobe size={22} />
                 </div>
                 <div>
@@ -752,7 +752,7 @@ export default function Dashboard() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {businessProfiles.map((p) => (
                <Card key={p._id} className="p-4 flex items-center gap-4">
-                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-400 to-rose-600 flex items-center justify-center text-white shadow-md shrink-0">
+                 <div className="w-12 h-12 rounded-xl bg-ink flex items-center justify-center text-white shadow-md shrink-0">
                    <FiFileText size={20} />
                  </div>
                  <div className="min-w-0 flex-1">

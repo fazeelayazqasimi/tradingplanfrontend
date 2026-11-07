@@ -56,8 +56,8 @@ export default function NewsletterPopup() {
               <FiX size={18} />
             </button>
 
-            <div className="w-16 h-16 rounded-[18px] bg-gradient-to-br from-primary-500 to-emerald-500 flex items-center justify-center mx-auto mb-5">
-              <FiMail className="h-7 w-7 text-white" />
+            <div className="w-16 h-16 rounded-[18px] bg-ink flex items-center justify-center mx-auto mb-5">
+              <FiMail className="h-7 w-7 text-primary-400" />
             </div>
 
             <h2 className="text-2xl font-extrabold text-ink mb-2" style={{ fontFamily: '"Plus Jakarta Sans"' }}>

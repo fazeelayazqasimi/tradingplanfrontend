@@ -37,13 +37,13 @@ const levelColor = {
 };
 
 const gradientPlaceholders = [
-  'from-blue-500 to-purple-600',
-  'from-emerald-500 to-teal-600',
-  'from-amber-500 to-orange-600',
-  'from-rose-500 to-pink-600',
-  'from-violet-500 to-indigo-600',
-  'from-cyan-500 to-blue-600',
-  'from-fuchsia-500 to-purple-600',
+  'bg-ink',
+  'bg-ink',
+  'bg-ink',
+  'bg-ink',
+  'bg-ink',
+  'bg-ink',
+  'bg-ink',
 ];
 
 const container = {
@@ -273,7 +273,7 @@ export default function Courses() {
                 <motion.div key={courseId || idx} variants={item}>
                   <Link to={`/student/courses/${slug}`}>
                     <Card hover className="p-0 overflow-hidden h-full flex flex-col">
-                      <div className={`relative h-40 bg-gradient-to-br ${gradientPlaceholders[idx % gradientPlaceholders.length]} flex items-center justify-center`}>
+                      <div className={`relative h-40 ${gradientPlaceholders[idx % gradientPlaceholders.length]} flex items-center justify-center`}>
                         {course.thumbnail ? (
                           <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover" />
                         ) : (

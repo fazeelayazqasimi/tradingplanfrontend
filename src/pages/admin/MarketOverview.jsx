@@ -133,7 +133,7 @@ export default function MarketOverview() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-gradient-to-r from-primary-600 to-blue-600 rounded-xl p-6 text-white">
+      <div className="bg-ink rounded-xl p-6 text-white">
         <h1 className="text-2xl font-bold">Market Overview</h1>
         <p className="text-sm text-primary-100 mt-1">
           Manage market trend, news, live class details, and daily summaries for{' '}

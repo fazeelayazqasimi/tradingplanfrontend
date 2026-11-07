@@ -31,7 +31,7 @@ function UserCard({ node, isRoot }) {
     `}>
       <div className="flex items-start gap-2 sm:gap-3">
         <div className={`shrink-0 flex items-center justify-center rounded-full font-bold text-white ${
-          isRoot ? 'w-8 sm:w-12 h-8 sm:h-12 text-xs sm:text-base bg-gradient-to-br from-primary-500 to-blue-600' : 'w-7 sm:w-10 h-7 sm:h-10 text-[10px] sm:text-sm bg-gradient-to-br from-primary-400 to-blue-500'
+          isRoot ? 'w-8 sm:w-12 h-8 sm:h-12 text-xs sm:text-base bg-ink' : 'w-7 sm:w-10 h-7 sm:h-10 text-[10px] sm:text-sm bg-ink'
         }`}>
           {initials}
         </div>
@@ -97,10 +97,10 @@ function GenealogyTree({ rootUser, treeNodes, stats, onBack }) {
 
   return (
     <div>
-      <div className="mb-3 sm:mb-4 p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-r from-primary-50 to-blue-50 border border-primary-200">
+      <div className="mb-3 sm:mb-4 p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-primary-50 border border-primary-200">
         <div className="flex items-center justify-between flex-wrap gap-2 sm:gap-3">
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="w-8 sm:w-11 h-8 sm:h-11 rounded-full bg-gradient-to-br from-primary-500 to-blue-600 flex items-center justify-center shadow-sm shrink-0">
+            <div className="w-8 sm:w-11 h-8 sm:h-11 rounded-full bg-ink flex items-center justify-center shadow-sm shrink-0">
               <FiUser className="text-white" size={14} />
             </div>
             <div className="min-w-0">
@@ -276,7 +276,7 @@ export default function Referrals() {
                   onClick={() => handleSelectUser(u)}
                   className="w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg hover:bg-white transition-colors text-left"
                 >
-                  <div className="w-7 sm:w-8 h-7 sm:h-8 rounded-full bg-gradient-to-br from-primary-400 to-blue-500 flex items-center justify-center text-white text-[10px] sm:text-xs font-bold shrink-0">
+                  <div className="w-7 sm:w-8 h-7 sm:h-8 rounded-full bg-ink flex items-center justify-center text-white text-[10px] sm:text-xs font-bold shrink-0">
                     {((u.firstName?.[0] || '') + (u.lastName?.[0] || '')).toUpperCase() || '?'}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -328,7 +328,7 @@ export default function Referrals() {
                     onClick={() => handleSelectUser(ref.user)}
                     className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 rounded-xl bg-white border border-dark-100 hover:border-primary-200 hover:shadow-sm transition-all text-left group"
                   >
-                    <div className="w-8 sm:w-10 h-8 sm:h-10 rounded-full bg-gradient-to-br from-primary-400 to-blue-500 flex items-center justify-center text-white text-xs sm:text-sm font-bold shrink-0">
+                    <div className="w-8 sm:w-10 h-8 sm:h-10 rounded-full bg-ink flex items-center justify-center text-white text-xs sm:text-sm font-bold shrink-0">
                       {((ref.user?.firstName?.[0] || '') + (ref.user?.lastName?.[0] || '')).toUpperCase() || '?'}
                     </div>
                     <div className="flex-1 min-w-0">

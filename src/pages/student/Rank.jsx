@@ -30,12 +30,12 @@ const item = {
 };
 
 const RANK_GRADIENTS = {
-  D1: 'from-gray-400 to-gray-500',
-  D2: 'from-amber-400 to-amber-600',
-  D3: 'from-blue-400 to-blue-600',
-  D4: 'from-purple-400 to-purple-600',
-  D5: 'from-rose-400 to-rose-600',
-  D6: 'from-emerald-400 to-emerald-600',
+  D1: 'bg-ink',
+  D2: 'bg-ink',
+  D3: 'bg-ink',
+  D4: 'bg-ink',
+  D5: 'bg-ink',
+  D6: 'bg-ink',
 };
 
 const RANK_BG = {
@@ -173,7 +173,7 @@ export default function Rank() {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className={`rounded-xl px-5 py-3.5 flex items-center gap-3 bg-gradient-to-r ${RANK_GRADIENTS[rankName] || 'from-primary-400 to-primary-600'} text-white shadow-md`}
+          className={`rounded-xl px-5 py-3.5 flex items-center gap-3 ${RANK_GRADIENTS[rankName] || 'bg-ink'} text-white shadow-md`}
         >
           <FiZap size={20} className="shrink-0" />
           <p className="text-sm font-medium">
@@ -201,11 +201,11 @@ export default function Rank() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: 'spring', stiffness: 200 }}>
             <Card className={`p-6 flex flex-col items-center justify-center text-center border-2 ${RANK_BORDER[rankName] || 'border-primary-200'}`}>
-              <div className={`relative w-40 h-40 rounded-full bg-gradient-to-br ${RANK_GRADIENTS[rankName] || 'from-primary-400 to-primary-600'} flex items-center justify-center shadow-lg ${RANK_GLOW[rankName] || 'shadow-primary-300/50'}`}>
+              <div className={`relative w-40 h-40 rounded-full ${RANK_GRADIENTS[rankName] || 'bg-ink'} flex items-center justify-center shadow-lg ${RANK_GLOW[rankName] || 'shadow-primary-300/50'}`}>
                 <div className="absolute inset-[3px] rounded-full bg-white flex items-center justify-center">
                   <div className="flex flex-col items-center">
-                    <FiAward className={`text-3xl mb-1 ${rankName ? 'text-transparent bg-clip-text bg-gradient-to-br ' + (RANK_GRADIENTS[rankName] || 'from-primary-400 to-primary-600') : 'text-primary-500'}`} />
-                    <span className={`text-4xl font-black bg-clip-text text-transparent bg-gradient-to-br ${RANK_GRADIENTS[rankName] || 'from-primary-400 to-primary-600'}`}>{rankName}</span>
+                    <FiAward className={`text-3xl mb-1 ${rankName ? 'text-ink' : 'text-primary-500'}`} />
+                    <span className="text-4xl font-black text-white">{rankName}</span>
                   </div>
                 </div>
               </div>
@@ -254,7 +254,7 @@ export default function Rank() {
                         initial={{ width: 0 }}
                         animate={{ width: `${directPct}%` }}
                         transition={{ duration: 1, delay: 0.3 }}
-                        className={`h-full rounded ${directNeeded === 0 ? 'bg-emerald-500' : 'bg-gradient-to-r from-primary-500 to-emerald-500'}`}
+                        className={`h-full rounded ${directNeeded === 0 ? 'bg-emerald-500' : 'bg-primary-500'}`}
                       />
                     </div>
                     {directNeeded > 0 ? (
@@ -279,7 +279,7 @@ export default function Rank() {
                         initial={{ width: 0 }}
                         animate={{ width: `${teamPct}%` }}
                         transition={{ duration: 1, delay: 0.5 }}
-                        className={`h-full rounded ${teamNeeded === 0 ? 'bg-emerald-500' : 'bg-gradient-to-r from-primary-500 to-emerald-500'}`}
+                        className={`h-full rounded ${teamNeeded === 0 ? 'bg-emerald-500' : 'bg-primary-500'}`}
                       />
                     </div>
                     {teamNeeded > 0 ? (
@@ -305,7 +305,7 @@ export default function Rank() {
                           initial={{ width: 0 }}
                           animate={{ width: `${legsPct}%` }}
                           transition={{ duration: 1, delay: 0.6 }}
-                          className={`h-full rounded ${legsNeeded === 0 ? 'bg-emerald-500' : 'bg-gradient-to-r from-primary-500 to-emerald-500'}`}
+                          className={`h-full rounded ${legsNeeded === 0 ? 'bg-emerald-500' : 'bg-primary-500'}`}
                         />
                       </div>
                       {legsNeeded > 0 ? (
@@ -399,7 +399,7 @@ export default function Rank() {
 
                     <div className="flex items-start justify-between mt-1 mb-3">
                       <div className="flex items-center gap-3">
-                        <div className={`w-11 h-11 rounded-[11px] bg-gradient-to-br ${RANK_GRADIENTS[rank.name] || 'from-gray-400 to-gray-500'} flex items-center justify-center text-white font-black text-lg shadow-sm`}>
+                        <div className={`w-11 h-11 rounded-[11px] ${RANK_GRADIENTS[rank.name] || 'bg-ink'} flex items-center justify-center text-white font-black text-lg shadow-sm`}>
                           {rank.name}
                         </div>
                         <div>
@@ -484,7 +484,7 @@ export default function Rank() {
                     >
                       <div className={`relative z-10 w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
                         isLatest
-                          ? `bg-gradient-to-br ${RANK_GRADIENTS[entryRank] || 'from-primary-400 to-primary-600'} text-white shadow-md`
+                          ? `${RANK_GRADIENTS[entryRank] || 'bg-ink'} text-white shadow-md`
                           : 'bg-dark-200 text-dark-600'
                       }`}>
                         <FiAward size={16} />

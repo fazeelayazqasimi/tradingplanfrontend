@@ -117,7 +117,7 @@ export default function OnsiteTraining() {
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-7">
                   {packages.map((pkg, i) => (
                     <ScrollReveal key={i} delay={i * 120}>
-                      <div className={`rounded-[22px] border p-6 sm:p-8 flex flex-col h-full ${i === 2 ? 'border-primary-400 shadow-card-lg relative bg-gradient-to-b from-primary-50/40 to-white' : 'border-dark-100 bg-white shadow-sm'}`}>
+                      <div className={`rounded-[22px] border p-6 sm:p-8 flex flex-col h-full ${i === 2 ? 'border-primary-400 shadow-card-lg relative bg-primary-50/50' : 'border-dark-100 bg-white shadow-sm'}`}>
                         {i === 2 && (
                           <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-primary-500 text-white text-[11.5px] font-bold px-4 py-1 rounded-full tracking-wide font-inter">
                             Most Popular
@@ -151,7 +151,7 @@ export default function OnsiteTraining() {
 
       <section className="section py-16">
         <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="rounded-[26px] border border-dark-100 py-10 sm:py-16 px-6 sm:px-16 flex flex-col md:flex-row justify-between items-center gap-6 sm:gap-10" style={{ background: 'linear-gradient(120deg, #EFF4FE, #ECFDF5)' }}>
+          <div className="rounded-[26px] border border-dark-100 py-10 sm:py-16 px-6 sm:px-16 flex flex-col md:flex-row justify-between items-center gap-6 sm:gap-10" style={{ background: '#F7F8FA' }}>
             <div className="text-center md:text-left">
               <h3 className="text-[22px] sm:text-[28px] mb-2.5" style={{ fontFamily: '"Plus Jakarta Sans"' }}>Ready to Learn in Person?</h3>
               <p className="text-dark-500 text-[15px] font-inter">Secure your spot in our next onsite training program and take your trading to the next level.</p>

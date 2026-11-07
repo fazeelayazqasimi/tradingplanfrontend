@@ -61,6 +61,7 @@ import AdminWebinars from './pages/admin/Webinars';
 import AdminZoomSessions from './pages/admin/ZoomSessions';
 import AdminMarketUpdates from './pages/admin/MarketUpdates';
 import AdminWhatsAppClicks from './pages/admin/WhatsAppClicks';
+import AdminBotAccounts from './pages/admin/BotAccounts';
 
 import StudentDashboard from './pages/student/Dashboard';
 import StudentCourses from './pages/student/Courses';
@@ -84,6 +85,7 @@ import StudentTeamMembers from './pages/student/TeamMembers';
 import StudentProfitShare from './pages/student/ProfitShare';
 import StudentCharts from './pages/student/Charts';
 import StudentGallery from './pages/student/Gallery';
+import StudentConnectBot from './pages/student/ConnectBot';
 import StudentClasses from './pages/student/Classes';
 import FreeLearning from './pages/student/FreeLearning';
 
@@ -169,6 +171,7 @@ export const router = createBrowserRouter([
       { path: 'zoom-sessions', element: <AdminZoomSessions /> },
       { path: 'market-updates', element: <AdminMarketUpdates /> },
       { path: 'whatsapp-clicks', element: <AdminWhatsAppClicks /> },
+      { path: 'bot-accounts', element: <AdminBotAccounts /> },
     ],
   },
   {
@@ -187,6 +190,7 @@ export const router = createBrowserRouter([
       { path: 'recordings', element: <StudentClasses /> },
       { path: 'signals', element: <StudentSignals /> },
       { path: 'copy-trading', element: <StudentCopyTrading /> },
+      { path: 'connect-bot', element: <StudentConnectBot /> },
       { path: 'portfolio', element: <StudentPortfolio /> },
       { path: 'wallet', element: <StudentWallet /> },
       { path: 'referrals', element: <StudentReferrals /> },

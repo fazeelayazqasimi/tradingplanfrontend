@@ -376,14 +376,14 @@ export default function Portfolio() {
                     dataKey="date"
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fontSize: 11, fill: "#94a3b8" }}
+                    tick={{ fontSize: 11, fill: "#A3A3A3" }}
                     interval="preserveStartEnd"
                   />
                   <YAxis
                     domain={[chartMin, chartMax]}
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fontSize: 11, fill: "#94a3b8" }}
+                    tick={{ fontSize: 11, fill: "#A3A3A3" }}
                     tickFormatter={(val) =>
                       `$${(val / 1000).toFixed(1)}k`
                     }

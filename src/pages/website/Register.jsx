@@ -180,7 +180,7 @@ export default function Register() {
 
   if (step === 'otp') {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4 py-8" style={{ background: 'radial-gradient(600px 300px at 50% 20%, rgba(69,240,0,0.06), transparent 60%)' }}>
+      <div className="min-h-screen flex items-center justify-center px-4 py-8">
         <div className="w-full max-w-[400px]">
           <div className="text-center mb-6">
             <Link to="/" className="inline-flex items-center gap-2 mb-4">
@@ -269,7 +269,7 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-8" style={{ background: 'radial-gradient(600px 300px at 50% 20%, rgba(69,240,0,0.06), transparent 60%)' }}>
+    <div className="min-h-screen flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-[400px]">
         <div className="text-center mb-6">
           <Link to="/" className="inline-flex items-center gap-2 mb-4">
@@ -397,7 +397,7 @@ export default function Register() {
            <button
             type="submit"
             disabled={otpLoading}
-            className="w-full py-3 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 active:scale-[0.98] transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
+            className="w-full py-3 rounded-xl text-sm font-semibold text-white bg-primary-500 hover:bg-primary-600 active:scale-[0.98] transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {otpLoading ? (
               <span className="flex items-center justify-center gap-2">

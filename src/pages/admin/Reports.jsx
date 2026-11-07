@@ -201,11 +201,11 @@ export default function Reports() {
           ) : (
             <ResponsiveContainer width="100%" height={320}>
               <BarChart data={chartData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#6b7280' }} />
-                <YAxis tick={{ fontSize: 12, fill: '#6b7280' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E5" />
+                <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#525252' }} />
+                <YAxis tick={{ fontSize: 12, fill: '#525252' }} />
                 <Tooltip
-                  contentStyle={{ borderRadius: 11, border: '1px solid #e5e7eb', fontSize: 13 }}
+                  contentStyle={{ borderRadius: 11, border: '1px solid #E5E5E5', fontSize: 13 }}
                   formatter={(value) => [formatCurrency(value), 'Revenue']}
                 />
                 <Bar dataKey="revenue" fill="#45F000" radius={[6, 6, 0, 0]} />
@@ -231,14 +231,14 @@ export default function Reports() {
           ) : (
             <ResponsiveContainer width="100%" height={320}>
               <LineChart data={chartData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#6b7280' }} />
-                <YAxis tick={{ fontSize: 12, fill: '#6b7280' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E5" />
+                <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#525252' }} />
+                <YAxis tick={{ fontSize: 12, fill: '#525252' }} />
                 <Tooltip
-                  contentStyle={{ borderRadius: 11, border: '1px solid #e5e7eb', fontSize: 13 }}
+                  contentStyle={{ borderRadius: 11, border: '1px solid #E5E5E5', fontSize: 13 }}
                   formatter={(value) => [value, 'Subscriptions']}
                 />
-                <Line type="monotone" dataKey="count" stroke="#10b981" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                <Line type="monotone" dataKey="count" stroke="#45F000" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} />
               </LineChart>
             </ResponsiveContainer>
           )}

@@ -181,7 +181,7 @@ export default function CourseDetail() {
 
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
         <Card className="p-0 overflow-hidden">
-          <div className="relative h-44 sm:h-56 bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center">
+          <div className="relative h-44 sm:h-56 bg-ink flex items-center justify-center">
             {course.thumbnail ? (
               <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover" />
             ) : (

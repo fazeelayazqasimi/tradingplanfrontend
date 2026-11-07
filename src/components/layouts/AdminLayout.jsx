@@ -1,6 +1,6 @@
 import { Link, useLocation, Outlet } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
-import { FiMenu, FiX, FiLayout, FiUsers, FiCreditCard, FiBookOpen, FiTrendingUp, FiBell, FiLink2, FiAward, FiDollarSign, FiSettings, FiLogOut, FiMessageSquare, FiHelpCircle, FiFileText, FiEdit, FiBarChart2, FiHome, FiLayers, FiDownload, FiTag, FiServer, FiImage, FiVideo, FiRadio, FiCalendar, FiChevronDown, FiChevronUp, FiMessageCircle } from 'react-icons/fi';
+import { FiMenu, FiX, FiLayout, FiUsers, FiCreditCard, FiBookOpen, FiTrendingUp, FiBell, FiLink2, FiAward, FiDollarSign, FiSettings, FiLogOut, FiMessageSquare, FiHelpCircle, FiFileText, FiEdit, FiBarChart2, FiHome, FiLayers, FiDownload, FiTag, FiServer, FiImage, FiVideo, FiRadio, FiCalendar, FiChevronDown, FiChevronUp, FiMessageCircle, FiCpu } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
 import { getInitials } from '../../utils/helpers';
@@ -19,6 +19,7 @@ const sidebarSections = [
     items: [
       { path: '/admin/dashboard', label: 'Dashboard', icon: FiLayout },
       { path: '/admin/students', label: 'Students', icon: FiUsers },
+      { path: '/admin/bot-accounts', label: 'Bot Accounts', icon: FiCpu },
       { path: '/admin/crm', label: 'Student CRM', icon: FiUsers },
     ],
   },

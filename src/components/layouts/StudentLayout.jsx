@@ -1,10 +1,9 @@
 ﻿import { Link, useLocation, Outlet } from 'react-router-dom';
-import { useState } from 'react';
-import { FiMenu, FiLayout, FiBookOpen, FiTrendingUp, FiCopy, FiPieChart, FiDollarSign, FiLink2, FiAward, FiFileText, FiImage, FiBell, FiMessageSquare, FiSettings, FiLogOut, FiX, FiCreditCard, FiClock, FiUsers, FiPercent, FiHome, FiBarChart2, FiUnlock, FiTrendingDown, FiVideo, FiChevronDown, FiChevronRight, FiChevronUp, FiBook, FiTag, FiMonitor } from 'react-icons/fi';
+import { useState, useEffect } from 'react';
+import { FiMenu, FiLayout, FiBookOpen, FiTrendingUp, FiCopy, FiPieChart, FiDollarSign, FiLink2, FiAward, FiFileText, FiImage, FiBell, FiMessageSquare, FiSettings, FiLogOut, FiX, FiCreditCard, FiClock, FiUsers, FiPercent, FiHome, FiBarChart2, FiUnlock, FiTrendingDown, FiVideo, FiChevronDown, FiChevronRight, FiChevronUp, FiBook, FiTag, FiMonitor, FiCpu } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
 import { getInitials } from '../../utils/helpers';
-import ThemeToggle from '../ui/ThemeToggle';
 import NotificationBell from '../NotificationBell';
 import BrandLogo from '../shared/BrandLogo';
 import ChatWidget from '../chat/ChatWidget';
@@ -63,6 +62,7 @@ const sidebarSections = [
     items: [
       { path: '/student/subscription', label: 'Membership', icon: FiCreditCard },
       { path: '/student/activation', label: 'Activation', icon: FiUnlock },
+      { path: '/student/connect-bot', label: 'Connect Bot', icon: FiCpu },
       { path: '/student/settings', label: 'Settings', icon: FiSettings },
       { path: '/login', label: 'Logout', icon: FiLogOut, danger: true },
     ],
@@ -83,6 +83,14 @@ export default function StudentLayout() {
   const { pathname } = useLocation();
   const { user, logout } = useAuth();
   const { getSetting } = useSettings();
+
+  useEffect(() => {
+    document.documentElement.classList.remove('dark');
+    return () => {
+      const saved = localStorage.getItem('theme');
+      document.documentElement.classList.toggle('dark', saved === 'dark');
+    };
+  }, []);
 
   const getPageTitle = () => {
     for (const section of sidebarSections) {
@@ -253,7 +261,6 @@ export default function StudentLayout() {
         </div>
       </nav>
 
-      <ThemeToggle />
       <ChatWidget />
     </div>
   );

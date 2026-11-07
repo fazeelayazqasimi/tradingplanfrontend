@@ -1,10 +1,10 @@
 const colors = {
-  success: 'bg-emerald-50 text-emerald-600',
-  warning: 'bg-amber-50 text-amber-600',
+  success: 'bg-primary-50 text-primary-700',
+  warning: 'bg-dark-100 text-dark-600',
   danger: 'bg-red-50 text-red-600',
-  info: 'bg-blue-50 text-primary-600',
+  info: 'bg-dark-100 text-dark-600',
   neutral: 'bg-dark-100 text-dark-600',
-  purple: 'bg-purple-50 text-purple-600',
+  purple: 'bg-dark-100 text-dark-600',
 };
 
 export default function Badge({ children, color = 'neutral', className = '' }) {

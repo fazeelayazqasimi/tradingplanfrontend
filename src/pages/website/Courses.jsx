@@ -5,7 +5,7 @@ import { useName } from '../../context/NameContext';
 
 const defaultCourses = [
   { title: 'Market Structure & Price Action', tag: 'Foundations', lessons: 12, fill: 82, color: '#45F000' },
-  { title: 'Position Sizing & Capital Protection', tag: 'Risk Management', lessons: 9, fill: 45, color: '#10B981' },
+  { title: 'Position Sizing & Capital Protection', tag: 'Risk Management', lessons: 9, fill: 45, color: '#45F000' },
   { title: 'Technical Analysis Deep Dive', tag: 'Strategy', lessons: 15, fill: 18, color: '#45F000' },
 ];
 
@@ -92,13 +92,13 @@ export default function Courses() {
                     {course.thumbnail ? (
                       <img src={course.thumbnail} alt={course.title} className="w-full h-[140px] object-cover" />
                     ) : (
-                      <div className="h-[140px]" style={{ background: 'linear-gradient(135deg,#EFF4FE,#ECFDF5)' }} />
+                      <div className="h-[140px]" style={{ background: '#F7F8FA' }} />
                     )}
                     <div className="p-[22px]">
                       <span className="text-[11px] font-semibold text-emerald-500 uppercase tracking-wider">{course.level || 'Course'}</span>
                       <h4 className="text-base font-bold mt-2 mb-3" style={{ fontFamily: '"Plus Jakarta Sans"' }}>{course.title}</h4>
                       <div className="h-1.5 rounded bg-dark-100 overflow-hidden mb-2">
-                        <div className="h-full rounded" style={{ width: `${Math.min(course.progress || 0, 100)}%`, background: 'linear-gradient(90deg,#45F000,#0E3D00)' }} />
+                        <div className="h-full rounded" style={{ width: `${Math.min(course.progress || 0, 100)}%`, background: '#45F000' }} />
                       </div>
                       <div className="flex justify-between text-xs text-dark-500 font-inter">
                         <span>{course.totalLessons || 0} lessons</span>
@@ -114,7 +114,7 @@ export default function Courses() {
               {defaultCourses.map((c, i) => (
                 <ScrollReveal key={i} delay={i * 80}>
                   <div className="bg-white border border-dark-100 rounded-[18px] overflow-hidden shadow-card">
-                    <div className="h-[140px] relative overflow-hidden" style={{ background: 'linear-gradient(135deg,#EFF4FE,#ECFDF5)' }}>
+                    <div className="h-[140px] relative overflow-hidden" style={{ background: '#F7F8FA' }}>
                       <svg className="absolute bottom-0 left-0 w-full h-[60%] opacity-50" viewBox="0 0 300 80" preserveAspectRatio="none">
                         <polyline fill="none" stroke={c.color} strokeWidth="2" points="0,60 40,40 80,50 120,20 160,35 200,15 240,25 300,5" />
                       </svg>
@@ -123,7 +123,7 @@ export default function Courses() {
                       <span className="text-[11px] font-semibold text-emerald-500 uppercase tracking-wider">{c.tag}</span>
                       <h4 className="text-base font-bold mt-2 mb-3" style={{ fontFamily: '"Plus Jakarta Sans"' }}>{c.title}</h4>
                       <div className="h-1.5 rounded bg-dark-100 overflow-hidden mb-2">
-                        <div className="h-full rounded" style={{ width: `${c.fill}%`, background: 'linear-gradient(90deg,#45F000,#0E3D00)' }} />
+                        <div className="h-full rounded" style={{ width: `${c.fill}%`, background: '#45F000' }} />
                       </div>
                       <div className="flex justify-between text-xs text-dark-500 font-inter">
                         <span>{c.lessons} lessons</span>
