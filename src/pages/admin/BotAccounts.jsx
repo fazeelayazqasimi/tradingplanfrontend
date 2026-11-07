@@ -5,7 +5,6 @@ import Button from '../../components/ui/Button';
 import DataTable from '../../components/ui/DataTable';
 import Modal from '../../components/ui/Modal';
 import Badge from '../../components/ui/Badge';
-import Select from '../../components/ui/Select';
 import Skeleton from '../../components/ui/Skeleton';
 import adminService from '../../services/adminService';
 import { formatDate } from '../../utils/helpers';
@@ -99,7 +98,6 @@ export default function BotAccounts() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [appliedSearch, setAppliedSearch] = useState('');
-  const [filter, setFilter] = useState('');
   const [selectedMember, setSelectedMember] = useState(null);
   const [detailOpen, setDetailOpen] = useState(false);
 
@@ -110,7 +108,7 @@ export default function BotAccounts() {
       setLoading(true);
       const data = await adminService.getBotAccounts({
         search: appliedSearch,
-        filter,
+        filter: 'filled',
         page: pagination.currentPage,
         limit: pagination.perPage,
       });
@@ -121,7 +119,7 @@ export default function BotAccounts() {
     } finally {
       setLoading(false);
     }
-  }, [appliedSearch, filter, pagination.currentPage, pagination.perPage]);
+  }, [appliedSearch, pagination.currentPage, pagination.perPage]);
 
   useEffect(() => {
     fetchMembers();
@@ -131,11 +129,6 @@ export default function BotAccounts() {
     e.preventDefault();
     pagination.goToPage(1);
     setAppliedSearch(searchQuery.trim());
-  };
-
-  const handleFilterChange = (e) => {
-    pagination.goToPage(1);
-    setFilter(e.target.value);
   };
 
   const handleViewDetails = (member) => {
@@ -166,7 +159,7 @@ export default function BotAccounts() {
       <div>
         <h1 className="text-[28px] font-extrabold text-ink leading-tight">Active Members with Bot Account</h1>
         <p className="mt-1 text-[15px] text-dark-500 leading-relaxed">
-          All members and their connected MT4/MT5 bot accounts
+          Members who submitted the Connect Bot (MT4/MT5) form
         </p>
       </div>
 
@@ -180,17 +173,6 @@ export default function BotAccounts() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full rounded-[11px] border border-dark-200 bg-dark-50 pl-10 pr-4 py-3 text-[14.5px] text-ink placeholder-dark-400 outline-none transition-colors focus:border-primary-500 focus:bg-white"
-            />
-          </div>
-          <div className="sm:w-56">
-            <Select
-              value={filter}
-              onChange={handleFilterChange}
-              placeholder="All Members"
-              options={[
-                { value: 'filled', label: 'Bot Filled' },
-                { value: 'not-filled', label: 'Not Filled' },
-              ]}
             />
           </div>
           <Button type="submit" variant="primary">
