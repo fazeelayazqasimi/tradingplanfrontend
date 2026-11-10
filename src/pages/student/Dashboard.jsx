@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { FiBookOpen, FiTrendingUp, FiDollarSign, FiAward, FiArrowRight, FiCreditCard, FiClock, FiCheckCircle, FiCopy, FiLink, FiUsers, FiUserPlus, FiBarChart2, FiStar, FiZap, FiGlobe, FiTrendingDown, FiLock, FiGift, FiShare2, FiCheck, FiExternalLink, FiCalendar, FiMessageSquare, FiKey, FiFileText, FiDownload, FiMessageCircle } from "react-icons/fi";
+import { FiBookOpen, FiTrendingUp, FiDollarSign, FiAward, FiArrowRight, FiCreditCard, FiClock, FiCheckCircle, FiCopy, FiLink, FiUsers, FiUserPlus, FiBarChart2, FiStar, FiZap, FiGlobe, FiTrendingDown, FiLock, FiGift, FiShare2, FiCheck, FiExternalLink, FiCalendar, FiMessageSquare, FiKey, FiFileText, FiDownload, FiMessageCircle, FiCpu } from "react-icons/fi";
 import toast from "react-hot-toast";
 import Card from "../../components/ui/Card";
 import Badge from "../../components/ui/Badge";
@@ -16,6 +16,7 @@ import MarketSessionsWidget from "../../components/shared/MarketSessionsWidget";
 import studentService from "../../services/studentService";
 import ContentDetailsModal from "../../components/student/ContentDetailsModal";
 import announcementService from "../../services/announcementService";
+import walletService from "../../services/walletService";
 import api from "../../services/api";
 import { WHATSAPP_CHANNEL_URL } from "../../constants";
 
@@ -52,6 +53,7 @@ export default function Dashboard() {
   const [openSignalsCount, setOpenSignalsCount] = useState(0);
   const [copyStats, setCopyStats] = useState(null);
   const [businessProfiles, setBusinessProfiles] = useState([]);
+  const [botStats, setBotStats] = useState({ total: 0, real: 0, demo: 0, byStrategy: [] });
   const [previewPdf, setPreviewPdf] = useState(null);
   const [selectedFreeItem, setSelectedFreeItem] = useState(null);
   const [showActivateModal, setShowActivateModal] = useState(false);
@@ -91,6 +93,7 @@ export default function Dashboard() {
         setFreeCourses(d.freeCourses || []);
         setCopyStats(d.copyStats || {});
         setBusinessProfiles(d.businessProfiles || []);
+        setBotStats(d.botStats || { total: 0, real: 0, demo: 0, byStrategy: [] });
       } catch { if (!cancelled) toast.error("Failed to load dashboard data"); }
       finally { clearTimeout(maxWait); if (!cancelled) setLoading(false); }
 
@@ -602,6 +605,78 @@ export default function Dashboard() {
             );
           })}
         </div>
+      </motion.div>
+
+      {/* Bot Connections */}
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.23 }}>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-xs font-bold text-dark-400 uppercase tracking-widest">Bot Connections</h3>
+          <Link to="/student/connect-bot" className="text-xs text-primary-500 font-medium flex items-center gap-1">Connect Bot <FiArrowRight size={12} /></Link>
+        </div>
+        {botStats.total === 0 ? (
+          <Card className="p-5 flex flex-col sm:flex-row items-center gap-4 border-dashed">
+            <div className="w-12 h-12 rounded-xl bg-ink flex items-center justify-center text-primary-400 shadow-md shrink-0">
+              <FiCpu size={20} />
+            </div>
+            <div className="flex-1 text-center sm:text-left">
+              <p className="text-sm font-bold text-ink">No bots connected yet</p>
+              <p className="text-xs text-dark-400 mt-0.5">Choose a trading strategy and connect your MT4/MT5 account.</p>
+            </div>
+            <Link to="/student/connect-bot">
+              <Button variant="primary" size="sm" className="shrink-0">Connect Bot</Button>
+            </Link>
+          </Card>
+        ) : (
+          <Card className="p-5">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="flex items-center gap-4 p-3 rounded-xl bg-dark-50">
+                <div className="w-11 h-11 rounded-xl bg-ink flex items-center justify-center text-primary-400 shadow-md shrink-0">
+                  <FiCpu size={19} />
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-dark-400">Total Connected</p>
+                  <p className="text-xl font-extrabold text-ink">{botStats.total}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4 p-3 rounded-xl bg-dark-50">
+                <div className="w-11 h-11 rounded-xl bg-emerald-500 flex items-center justify-center text-white shadow-md shrink-0">
+                  <FiCheckCircle size={19} />
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-dark-400">Real Accounts</p>
+                  <p className="text-xl font-extrabold text-ink">{botStats.real}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4 p-3 rounded-xl bg-dark-50">
+                <div className="w-11 h-11 rounded-xl bg-blue-500 flex items-center justify-center text-white shadow-md shrink-0">
+                  <FiBarChart2 size={19} />
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-dark-400">Demo Accounts</p>
+                  <p className="text-xl font-extrabold text-ink">{botStats.demo}</p>
+                </div>
+              </div>
+            </div>
+            {botStats.byStrategy.length > 0 && (
+              <div className="mt-4 border-t border-dark-100 pt-4">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-dark-400 mb-2.5">Strategies Used</p>
+                <div className="flex flex-wrap gap-2">
+                  {botStats.byStrategy.map((st, idx) => (
+                    <span
+                      key={st.strategyName}
+                      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold ${
+                        idx === 0 ? 'bg-primary-50 text-primary-700 ring-1 ring-primary-200' : 'bg-dark-100 text-dark-600'
+                      }`}
+                    >
+                      {st.strategyName}
+                      <strong className={idx === 0 ? 'text-primary-600' : 'text-ink'}>{st.count}</strong>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </Card>
+        )}
       </motion.div>
 
       {/* Affiliate Dashboard */}

@@ -62,6 +62,7 @@ import AdminZoomSessions from './pages/admin/ZoomSessions';
 import AdminMarketUpdates from './pages/admin/MarketUpdates';
 import AdminWhatsAppClicks from './pages/admin/WhatsAppClicks';
 import AdminBotAccounts from './pages/admin/BotAccounts';
+import AdminTradingStrategies from './pages/admin/TradingStrategies';
 
 import StudentDashboard from './pages/student/Dashboard';
 import StudentCourses from './pages/student/Courses';
@@ -172,6 +173,7 @@ export const router = createBrowserRouter([
       { path: 'market-updates', element: <AdminMarketUpdates /> },
       { path: 'whatsapp-clicks', element: <AdminWhatsAppClicks /> },
       { path: 'bot-accounts', element: <AdminBotAccounts /> },
+      { path: 'trading-strategies', element: <AdminTradingStrategies /> },
     ],
   },
   {

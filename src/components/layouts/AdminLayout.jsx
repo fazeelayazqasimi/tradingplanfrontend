@@ -20,6 +20,7 @@ const sidebarSections = [
       { path: '/admin/dashboard', label: 'Dashboard', icon: FiLayout },
       { path: '/admin/students', label: 'Students', icon: FiUsers },
       { path: '/admin/bot-accounts', label: 'Bot Accounts', icon: FiCpu },
+      { path: '/admin/trading-strategies', label: 'Trading Strategies', icon: FiTrendingUp },
       { path: '/admin/crm', label: 'Student CRM', icon: FiUsers },
     ],
   },

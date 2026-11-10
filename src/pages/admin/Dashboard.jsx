@@ -19,6 +19,7 @@ import {
   FiPercent,
   FiUserCheck,
   FiUserX,
+  FiCpu,
 } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
 import Card from '../../components/ui/Card';
@@ -79,6 +80,7 @@ export default function Dashboard() {
   const w = s.withdrawals || {};
   const wall = s.wallets || {};
   const ref = s.referrals || {};
+  const bot = s.botStats || { total: 0, real: 0, demo: 0, revenue: 0, students: 0, byStrategy: [], topStrategy: null };
 
   if (loading) {
     return (
@@ -123,6 +125,63 @@ export default function Dashboard() {
         { key: 'unapprovedStudents', label: 'Not Activated', icon: FiUserX, value: s.unapprovedStudents ?? 0, color: 'bg-amber-50 text-amber-600' },
         { key: 'activeSubscriptions', label: 'Active Subscriptions', icon: FiCreditCard, value: s.activeSubscriptions ?? 0, color: 'bg-emerald-50 text-emerald-600' },
       ],
+    },
+    {
+      title: 'Bot Accounts',
+      cards: [
+        { key: 'botTotal', label: 'Total Connected', icon: FiCpu, value: bot.total ?? 0, color: 'bg-primary-50 text-primary-500' },
+        { key: 'botStudents', label: 'Students with Bot', icon: FiUsers, value: bot.students ?? 0, color: 'bg-indigo-50 text-indigo-600' },
+        { key: 'botReal', label: 'Real Accounts', icon: FiCheckCircle, value: bot.real ?? 0, color: 'bg-emerald-50 text-emerald-600' },
+        { key: 'botDemo', label: 'Demo Accounts', icon: FiLayers, value: bot.demo ?? 0, color: 'bg-blue-50 text-blue-600' },
+        { key: 'botRevenue', label: 'Activation Revenue', icon: FiDollarSign, value: bot.revenue ?? 0, isCurrency: true, color: 'bg-amber-50 text-amber-600' },
+        {
+          key: 'botTopStrategy',
+          label: 'Most Popular Strategy',
+          icon: FiTrendingUp,
+          value: bot.topStrategy ? `${bot.topStrategy.strategyName}` : '—',
+          sub: bot.topStrategy ? `${bot.topStrategy.count} account${bot.topStrategy.count === 1 ? '' : 's'}` : 'No connections yet',
+          color: 'bg-violet-50 text-violet-600',
+        },
+      ],
+      custom:
+        bot.byStrategy && bot.byStrategy.length > 0 ? (
+          <div className="mt-3 rounded-[18px] border border-dark-100 bg-white p-5 shadow-card">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-dark-400">
+              Connections by Strategy
+            </p>
+            <div className="flex flex-wrap gap-3">
+              {bot.byStrategy.map((st, idx) => (
+                <div
+                  key={st.strategyName}
+                  className={`flex items-center gap-3 rounded-xl border px-4 py-2.5 ${
+                    idx === 0
+                      ? 'border-primary-200 bg-primary-50'
+                      : 'border-dark-100 bg-dark-50'
+                  }`}
+                >
+                  <div className="min-w-0">
+                    <p className={`text-sm font-bold ${idx === 0 ? 'text-primary-700' : 'text-ink'}`}>
+                      {st.strategyName}
+                    </p>
+                    <p className="text-[11px] text-dark-400">
+                      {st.real} real · {st.demo} demo
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className={`text-lg font-extrabold ${idx === 0 ? 'text-primary-600' : 'text-ink'}`}>
+                      {st.count}
+                    </p>
+                    {idx === 0 && (
+                      <p className="text-[10px] font-bold uppercase tracking-wide text-primary-500">
+                        Most popular
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null,
     },
     {
       title: 'Institute Overview',
@@ -215,9 +274,12 @@ export default function Dashboard() {
                         <p className="truncate text-xs font-semibold text-dark-400 uppercase tracking-wider">
                           {card.label}
                         </p>
-                        <p className="mt-1 text-2xl font-bold text-ink tracking-tight">
+                        <p className="mt-1 text-2xl font-bold text-ink tracking-tight truncate">
                           {card.isCurrency ? formatCurrency(card.value) : (card.value ?? 0).toLocaleString()}
                         </p>
+                        {card.sub && (
+                          <p className="mt-0.5 text-[11px] font-medium text-dark-400">{card.sub}</p>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -225,6 +287,7 @@ export default function Dashboard() {
               );
             })}
           </motion.div>
+          {section.custom}
         </motion.div>
       ))}
 
